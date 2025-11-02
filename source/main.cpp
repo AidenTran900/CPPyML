@@ -32,8 +32,10 @@ int main()
     printMatrix(multiplyMatrix(m1, m2));
 
     fmt::print("Eliminate m3:\n");
-    printMatrix(gaussianElimination(m3));
+    printMatrix(gaussianElimination(m3).matrix);
 
+    fmt::print("Determinant m3:\n");
+    fmt::print("{}\n", determinant(m3));
 
     return 0;
 }

@@ -6,6 +6,11 @@
 using Vector = std::vector<double>;
 using Matrix = std::vector<Vector>;
 
+struct EliminationResult {
+    Matrix matrix;
+    int swaps;
+};
+
 void printMatrix(Matrix m) {
     for (std::vector<double> row : m) {
         for (double val : row) {
@@ -61,9 +66,9 @@ Matrix multiplyMatrix(Matrix m1, Matrix m2) {
     return result;
 }
 
-Matrix gaussianElimination(Matrix m) {
+EliminationResult gaussianElimination(Matrix m) {
     if (m.empty() || m[0].empty()) { 
-        return m;
+        return {m, 0};
     }
 
     int m_rows = m.size();
@@ -73,6 +78,7 @@ Matrix gaussianElimination(Matrix m) {
     Matrix identity(m_rows, Vector(m_cols));
 
     int pivot_row = 0;
+    int swaps = 0;
 
     for (int j = 0; j < m_cols && pivot_row < m_rows; j++) { // Condition means loop thru cols until we run out of rows to eliminate
         int max_row_ind = pivot_row;
@@ -89,6 +95,7 @@ Matrix gaussianElimination(Matrix m) {
         // Rows w/ greatest vals at col are on top
         if (max_row_ind != pivot_row) {
             std::swap(u[pivot_row], u[max_row_ind]);
+            swaps++;
         }
 
         // Prevent super large #s (1/0.000000001 super big), also floating pt errors :/ 
@@ -114,30 +121,42 @@ Matrix gaussianElimination(Matrix m) {
         pivot_row++;
     }
 
-    return u;
+    return {u, swaps};
 }
 
-// LU Decomposition
-// double calculateDeterminant(Matrix m) {
-//     int m_rows = m.size();
-//     int m_cols = m[0].size();
+double determinant(Matrix m) {
+    if (m.empty()) {
+        return 0.0;
+    }
+
+    int m_rows = m.size();
+    int m_cols = m[0].size();
     
-//     // Check dimensions
-//     if (m_rows != m_cols) { 
-//         throw std::invalid_argument("Matrix dimensions are not square."); 
-//     }
+    // Check dimensions
+    if (m_rows != m_cols) { 
+        throw std::invalid_argument("Matrix dimensions are not square."); 
+    }
+    if (m_rows == 1 && m_cols == 1) {
+        return m[0][0];
+    }
 
-//     if (m_rows == 1 && m_cols == 1) {
-//         return m[0][0];
-//     }
+    if (m_rows == 2 && m_cols == 2) {
+        return m[0][0] * m[1][1] - m[1][0] * m[0][1];
+    } 
 
-//     if (m_rows == 2 && m_cols == 2) {
-//         return m[0][0] * m[1][1] - m[1][0] * m[0][1];
-//     } 
+    EliminationResult elim_result = gaussianElimination(m);
 
-//     double result = 0.0;
+    double det = 1.0;
+    for (int i = 0; i < m_rows; i++) {
+        if (std::abs(elim_result.matrix[i][i]) < 1e-9) { // Stop early if "0"
+            return 0.0;
+        }
+        det *= elim_result.matrix[i][i];
+    }
 
+    if (elim_result.swaps % 2 != 0) {
+        det *= -1.0;
+    }
 
-
-//     return result;
-// }
+    return det;
+}
