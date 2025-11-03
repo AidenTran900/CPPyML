@@ -466,7 +466,7 @@ MEMORYCHECK_COMMAND:FILEPATH=MEMORYCHECK_COMMAND-NOTFOUND
 MEMORYCHECK_SUPPRESSIONS_FILE:FILEPATH=
 
 //Name of the computer/site where compile is being run
-SITE:STRING=wifi-10-42-24-178.wifi.berkeley.edu
+SITE:STRING=fedora
 
 //Build all artifacts
 SPDLOG_BUILD_ALL:BOOL=OFF

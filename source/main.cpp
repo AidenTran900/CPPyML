@@ -1,36 +1,36 @@
 
 #include <fmt/format.h>
-#include "helpers/linalg.cpp"
+#include "linalg/matrix.h"
 
 int main()
 {
     // Test matrix operations
-    Matrix m1 = {{1, 2}, 
-                 {3, 4}};
-    Matrix m2 = {{5, 6}, 
-                 {7, 8}};
-    Matrix m3 = {{-1, 4, -2}, 
-                 {-4, 6, 1},
-                 {-6, -6, -2}};
+    Matrix m1 = Matrix(std::vector<std::vector<double>>{{1, 2},
+                                                        {3, 4}});
+    Matrix m2 = Matrix(std::vector<std::vector<double>>{{5, 6},
+                                                        {7, 8}});
+    Matrix m3 = Matrix(std::vector<std::vector<double>>{{-1, 4, -2},
+                                                        {-4, 6, 1},
+                                                        {-6, -6, -2}});
 
     fmt::print("Add:\n");
-    printMatrix(addMatrix(m1, m2));
+    m1.add(m2).print();
 
     fmt::print("Multiply:\n");
-    printMatrix(multiplyMatrix(m1, m2));
+    m1.multiply(m2).print();
 
     fmt::print("REF of m3:\n");
-    EliminationResult m3_elim = forwardElimination(m3);
-    printMatrix(m3_elim.matrix);
+    EliminationResult m3_elim = Matrix::forwardElimination(m3);
+    m3_elim.matrix.print();
 
     fmt::print("RREF of m3:\n"); // Prints diagonal matrix with 1s and 0s duh idk what im doing
-    printMatrix(backwardElimination(m3_elim.matrix).matrix);
+    Matrix::backwardElimination(m3_elim.matrix).matrix.print();
 
     fmt::print("Inverse of m3:\n");
-    printMatrix(inverse(m3));
+    m3.inverse().print();
 
     fmt::print("Determinant m3:\n");
-    fmt::print("{}\n", determinant(m3));
+    fmt::print("{}\n", m3.determinant());
 
     return 0;
 }

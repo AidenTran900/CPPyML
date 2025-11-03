@@ -3,6 +3,7 @@ Build: \
   /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/crti.o \
   /usr/lib/gcc/x86_64-redhat-linux/15/crtbegin.o \
   CMakeFiles/Build.dir/source/main.cpp.o \
+  CMakeFiles/Build.dir/source/linalg/matrix.cpp.o \
   CMakeFiles/Build.dir/source/additional-sourcefile.cpp.o \
   external/fmt/libfmt.a \
   external/spdlog/libspdlog.a \
@@ -41,6 +42,8 @@ Build: \
 /usr/lib/gcc/x86_64-redhat-linux/15/crtbegin.o:
 
 CMakeFiles/Build.dir/source/main.cpp.o:
+
+CMakeFiles/Build.dir/source/linalg/matrix.cpp.o:
 
 CMakeFiles/Build.dir/source/additional-sourcefile.cpp.o:
 

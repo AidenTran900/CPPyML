@@ -132,7 +132,7 @@ CMakeFiles/Build.dir/source/main.cpp.o: \
  /usr/include/c++/15/bits/uses_allocator_args.h /usr/include/c++/15/tuple \
  /usr/include/c++/15/system_error \
  /usr/include/c++/15/x86_64-redhat-linux/bits/error_constants.h \
- /home/atran/Documents/Projects/LinearModel/source/Helpers/matrix.cpp \
+ /home/atran/Documents/Projects/LinearModel/source/linalg/matrix.h \
  /usr/include/c++/15/vector /usr/include/c++/15/bits/stl_uninitialized.h \
  /usr/include/c++/15/bits/stl_vector.h \
  /usr/include/c++/15/bits/stl_bvector.h \

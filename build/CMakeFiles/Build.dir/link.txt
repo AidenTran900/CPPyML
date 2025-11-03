@@ -1,1 +1,1 @@
-/usr/bin/c++ -flto=auto -fno-fat-lto-objects -Wl,--dependency-file=CMakeFiles/Build.dir/link.d CMakeFiles/Build.dir/source/main.cpp.o "CMakeFiles/Build.dir/source/additional-sourcefile.cpp.o" -o Build  external/fmt/libfmt.a external/spdlog/libspdlog.a
+/usr/bin/c++ -flto=auto -fno-fat-lto-objects -Wl,--dependency-file=CMakeFiles/Build.dir/link.d CMakeFiles/Build.dir/source/main.cpp.o CMakeFiles/Build.dir/source/linalg/matrix.cpp.o "CMakeFiles/Build.dir/source/additional-sourcefile.cpp.o" -o Build  external/fmt/libfmt.a external/spdlog/libspdlog.a

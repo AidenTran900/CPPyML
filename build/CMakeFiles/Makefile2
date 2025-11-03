@@ -1097,12 +1097,12 @@ CMakeFiles/Build.dir/all: external/fmt/CMakeFiles/fmt.dir/all
 CMakeFiles/Build.dir/all: external/spdlog/CMakeFiles/spdlog.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=1,2,3 "Built target Build"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=1,2,3,4 "Built target Build"
 .PHONY : CMakeFiles/Build.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/Build.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/atran/Documents/Projects/LinearModel/build/CMakeFiles 14
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/atran/Documents/Projects/LinearModel/build/CMakeFiles 15
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/Build.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/atran/Documents/Projects/LinearModel/build/CMakeFiles 0
 .PHONY : CMakeFiles/Build.dir/rule
@@ -1114,7 +1114,7 @@ Build: CMakeFiles/Build.dir/rule
 # codegen rule for target.
 CMakeFiles/Build.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=1,2,3 "Finished codegen for target Build"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=1,2,3,4 "Finished codegen for target Build"
 .PHONY : CMakeFiles/Build.dir/codegen
 
 # clean rule for target.
@@ -1129,7 +1129,7 @@ CMakeFiles/Build.dir/clean:
 CMakeFiles/bp_foo.dir/all: external/fmt/CMakeFiles/fmt.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/bp_foo.dir/build.make CMakeFiles/bp_foo.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/bp_foo.dir/build.make CMakeFiles/bp_foo.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=4,5 "Built target bp_foo"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=5,6 "Built target bp_foo"
 .PHONY : CMakeFiles/bp_foo.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1146,7 +1146,7 @@ bp_foo: CMakeFiles/bp_foo.dir/rule
 # codegen rule for target.
 CMakeFiles/bp_foo.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/bp_foo.dir/build.make CMakeFiles/bp_foo.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=4,5 "Finished codegen for target bp_foo"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=5,6 "Finished codegen for target bp_foo"
 .PHONY : CMakeFiles/bp_foo.dir/codegen
 
 # clean rule for target.
@@ -1161,7 +1161,7 @@ CMakeFiles/bp_foo.dir/clean:
 external/fmt/CMakeFiles/fmt.dir/all:
 	$(MAKE) $(MAKESILENT) -f external/fmt/CMakeFiles/fmt.dir/build.make external/fmt/CMakeFiles/fmt.dir/depend
 	$(MAKE) $(MAKESILENT) -f external/fmt/CMakeFiles/fmt.dir/build.make external/fmt/CMakeFiles/fmt.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=8,9,10 "Built target fmt"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=9,10,11 "Built target fmt"
 .PHONY : external/fmt/CMakeFiles/fmt.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1178,7 +1178,7 @@ fmt: external/fmt/CMakeFiles/fmt.dir/rule
 # codegen rule for target.
 external/fmt/CMakeFiles/fmt.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f external/fmt/CMakeFiles/fmt.dir/build.make external/fmt/CMakeFiles/fmt.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=8,9,10 "Finished codegen for target fmt"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=9,10,11 "Finished codegen for target fmt"
 .PHONY : external/fmt/CMakeFiles/fmt.dir/codegen
 
 # clean rule for target.
@@ -1193,7 +1193,7 @@ external/fmt/CMakeFiles/fmt.dir/clean:
 external/spdlog/CMakeFiles/spdlog.dir/all:
 	$(MAKE) $(MAKESILENT) -f external/spdlog/CMakeFiles/spdlog.dir/build.make external/spdlog/CMakeFiles/spdlog.dir/depend
 	$(MAKE) $(MAKESILENT) -f external/spdlog/CMakeFiles/spdlog.dir/build.make external/spdlog/CMakeFiles/spdlog.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=11,12,13,14,15,16,17,18 "Built target spdlog"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=12,13,14,15,16,17,18,19 "Built target spdlog"
 .PHONY : external/spdlog/CMakeFiles/spdlog.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1210,7 +1210,7 @@ spdlog: external/spdlog/CMakeFiles/spdlog.dir/rule
 # codegen rule for target.
 external/spdlog/CMakeFiles/spdlog.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f external/spdlog/CMakeFiles/spdlog.dir/build.make external/spdlog/CMakeFiles/spdlog.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=11,12,13,14,15,16,17,18 "Finished codegen for target spdlog"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=12,13,14,15,16,17,18,19 "Finished codegen for target spdlog"
 .PHONY : external/spdlog/CMakeFiles/spdlog.dir/codegen
 
 # clean rule for target.
@@ -1225,7 +1225,7 @@ external/spdlog/CMakeFiles/spdlog.dir/clean:
 tests/CMakeFiles/failtest.dir/all:
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/failtest.dir/build.make tests/CMakeFiles/failtest.dir/depend
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/failtest.dir/build.make tests/CMakeFiles/failtest.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=6,7 "Built target failtest"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=7,8 "Built target failtest"
 .PHONY : tests/CMakeFiles/failtest.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1242,7 +1242,7 @@ failtest: tests/CMakeFiles/failtest.dir/rule
 # codegen rule for target.
 tests/CMakeFiles/failtest.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/failtest.dir/build.make tests/CMakeFiles/failtest.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=6,7 "Finished codegen for target failtest"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=7,8 "Finished codegen for target failtest"
 .PHONY : tests/CMakeFiles/failtest.dir/codegen
 
 # clean rule for target.
@@ -1258,7 +1258,7 @@ tests/CMakeFiles/successtest.dir/all: CMakeFiles/bp_foo.dir/all
 tests/CMakeFiles/successtest.dir/all: external/fmt/CMakeFiles/fmt.dir/all
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/successtest.dir/build.make tests/CMakeFiles/successtest.dir/depend
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/successtest.dir/build.make tests/CMakeFiles/successtest.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=19,20 "Built target successtest"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=20,21 "Built target successtest"
 .PHONY : tests/CMakeFiles/successtest.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1275,7 +1275,7 @@ successtest: tests/CMakeFiles/successtest.dir/rule
 # codegen rule for target.
 tests/CMakeFiles/successtest.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/successtest.dir/build.make tests/CMakeFiles/successtest.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=19,20 "Finished codegen for target successtest"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/atran/Documents/Projects/LinearModel/build/CMakeFiles --progress-num=20,21 "Finished codegen for target successtest"
 .PHONY : tests/CMakeFiles/successtest.dir/codegen
 
 # clean rule for target.

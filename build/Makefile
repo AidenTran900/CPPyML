@@ -681,6 +681,30 @@ source/foo.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/bp_foo.dir/build.make CMakeFiles/bp_foo.dir/source/foo.cpp.s
 .PHONY : source/foo.cpp.s
 
+source/linalg/matrix.o: source/linalg/matrix.cpp.o
+.PHONY : source/linalg/matrix.o
+
+# target to build an object file
+source/linalg/matrix.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/linalg/matrix.cpp.o
+.PHONY : source/linalg/matrix.cpp.o
+
+source/linalg/matrix.i: source/linalg/matrix.cpp.i
+.PHONY : source/linalg/matrix.i
+
+# target to preprocess a source file
+source/linalg/matrix.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/linalg/matrix.cpp.i
+.PHONY : source/linalg/matrix.cpp.i
+
+source/linalg/matrix.s: source/linalg/matrix.cpp.s
+.PHONY : source/linalg/matrix.s
+
+# target to generate assembly for a file
+source/linalg/matrix.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/linalg/matrix.cpp.s
+.PHONY : source/linalg/matrix.cpp.s
+
 source/main.o: source/main.cpp.o
 .PHONY : source/main.o
 
@@ -760,6 +784,9 @@ help:
 	@echo "... source/foo.o"
 	@echo "... source/foo.i"
 	@echo "... source/foo.s"
+	@echo "... source/linalg/matrix.o"
+	@echo "... source/linalg/matrix.i"
+	@echo "... source/linalg/matrix.s"
 	@echo "... source/main.o"
 	@echo "... source/main.i"
 	@echo "... source/main.s"

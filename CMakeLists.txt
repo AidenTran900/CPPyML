@@ -96,7 +96,16 @@ find_lto(CXX)
 
 # Always list the source files explicitly, including headers so that they are listed in the IDE
 # If you need to use files based on a variable value, use target_sources
-add_executable(Build source/main.cpp)
+add_executable(Build
+    source/main.cpp
+    source/linalg/matrix.cpp
+    source/linalg/matrix.h
+)
+
+target_include_directories(Build
+    PRIVATE
+        ${CMAKE_CURRENT_LIST_DIR}/source
+)
 
 target_link_libraries(Build
     #PUBLIC # Useful for libraries, see https://cmake.org/cmake/help/latest/manual/cmake-buildsystem.7.html for more details about transitive usage requirements.

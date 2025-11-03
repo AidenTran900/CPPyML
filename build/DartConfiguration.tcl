@@ -11,7 +11,7 @@ BuildDirectory: /home/atran/Documents/Projects/LinearModel/build
 CostDataFile: 
 
 # Site is something like machine.domain, i.e. pragmatic.crd
-Site: wifi-10-42-24-178.wifi.berkeley.edu
+Site: fedora
 
 # Build name is osname-revision-compiler, i.e. Linux-2.4.2-2smp-c++
 BuildName: Linux-c++

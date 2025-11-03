@@ -9,6 +9,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/atran/Documents/Projects/LinearModel/source/additional-sourcefile.cpp" "CMakeFiles/Build.dir/source/additional-sourcefile.cpp.o" "gcc" "CMakeFiles/Build.dir/source/additional-sourcefile.cpp.o.d"
+  "/home/atran/Documents/Projects/LinearModel/source/linalg/matrix.cpp" "CMakeFiles/Build.dir/source/linalg/matrix.cpp.o" "gcc" "CMakeFiles/Build.dir/source/linalg/matrix.cpp.o.d"
   "/home/atran/Documents/Projects/LinearModel/source/main.cpp" "CMakeFiles/Build.dir/source/main.cpp.o" "gcc" "CMakeFiles/Build.dir/source/main.cpp.o.d"
   "" "Build" "gcc" "CMakeFiles/Build.dir/link.d"
   )
