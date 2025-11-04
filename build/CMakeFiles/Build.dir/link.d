@@ -3,7 +3,12 @@ Build: \
   /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/crti.o \
   /usr/lib/gcc/x86_64-redhat-linux/15/crtbegin.o \
   CMakeFiles/Build.dir/source/main.cpp.o \
-  CMakeFiles/Build.dir/source/linalg/matrix.cpp.o \
+  CMakeFiles/Build.dir/source/math/matrix.cpp.o \
+  CMakeFiles/Build.dir/source/core/loss.cpp.o \
+  CMakeFiles/Build.dir/source/core/optimizer.cpp.o \
+  CMakeFiles/Build.dir/source/models/linear-regression.cpp.o \
+  CMakeFiles/Build.dir/tests/math/matrix-test.cpp.o \
+  CMakeFiles/Build.dir/tests/models/linear-regression-test.cpp.o \
   CMakeFiles/Build.dir/source/additional-sourcefile.cpp.o \
   external/fmt/libfmt.a \
   external/spdlog/libspdlog.a \
@@ -43,7 +48,17 @@ Build: \
 
 CMakeFiles/Build.dir/source/main.cpp.o:
 
-CMakeFiles/Build.dir/source/linalg/matrix.cpp.o:
+CMakeFiles/Build.dir/source/math/matrix.cpp.o:
+
+CMakeFiles/Build.dir/source/core/loss.cpp.o:
+
+CMakeFiles/Build.dir/source/core/optimizer.cpp.o:
+
+CMakeFiles/Build.dir/source/models/linear-regression.cpp.o:
+
+CMakeFiles/Build.dir/tests/math/matrix-test.cpp.o:
+
+CMakeFiles/Build.dir/tests/models/linear-regression-test.cpp.o:
 
 CMakeFiles/Build.dir/source/additional-sourcefile.cpp.o:
 

@@ -1,5 +1,10 @@
-#include "matrix.h"
+#include "ml_lib/math/matrix.h"
 #include <cmath>
+
+Matrix::Matrix()
+    : m_rows(0), 
+      m_cols(0), 
+      m_data(0,0) {}
 
 Matrix::Matrix(int rows, int cols, double init_val)
     : m_rows(rows), 
@@ -63,6 +68,23 @@ Matrix Matrix::add(const Matrix& other) const {
     return result;
 }
 
+Matrix Matrix::sub(const Matrix& other) const {
+    // Check dimensions
+    if (m_cols != other.m_cols || m_rows != other.m_rows) {
+        throw std::invalid_argument("Matrix dimensions are incompatible.");
+    }
+
+    Matrix result(m_rows, m_cols);
+
+    // Do sub stuff
+    for (int i = 0; i < m_rows; i++) {
+        for (int j = 0; j < m_cols; j++) {
+            result(i, j) = (*this)(i, j) - other(i, j);
+        }
+    }
+    return result;
+}
+
 Matrix Matrix::multiply(const Matrix& other) const {
     // Check dimensions
     if (m_cols != other.m_rows) {
@@ -79,6 +101,17 @@ Matrix Matrix::multiply(const Matrix& other) const {
             for (int h = 0; h < m_cols; h++) {
                 result(i, j) += (*this)(i, h) * other(h, j);
             }
+        }
+    }
+    return result;
+}
+
+Matrix Matrix::scale(double scalar) const {
+    Matrix result(m_rows, m_cols);
+
+    for (int i = 0; i < m_rows; i++) {
+        for (int j = 0; j < m_cols; j++) {
+            result(i, j) = (*this)(i, j) * scalar;
         }
     }
     return result;
@@ -241,6 +274,17 @@ Matrix Matrix::inverse() const {
     return backward_result.augmented;
 }
 
+Matrix Matrix::transpose() const {
+    Matrix result(m_cols, m_rows);
+    for (int i = 0; i < m_rows; i++) {
+        for (int j = 0; j < m_cols; j++) {
+            result(j, i) = (*this)(i, j);
+        }
+    }
+
+    return result;
+}
+
 double Matrix::determinant() const {
     if (empty()) {
         return 0.0;
@@ -273,4 +317,36 @@ double Matrix::determinant() const {
     }
 
     return det;
+}
+
+double Matrix::dot(const Matrix& m) const {
+    if (rows() != m.rows() || cols() != m.cols()) {
+        throw std::invalid_argument("Dimension mismatch for dot product");
+    }
+
+    double result = 0.0;
+    for (int i = 0; i < rows(); i++) {
+        for (int j = 0; j < cols(); j++) {
+            result += (*this)(i,j) * m(i,j);
+        }
+    }
+    return result;
+}
+
+Matrix Matrix::sign() const {
+    Matrix result(m_rows, m_cols);
+    
+    for (int i = 0; i < m_rows; i++) {
+        for (int j = 0; j < m_cols; j++) {
+            double val = (*this)(i, j);
+            if (val > 0) {
+                result(i, j) = 1.0;
+            } else if (val < 0) {
+                result(i, j) = -1.0;
+            } else {
+                result(i, j) = 0.0;
+            }
+        }
+    }
+    return result;
 }

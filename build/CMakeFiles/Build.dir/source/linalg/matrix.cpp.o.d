@@ -1,7 +1,7 @@
 CMakeFiles/Build.dir/source/linalg/matrix.cpp.o: \
  /home/atran/Documents/Projects/LinearModel/source/linalg/matrix.cpp \
  /usr/include/stdc-predef.h \
- /home/atran/Documents/Projects/LinearModel/source/linalg/matrix.h \
+ /home/atran/Documents/Projects/LinearModel/include/ml_lib/linalg/matrix.h \
  /usr/include/c++/15/vector /usr/include/c++/15/bits/requires_hosted.h \
  /usr/include/c++/15/x86_64-redhat-linux/bits/c++config.h \
  /usr/include/bits/wordsize.h \

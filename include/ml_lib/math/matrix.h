@@ -12,6 +12,7 @@ class Matrix {
         std::vector<double> m_data;
 
     public:
+        Matrix();
         Matrix(int rows, int cols, double init_val = 0.0);
         Matrix(const std::vector<std::vector<double>>& vec);
 
@@ -26,10 +27,15 @@ class Matrix {
         void print() const;
 
         Matrix add(const Matrix& other) const;
+        Matrix sub(const Matrix& other) const;
         Matrix multiply(const Matrix& other) const;
+        Matrix scale(double scalar) const;
 
         Matrix inverse() const;
+        Matrix transpose() const;
+        Matrix sign() const;
         double determinant() const;
+        double dot(const Matrix& other) const;
 
         static EliminationResult forwardElimination(const Matrix& m, const Matrix& aug = Matrix(0, 0));
         static EliminationResult backwardElimination(const Matrix& m, const Matrix& aug = Matrix(0, 0));

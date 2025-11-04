@@ -98,13 +98,24 @@ find_lto(CXX)
 # If you need to use files based on a variable value, use target_sources
 add_executable(Build
     source/main.cpp
-    source/linalg/matrix.cpp
-    source/linalg/matrix.h
+    source/math/matrix.cpp
+    source/core/loss.cpp
+    source/core/optimizer.cpp
+    source/models/linear-regression.cpp
+    tests/math/matrix-test.cpp
+    tests/models/linear-regression-test.cpp
+    include/ml_lib/math/matrix.h
+    include/ml_lib/core/loss.h
+    include/ml_lib/core/optimizer.h
+    include/ml_lib/models/base-model.h
+    include/ml_lib/models/linear-regression.h
 )
 
 target_include_directories(Build
     PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/source
+        ${CMAKE_CURRENT_LIST_DIR}/include
+        ${CMAKE_CURRENT_LIST_DIR}/tests
 )
 
 target_link_libraries(Build

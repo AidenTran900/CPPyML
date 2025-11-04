@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = -DHAS_ADDITIONAL_SOURCEFILE -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL
 
-CXX_INCLUDES = -I/home/atran/Documents/Projects/LinearModel/source -isystem /home/atran/Documents/Projects/LinearModel/external/fmt/include -isystem /home/atran/Documents/Projects/LinearModel/external/spdlog/include
+CXX_INCLUDES = -I/home/atran/Documents/Projects/LinearModel/source -I/home/atran/Documents/Projects/LinearModel/include -I/home/atran/Documents/Projects/LinearModel/tests -isystem /home/atran/Documents/Projects/LinearModel/external/fmt/include -isystem /home/atran/Documents/Projects/LinearModel/external/spdlog/include
 
 CXX_FLAGS = -flto=auto -fno-fat-lto-objects -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Wextra -Wpedantic -Wno-switch-enum -Werror
 

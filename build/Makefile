@@ -657,6 +657,54 @@ source/additional-sourcefile.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/additional-sourcefile.cpp.s
 .PHONY : source/additional-sourcefile.cpp.s
 
+source/core/loss.o: source/core/loss.cpp.o
+.PHONY : source/core/loss.o
+
+# target to build an object file
+source/core/loss.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/core/loss.cpp.o
+.PHONY : source/core/loss.cpp.o
+
+source/core/loss.i: source/core/loss.cpp.i
+.PHONY : source/core/loss.i
+
+# target to preprocess a source file
+source/core/loss.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/core/loss.cpp.i
+.PHONY : source/core/loss.cpp.i
+
+source/core/loss.s: source/core/loss.cpp.s
+.PHONY : source/core/loss.s
+
+# target to generate assembly for a file
+source/core/loss.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/core/loss.cpp.s
+.PHONY : source/core/loss.cpp.s
+
+source/core/optimizer.o: source/core/optimizer.cpp.o
+.PHONY : source/core/optimizer.o
+
+# target to build an object file
+source/core/optimizer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/core/optimizer.cpp.o
+.PHONY : source/core/optimizer.cpp.o
+
+source/core/optimizer.i: source/core/optimizer.cpp.i
+.PHONY : source/core/optimizer.i
+
+# target to preprocess a source file
+source/core/optimizer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/core/optimizer.cpp.i
+.PHONY : source/core/optimizer.cpp.i
+
+source/core/optimizer.s: source/core/optimizer.cpp.s
+.PHONY : source/core/optimizer.s
+
+# target to generate assembly for a file
+source/core/optimizer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/core/optimizer.cpp.s
+.PHONY : source/core/optimizer.cpp.s
+
 source/foo.o: source/foo.cpp.o
 .PHONY : source/foo.o
 
@@ -681,30 +729,6 @@ source/foo.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/bp_foo.dir/build.make CMakeFiles/bp_foo.dir/source/foo.cpp.s
 .PHONY : source/foo.cpp.s
 
-source/linalg/matrix.o: source/linalg/matrix.cpp.o
-.PHONY : source/linalg/matrix.o
-
-# target to build an object file
-source/linalg/matrix.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/linalg/matrix.cpp.o
-.PHONY : source/linalg/matrix.cpp.o
-
-source/linalg/matrix.i: source/linalg/matrix.cpp.i
-.PHONY : source/linalg/matrix.i
-
-# target to preprocess a source file
-source/linalg/matrix.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/linalg/matrix.cpp.i
-.PHONY : source/linalg/matrix.cpp.i
-
-source/linalg/matrix.s: source/linalg/matrix.cpp.s
-.PHONY : source/linalg/matrix.s
-
-# target to generate assembly for a file
-source/linalg/matrix.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/linalg/matrix.cpp.s
-.PHONY : source/linalg/matrix.cpp.s
-
 source/main.o: source/main.cpp.o
 .PHONY : source/main.o
 
@@ -728,6 +752,102 @@ source/main.s: source/main.cpp.s
 source/main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/main.cpp.s
 .PHONY : source/main.cpp.s
+
+source/math/matrix.o: source/math/matrix.cpp.o
+.PHONY : source/math/matrix.o
+
+# target to build an object file
+source/math/matrix.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/math/matrix.cpp.o
+.PHONY : source/math/matrix.cpp.o
+
+source/math/matrix.i: source/math/matrix.cpp.i
+.PHONY : source/math/matrix.i
+
+# target to preprocess a source file
+source/math/matrix.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/math/matrix.cpp.i
+.PHONY : source/math/matrix.cpp.i
+
+source/math/matrix.s: source/math/matrix.cpp.s
+.PHONY : source/math/matrix.s
+
+# target to generate assembly for a file
+source/math/matrix.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/math/matrix.cpp.s
+.PHONY : source/math/matrix.cpp.s
+
+source/models/linear-regression.o: source/models/linear-regression.cpp.o
+.PHONY : source/models/linear-regression.o
+
+# target to build an object file
+source/models/linear-regression.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/models/linear-regression.cpp.o
+.PHONY : source/models/linear-regression.cpp.o
+
+source/models/linear-regression.i: source/models/linear-regression.cpp.i
+.PHONY : source/models/linear-regression.i
+
+# target to preprocess a source file
+source/models/linear-regression.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/models/linear-regression.cpp.i
+.PHONY : source/models/linear-regression.cpp.i
+
+source/models/linear-regression.s: source/models/linear-regression.cpp.s
+.PHONY : source/models/linear-regression.s
+
+# target to generate assembly for a file
+source/models/linear-regression.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/models/linear-regression.cpp.s
+.PHONY : source/models/linear-regression.cpp.s
+
+tests/math/matrix-test.o: tests/math/matrix-test.cpp.o
+.PHONY : tests/math/matrix-test.o
+
+# target to build an object file
+tests/math/matrix-test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/tests/math/matrix-test.cpp.o
+.PHONY : tests/math/matrix-test.cpp.o
+
+tests/math/matrix-test.i: tests/math/matrix-test.cpp.i
+.PHONY : tests/math/matrix-test.i
+
+# target to preprocess a source file
+tests/math/matrix-test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/tests/math/matrix-test.cpp.i
+.PHONY : tests/math/matrix-test.cpp.i
+
+tests/math/matrix-test.s: tests/math/matrix-test.cpp.s
+.PHONY : tests/math/matrix-test.s
+
+# target to generate assembly for a file
+tests/math/matrix-test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/tests/math/matrix-test.cpp.s
+.PHONY : tests/math/matrix-test.cpp.s
+
+tests/models/linear-regression-test.o: tests/models/linear-regression-test.cpp.o
+.PHONY : tests/models/linear-regression-test.o
+
+# target to build an object file
+tests/models/linear-regression-test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/tests/models/linear-regression-test.cpp.o
+.PHONY : tests/models/linear-regression-test.cpp.o
+
+tests/models/linear-regression-test.i: tests/models/linear-regression-test.cpp.i
+.PHONY : tests/models/linear-regression-test.i
+
+# target to preprocess a source file
+tests/models/linear-regression-test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/tests/models/linear-regression-test.cpp.i
+.PHONY : tests/models/linear-regression-test.cpp.i
+
+tests/models/linear-regression-test.s: tests/models/linear-regression-test.cpp.s
+.PHONY : tests/models/linear-regression-test.s
+
+# target to generate assembly for a file
+tests/models/linear-regression-test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/tests/models/linear-regression-test.cpp.s
+.PHONY : tests/models/linear-regression-test.cpp.s
 
 # Help Target
 help:
@@ -781,15 +901,30 @@ help:
 	@echo "... source/additional-sourcefile.o"
 	@echo "... source/additional-sourcefile.i"
 	@echo "... source/additional-sourcefile.s"
+	@echo "... source/core/loss.o"
+	@echo "... source/core/loss.i"
+	@echo "... source/core/loss.s"
+	@echo "... source/core/optimizer.o"
+	@echo "... source/core/optimizer.i"
+	@echo "... source/core/optimizer.s"
 	@echo "... source/foo.o"
 	@echo "... source/foo.i"
 	@echo "... source/foo.s"
-	@echo "... source/linalg/matrix.o"
-	@echo "... source/linalg/matrix.i"
-	@echo "... source/linalg/matrix.s"
 	@echo "... source/main.o"
 	@echo "... source/main.i"
 	@echo "... source/main.s"
+	@echo "... source/math/matrix.o"
+	@echo "... source/math/matrix.i"
+	@echo "... source/math/matrix.s"
+	@echo "... source/models/linear-regression.o"
+	@echo "... source/models/linear-regression.i"
+	@echo "... source/models/linear-regression.s"
+	@echo "... tests/math/matrix-test.o"
+	@echo "... tests/math/matrix-test.i"
+	@echo "... tests/math/matrix-test.s"
+	@echo "... tests/models/linear-regression-test.o"
+	@echo "... tests/models/linear-regression-test.i"
+	@echo "... tests/models/linear-regression-test.s"
 .PHONY : help
 
 
