@@ -705,6 +705,30 @@ source/core/optimizer.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/core/optimizer.cpp.s
 .PHONY : source/core/optimizer.cpp.s
 
+source/core/regularizer.o: source/core/regularizer.cpp.o
+.PHONY : source/core/regularizer.o
+
+# target to build an object file
+source/core/regularizer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/core/regularizer.cpp.o
+.PHONY : source/core/regularizer.cpp.o
+
+source/core/regularizer.i: source/core/regularizer.cpp.i
+.PHONY : source/core/regularizer.i
+
+# target to preprocess a source file
+source/core/regularizer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/core/regularizer.cpp.i
+.PHONY : source/core/regularizer.cpp.i
+
+source/core/regularizer.s: source/core/regularizer.cpp.s
+.PHONY : source/core/regularizer.s
+
+# target to generate assembly for a file
+source/core/regularizer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Build.dir/build.make CMakeFiles/Build.dir/source/core/regularizer.cpp.s
+.PHONY : source/core/regularizer.cpp.s
+
 source/foo.o: source/foo.cpp.o
 .PHONY : source/foo.o
 
@@ -907,6 +931,9 @@ help:
 	@echo "... source/core/optimizer.o"
 	@echo "... source/core/optimizer.i"
 	@echo "... source/core/optimizer.s"
+	@echo "... source/core/regularizer.o"
+	@echo "... source/core/regularizer.i"
+	@echo "... source/core/regularizer.s"
 	@echo "... source/foo.o"
 	@echo "... source/foo.i"
 	@echo "... source/foo.s"

@@ -1,6 +1,15 @@
 #pragma once
 #include "../math/matrix.h"
 
+enum OptimizerType {
+    BATCH,
+        // Using full dataset
+    STOCHASTIC,
+        // Update parameters after 1 sample
+    MINI_BATCH
+        // Update parameters after small batches
+};
+
 class Optimizer {
     protected:
         double learning_rate;
@@ -36,3 +45,5 @@ class MiniBatchOptimizer : public Optimizer {
 
         void step(Matrix& param, const Matrix& grad) override;
 };
+
+Optimizer* createOptimizer(OptimizerType type, double lr);

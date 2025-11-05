@@ -128,4 +128,21 @@ Matrix RMSELoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
     return error.scale(final_rmse_scale);
 }
 
+LossFunction* createLoss(LossType type)
+{
+    switch (type) {
+        case LossType::L1:
+            return new L1Loss();
+        case LossType::MAE:
+            return new MAELoss();
+        case LossType::L2:
+            return new L2Loss();
+        case LossType::MSE:
+            return new MSELoss();
+        case LossType::RMSE:
+            return new RMSELoss();
+        default:
+            return new MSELoss();
+    }
+}
 

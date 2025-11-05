@@ -8,6 +8,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/Build.dir/source/core/loss.cpp.o.d"
   "CMakeFiles/Build.dir/source/core/optimizer.cpp.o"
   "CMakeFiles/Build.dir/source/core/optimizer.cpp.o.d"
+  "CMakeFiles/Build.dir/source/core/regularizer.cpp.o"
+  "CMakeFiles/Build.dir/source/core/regularizer.cpp.o.d"
   "CMakeFiles/Build.dir/source/main.cpp.o"
   "CMakeFiles/Build.dir/source/main.cpp.o.d"
   "CMakeFiles/Build.dir/source/math/matrix.cpp.o"

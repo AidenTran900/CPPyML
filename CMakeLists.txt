@@ -101,12 +101,14 @@ add_executable(Build
     source/math/matrix.cpp
     source/core/loss.cpp
     source/core/optimizer.cpp
+    source/core/regularizer.cpp
     source/models/linear-regression.cpp
     tests/math/matrix-test.cpp
     tests/models/linear-regression-test.cpp
     include/ml_lib/math/matrix.h
     include/ml_lib/core/loss.h
     include/ml_lib/core/optimizer.h
+    include/ml_lib/core/regularizer.h
     include/ml_lib/models/base-model.h
     include/ml_lib/models/linear-regression.h
 )

@@ -1,8 +1,8 @@
-CMakeFiles/Build.dir/source/models/linear-regression.cpp.o: \
- /home/atran/Documents/Projects/LinearModel/source/models/linear-regression.cpp \
+CMakeFiles/Build.dir/source/core/regularizer.cpp.o: \
+ /home/atran/Documents/Projects/LinearModel/source/core/regularizer.cpp \
  /usr/include/stdc-predef.h \
- /home/atran/Documents/Projects/LinearModel/include/ml_lib/models/linear-regression.h \
- /home/atran/Documents/Projects/LinearModel/include/ml_lib/models/../math/matrix.h \
+ /home/atran/Documents/Projects/LinearModel/include/ml_lib/core/regularizer.h \
+ /home/atran/Documents/Projects/LinearModel/include/ml_lib/core/../math/matrix.h \
  /usr/include/c++/15/vector /usr/include/c++/15/bits/requires_hosted.h \
  /usr/include/c++/15/x86_64-redhat-linux/bits/c++config.h \
  /usr/include/bits/wordsize.h \
@@ -147,12 +147,8 @@ CMakeFiles/Build.dir/source/models/linear-regression.cpp.o: \
  /usr/include/c++/15/bits/locale_facets_nonio.tcc \
  /usr/include/c++/15/bits/locale_conv.h \
  /usr/include/c++/15/bits/quoted_string.h /usr/include/c++/15/sstream \
- /usr/include/c++/15/bits/sstream.tcc \
- /home/atran/Documents/Projects/LinearModel/include/ml_lib/models/base-model.h \
- /home/atran/Documents/Projects/LinearModel/include/ml_lib/models/../core/loss.h \
- /home/atran/Documents/Projects/LinearModel/include/ml_lib/models/../core/optimizer.h \
- /home/atran/Documents/Projects/LinearModel/include/ml_lib/models/../core/regularizer.h \
- /usr/include/c++/15/memory /usr/include/c++/15/bits/stl_tempbuf.h \
+ /usr/include/c++/15/bits/sstream.tcc /usr/include/c++/15/memory \
+ /usr/include/c++/15/bits/stl_tempbuf.h \
  /usr/include/c++/15/bits/stl_raw_storage_iter.h \
  /usr/include/c++/15/bits/align.h /usr/include/c++/15/bits/unique_ptr.h \
  /usr/include/c++/15/bits/shared_ptr.h \
@@ -165,4 +161,23 @@ CMakeFiles/Build.dir/source/models/linear-regression.cpp.o: \
  /usr/include/c++/15/bits/atomic_lockfree_defines.h \
  /usr/include/c++/15/backward/auto_ptr.h \
  /usr/include/c++/15/pstl/glue_memory_defs.h \
- /usr/include/c++/15/pstl/execution_defs.h
+ /usr/include/c++/15/pstl/execution_defs.h /usr/include/c++/15/cmath \
+ /usr/include/math.h /usr/include/bits/math-vector.h \
+ /usr/include/bits/libm-simd-decl-stubs.h \
+ /usr/include/bits/flt-eval-method.h /usr/include/bits/fp-logb.h \
+ /usr/include/bits/fp-fast.h /usr/include/bits/mathcalls-macros.h \
+ /usr/include/bits/mathcalls-helper-functions.h \
+ /usr/include/bits/mathcalls.h /usr/include/bits/mathcalls-narrow.h \
+ /usr/include/bits/iscanonical.h /usr/include/c++/15/bits/specfun.h \
+ /usr/include/c++/15/limits /usr/include/c++/15/tr1/gamma.tcc \
+ /usr/include/c++/15/tr1/special_function_util.h \
+ /usr/include/c++/15/tr1/bessel_function.tcc \
+ /usr/include/c++/15/tr1/beta_function.tcc \
+ /usr/include/c++/15/tr1/ell_integral.tcc \
+ /usr/include/c++/15/tr1/exp_integral.tcc \
+ /usr/include/c++/15/tr1/hypergeometric.tcc \
+ /usr/include/c++/15/tr1/legendre_function.tcc \
+ /usr/include/c++/15/tr1/modified_bessel_func.tcc \
+ /usr/include/c++/15/tr1/poly_hermite.tcc \
+ /usr/include/c++/15/tr1/poly_laguerre.tcc \
+ /usr/include/c++/15/tr1/riemann_zeta.tcc
