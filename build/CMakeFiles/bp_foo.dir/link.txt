@@ -1,2 +1,0 @@
-/usr/bin/ar qc libbp_foo.a CMakeFiles/bp_foo.dir/source/foo.cpp.o
-/usr/bin/ranlib libbp_foo.a

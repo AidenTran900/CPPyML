@@ -1,3 +1,0 @@
-BP.failtest 1 0.00238594
-BP.successtest 1 0.00177988
----
