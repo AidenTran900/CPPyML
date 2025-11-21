@@ -38,6 +38,7 @@ class DescisionTree : public FitPredictModel {
         int max_depth = 100;
         int min_samples_split = 2;
         int features = 0;
+        std::vector<int> feature_indices;
 
         std::pair<int, int> countClasses(const std::vector<int>& indices);
         double calculateImpurity(std::vector<int> indices);
@@ -50,6 +51,7 @@ class DescisionTree : public FitPredictModel {
         DescisionTree();
         ~DescisionTree();
 
+        void setFeatureIndices(const std::vector<int>& indices);
         void fit(const Matrix& X, const Matrix& y) override;
         Matrix predict(const Matrix& X) override;
 };

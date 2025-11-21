@@ -8,6 +8,11 @@ DescisionTree::DescisionTree()
     root_node = new Node();
 }
 
+void DescisionTree::setFeatureIndices(const std::vector<int>& indices)
+{
+    feature_indices = indices;
+}
+
 DescisionTree::~DescisionTree()
 {
     deleteTree(root_node);
@@ -74,7 +79,14 @@ void DescisionTree::evaluateNode(Node* node, std::vector<int> indices, int depth
     std::vector<int> best_left_indices;
     std::vector<int> best_right_indices;
 
-    for (int j = 0; j < n; j++) {
+    std::vector<int> features_to_try = feature_indices.empty() ? std::vector<int>() : feature_indices;
+    if (features_to_try.empty()) {
+        for (int i = 0; i < n; i++) {
+            features_to_try.push_back(i);
+        }
+    }
+
+    for (int j : features_to_try) {
         for (int idx : indices) {
             double threshold = X_train(idx, j);
             std::vector<int> left_indices;
