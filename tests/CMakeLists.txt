@@ -26,3 +26,28 @@ add_test(
     NAME BP.successtest
     COMMAND successtest ${TEST_RUNNER_PARAMS}
 )
+
+# SVM Performance Comparison Test
+add_executable(svm_performance_test
+    models/svm-performance-test.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../source/math/matrix.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../source/models/support-vector-machine.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../source/models/support-vector-machine-basic.cpp
+)
+
+target_include_directories(svm_performance_test
+    PRIVATE
+        ${CMAKE_CURRENT_LIST_DIR}/../include
+        ${CMAKE_CURRENT_LIST_DIR}/../source
+)
+
+target_link_libraries(svm_performance_test
+    PRIVATE
+        doctest::doctest
+        fmt::fmt
+)
+
+add_test(
+    NAME ML.svm_performance_test
+    COMMAND svm_performance_test ${TEST_RUNNER_PARAMS}
+)

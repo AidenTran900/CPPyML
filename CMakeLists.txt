@@ -106,6 +106,8 @@ add_executable(Build
     source/core/metrics.cpp
     source/models/linear-regression.cpp
     source/models/logistic-regression.cpp
+    source/models/support-vector-machine.cpp
+    source/models/support-vector-machine-basic.cpp
     source/utils/csv_utils.cpp
     examples/linear-regression/housing/housing-example.cpp
     examples/logistic-regression/h-disease-example.cpp
@@ -116,9 +118,10 @@ add_executable(Build
     include/ml_lib/core/optimizer.h
     include/ml_lib/core/regularizer.h
     include/ml_lib/core/metrics.h
-    include/ml_lib/models/base-model.h
     include/ml_lib/models/linear-regression.h
     include/ml_lib/models/logistic-regression.h
+    include/ml_lib/models/support-vector-machine.h
+    include/ml_lib/models/support-vector-machine-basic.h
     include/ml_lib/utils/csv_utils.h
     examples/linear-regression/housing/housing-example.h
     examples/logistic-regression/h-disease-example.h
