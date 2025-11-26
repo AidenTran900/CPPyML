@@ -361,3 +361,35 @@ Matrix Matrix::sign() const {
     }
     return result;
 }
+
+bool Matrix::operator==(const Matrix& other) const {
+    if (m_rows != other.m_rows || m_cols != other.m_cols) {
+        return false;
+    }
+
+    int size = m_rows * m_cols;
+    for (int i = 0; i < size; i++) {
+        if (m_data[i] != other.m_data[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Matrix::operator!=(const Matrix& other) const {
+    return !(*this == other);
+}
+
+bool Matrix::approxEqual(const Matrix& other, double epsilon) const {
+    if (m_rows != other.m_rows || m_cols != other.m_cols) {
+        return false;
+    }
+
+    int size = m_rows * m_cols;
+    for (int i = 0; i < size; i++) {
+        if (std::abs(m_data[i] - other.m_data[i]) > epsilon) {
+            return false;
+        }
+    }
+    return true;
+}

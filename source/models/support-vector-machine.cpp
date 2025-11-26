@@ -11,11 +11,11 @@ SupportVectorMachine::SupportVectorMachine(
     KERNEL kernel,
     int degree,
     double tolerance,
-    int max_iterations,
+    int max_iter,
     double coef0
 )
     : C(C), gamma(gamma), kernel_type(kernel), degree(degree),
-      tolerance(tolerance), max_iteration(max_iterations), coef0(coef0), bias(0.0)
+      tolerance(tolerance), max_iter(max_iter), coef0(coef0), bias(0.0)
 {}
 
 double SupportVectorMachine::kernel(const Matrix &X1, const Matrix &X2) {
@@ -37,29 +37,27 @@ double SupportVectorMachine::kernel(const Matrix &X1, const Matrix &X2) {
 
 double SupportVectorMachine::decision(const Matrix& X) {
     double result = 0.0;
-    int m = this->X_train.rows();
+    int m = this->support_vectors.rows();
 
     for (int i = 0; i < m; i++) {
-        if (this->alphas[i] > 0) {
-            result += this->alphas[i] * this->Y_train(i, 0) * kernel(this->X_train.row(i), X);
-        }
+        result += this->support_alphas[i] * this->support_labels(i, 0) * kernel(this->support_vectors.row(i), X);
     }
     return result + bias;
 }
 
-double SupportVectorMachine::decisionCached(int idx) {
+double SupportVectorMachine::decisionCached(int idx, const Matrix& K_cache, const std::vector<double>& alphas, const Matrix& Y_train) {
     double result = 0.0;
-    int m = this->X_train.rows();
+    int m = Y_train.rows();
 
     for (int i = 0; i < m; i++) {
-        if (this->alphas[i] > 0) {
-            result += this->alphas[i] * this->Y_train(i, 0) * K_cache(i, idx);
+        if (alphas[i] > 0) {
+            result += alphas[i] * Y_train(i, 0) * K_cache(i, idx);
         }
     }
     return result + bias;
 }
 
-int SupportVectorMachine::takeStep(int I1, int I2) {
+int SupportVectorMachine::takeStep(int I1, int I2, const Matrix& X_train, const Matrix& Y_train, const Matrix& K_cache, std::vector<double>& alphas, std::vector<double>& errors) {
     if (I1 == I2) return 0;
 
     double alpha1 = alphas[I1];
@@ -109,13 +107,13 @@ int SupportVectorMachine::takeStep(int I1, int I2) {
 
     int m = X_train.rows();
     for (int i = 0; i < m; i++) {
-        errors[i] = decisionCached(i) - Y_train(i, 0);
+        errors[i] = decisionCached(i, K_cache, alphas, Y_train) - Y_train(i, 0);
     }
 
     return 1;
 }
 
-int SupportVectorMachine::examineExample(int I2) {
+int SupportVectorMachine::examineExample(int I2, const Matrix& X_train, const Matrix& Y_train, Matrix& K_cache, std::vector<double>& alphas, std::vector<double>& errors) {
     double alpha2 = alphas[I2];
     double r2 = errors[I2] * Y_train(I2, 0);
     double E2 = errors[I2];
@@ -137,10 +135,10 @@ int SupportVectorMachine::examineExample(int I2) {
             }
         }
 
-        if (I >= 0 && takeStep(I, I2)) return 1;
+        if (I >= 0 && takeStep(I, I2, X_train, Y_train, K_cache, alphas, errors)) return 1;
 
         for (int i = 0; i < m; i++) {
-            if (takeStep(i, I2)) return 1;
+            if (takeStep(i, I2, X_train, Y_train, K_cache, alphas, errors)) return 1;
         }
 
     }
@@ -150,17 +148,14 @@ int SupportVectorMachine::examineExample(int I2) {
 
 void SupportVectorMachine::fit(const Matrix &X, const Matrix &Y)
 {
-    X_train = X;
-    Y_train = Y;
     int m = X.rows();
     int n = X.cols();
 
-    alphas = std::vector<double>(m, 0.0);
-    errors = std::vector<double>(m);
+    std::vector<double> alphas(m, 0.0);
+    std::vector<double> errors(m);
     bias = 0.0;
 
-    // Precompute kernel matrix
-    K_cache = Matrix(m, m);
+    Matrix K_cache(m, m);
     for (int i = 0; i < m; i++) {
         for (int j = i; j < m; j++) {
             double k_val = kernel(X.row(i), X.row(j));
@@ -172,32 +167,47 @@ void SupportVectorMachine::fit(const Matrix &X, const Matrix &Y)
     for (int i = 0; i < m; i++) {
         errors[i] = -Y(i, 0);
     }
-    
-    // double error_sum = 0;
-    // for (int i = 0; i < errors.size(); i++) {
-    //     error_sum += errors[i];
-    // }
 
     int iterations = 0;
     int num_changed = 0;
-    bool examine_all = true; // examine all on first iteration
+    bool examine_all = true;
 
-    while ((num_changed > 0 || examine_all) && iterations < max_iteration) {
+    while ((num_changed > 0 || examine_all) && iterations < max_iter) {
         num_changed = 0;
 
         for (int i = 0; i < m; i++) {
             if (examine_all || (alphas[i] > 0 && alphas[i] < C))
-            num_changed += examineExample(i);
+            num_changed += examineExample(i, X, Y, K_cache, alphas, errors);
         }
 
         if (examine_all)
             examine_all = false;
-        else if (num_changed == 0) 
+        else if (num_changed == 0)
             examine_all = true;
 
         iterations++;
     }
-    
+
+    int sv_count = 0;
+    for (int i = 0; i < m; i++) {
+        if (alphas[i] > 0) sv_count++;
+    }
+
+    support_vectors = Matrix(sv_count, n);
+    support_labels = Matrix(sv_count, 1);
+    support_alphas = std::vector<double>(sv_count);
+
+    int sv_idx = 0;
+    for (int i = 0; i < m; i++) {
+        if (alphas[i] > 0) {
+            for (int j = 0; j < n; j++) {
+                support_vectors(sv_idx, j) = X(i, j);
+            }
+            support_labels(sv_idx, 0) = Y(i, 0);
+            support_alphas[sv_idx] = alphas[i];
+            sv_idx++;
+        }
+    }
 }
 
 Matrix SupportVectorMachine::predict(const Matrix &X)

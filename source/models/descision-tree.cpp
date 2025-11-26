@@ -27,11 +27,11 @@ void DescisionTree::deleteTree(Node* node)
     delete node;
 }
 
-std::pair<int, int> DescisionTree::countClasses(const std::vector<int>& indices) {
+std::pair<int, int> DescisionTree::countClasses(const Matrix& Y, const std::vector<int>& indices) {
     int count_0 = 0;
     int count_1 = 0;
     for (int i : indices) {
-        if (Y_train(i, 0) == 0) {
+        if (Y(i, 0) == 0) {
             count_0++;
         } else {
             count_1++;
@@ -40,8 +40,8 @@ std::pair<int, int> DescisionTree::countClasses(const std::vector<int>& indices)
     return {count_0, count_1};
 }
 
-double DescisionTree::calculateImpurity(std::vector<int> indices) {
-    auto [count_0, count_1] = countClasses(indices);
+double DescisionTree::calculateImpurity(const Matrix& Y, std::vector<int> indices) {
+    auto [count_0, count_1] = countClasses(Y, indices);
 
     int total = indices.size();
     double p0 = (double) count_0 / total;
@@ -59,15 +59,15 @@ double DescisionTree::calculateImpurity(std::vector<int> indices) {
     return 0;
 }
 
-int DescisionTree::getMajorityClass(std::vector<int> indices) {
-    auto [count_0, count_1] = countClasses(indices);
+int DescisionTree::getMajorityClass(const Matrix& Y, std::vector<int> indices) {
+    auto [count_0, count_1] = countClasses(Y, indices);
     return (count_1 > count_0) ? 1 : 0;
 }
 
-void DescisionTree::evaluateNode(Node* node, std::vector<int> indices, int depth) {
-    int n = X_train.cols();
+void DescisionTree::evaluateNode(const Matrix& X, const Matrix& Y, Node* node, std::vector<int> indices, int depth) {
+    int n = X.cols();
 
-    node->value = getMajorityClass(indices);
+    node->value = getMajorityClass(Y, indices);
 
     if (indices.size() < min_samples_split || depth >= max_depth) {
         return;
@@ -88,12 +88,12 @@ void DescisionTree::evaluateNode(Node* node, std::vector<int> indices, int depth
 
     for (int j : features_to_try) {
         for (int idx : indices) {
-            double threshold = X_train(idx, j);
+            double threshold = X(idx, j);
             std::vector<int> left_indices;
             std::vector<int> right_indices;
 
             for (int x : indices) {
-                if (X_train(x, j) > threshold) {
+                if (X(x, j) > threshold) {
                     right_indices.push_back(x);
                 } else {
                     left_indices.push_back(x);
@@ -104,8 +104,8 @@ void DescisionTree::evaluateNode(Node* node, std::vector<int> indices, int depth
                 continue;
             }
 
-            double left_impurity = calculateImpurity(left_indices);
-            double right_impurity = calculateImpurity(right_indices);
+            double left_impurity = calculateImpurity(Y, left_indices);
+            double right_impurity = calculateImpurity(Y, right_indices);
             double total = left_indices.size() + right_indices.size();
             double weighted_impurity = (left_indices.size() * left_impurity + right_indices.size() * right_impurity) / total;
 
@@ -129,21 +129,18 @@ void DescisionTree::evaluateNode(Node* node, std::vector<int> indices, int depth
     node->left = new Node();
     node->right = new Node();
 
-    evaluateNode(node->left, best_left_indices, depth + 1);
-    evaluateNode(node->right, best_right_indices, depth + 1);
+    evaluateNode(X, Y, node->left, best_left_indices, depth + 1);
+    evaluateNode(X, Y, node->right, best_right_indices, depth + 1);
 }
 
 void DescisionTree::fit(const Matrix &X, const Matrix &Y)
 {
-    X_train = X;
-    Y_train = Y;
-
     std::vector<int> indices;
     for (int i = 0; i < X.rows(); i++) {
         indices.push_back(i);
     }
 
-    evaluateNode(root_node, indices, 0);
+    evaluateNode(X, Y, root_node, indices, 0);
 }
 
 Matrix DescisionTree::predict(const Matrix &X)

@@ -7,9 +7,6 @@
 
 class RandomForest : public FitPredictModel {
     private:
-        Matrix X_train;
-        Matrix Y_train;
-
         std::vector<DescisionTree*> trees;
 
         IMPURITY impurity = IMPURITY::GINI;

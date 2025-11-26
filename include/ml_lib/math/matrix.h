@@ -42,6 +42,10 @@ class Matrix {
         double determinant() const;
         double dot(const Matrix& other) const;
 
+        bool operator==(const Matrix& other) const;
+        bool operator!=(const Matrix& other) const;
+        bool approxEqual(const Matrix& other, double epsilon = 1e-9) const;
+
         static EliminationResult forwardElimination(const Matrix& m, const Matrix& aug = Matrix(0, 0));
         static EliminationResult backwardElimination(const Matrix& m, const Matrix& aug = Matrix(0, 0));
         
