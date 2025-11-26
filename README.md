@@ -10,6 +10,7 @@ A C++ machine learning library built from the ground up. Implementing various ML
 - **Support Vector Machines (SVM)** for classification
 - **Decision Trees** for classification with Gini and Entropy impurity measures
 - **Random Forests** for ensemble learning with bootstrap aggregation
+- **K-Means Clustering** for unsupervised learning and data segmentation
 - Matrix operations library (addition, multiplication, transpose, inverse)
 - Loss functions: MSE, MAE, RMSE, L1, L2, Binary Cross-Entropy (BCE)
 - Evaluation metrics:
@@ -139,8 +140,8 @@ Run the examples:
 - [X] **Decision Trees**
 - [X] **Random Forests**
 
-### Unsupervised Learning [ ]
-- [ ] **K-Means Clustering**
+### Unsupervised Learning [X]
+- [X] **K-Means Clustering**
 
 ### Deep Learning [ ]
 - [ ] **Neural Networks (Feedforward)**
