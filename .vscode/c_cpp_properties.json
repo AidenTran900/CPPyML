@@ -4,7 +4,8 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/source"
+                "${workspaceFolder}/source",
+                "${workspaceFolder}/include/ml_lib/core"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",

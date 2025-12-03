@@ -9,10 +9,10 @@ LogisticRegression::LogisticRegression(int input_dim, LossFunction* loss, Optimi
 Matrix LogisticRegression::forward(const Matrix &X)
 {
     last_input = X;
-    Matrix result = X.multiply(weights);
+    Matrix result = X.multiply(weights).add(bias);
 
     for (int i = 0; i < result.rows(); i++) {
-        result(i, 0) = 1 / (1 + pow(std::exp(1.0), -(result(i, 0) + bias(0, 0))) );
+        result(i, 0) = 1 / (1 + pow(std::exp(1.0), -(result(i, 0))) );
     }
 
     last_output = result;

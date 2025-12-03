@@ -13,7 +13,6 @@ enum ACTIVATION_FUNC {
     SIGN,
     LINEAR,
         // Acts like linear regression
-    PIECEWISE,
     SIGMOID,
         // Acts like logistic regression
     TANH,
@@ -29,12 +28,17 @@ class NeuralNetworkLayer {
         Matrix grad_w;
         Matrix grad_b;
 
+        Matrix last_input;
+        Matrix last_output;
+
         ACTIVATION_FUNC activation;
 
     public:
         NeuralNetworkLayer(int input_dim, int output_dim, ACTIVATION_FUNC act);
 
+        double applyActivation(const double x);
+
         Matrix forward(const Matrix& X);
-        void backward(const Matrix& grad_output);
+        void backward(const Matrix &grad_output, double learning_rate);
         void update(Optimizer* opt);
 }
