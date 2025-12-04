@@ -11,7 +11,8 @@ A C++ machine learning library built from the ground up. Implementing various ML
 - **Decision Trees** for classification with Gini and Entropy impurity measures
 - **Random Forests** for ensemble learning with bootstrap aggregation
 - **K-Means Clustering** for unsupervised learning and data segmentation
-- Matrix operations library (addition, multiplication, transpose, inverse)
+- **Neural Networks** with backpropagation and multiple activation functions (ReLU, Sigmoid, Tanh, Linear, Softplus)
+- Matrix operations library (addition, multiplication, transpose, inverse, element-wise operations)
 - Loss functions: MSE, MAE, RMSE, L1, L2, Binary Cross-Entropy (BCE)
 - Evaluation metrics:
   - Regression: R2, Adjusted R2, MSE, MAE, RMSE
@@ -143,13 +144,17 @@ Run the examples:
 ### Unsupervised Learning [X]
 - [X] **K-Means Clustering**
 
-### Deep Learning [ ]
-- [ ] **Neural Networks (Feedforward)**
-- [ ] **Backpropagation**
+### Deep Learning [In Progress]
+- [X] **Neural Networks (Feedforward)**
+- [X] **Backpropagation**
+- [X] **Activation Functions:** ReLU, Sigmoid, Tanh, Linear, Softplus, Step, Sign
 - [ ] **Optimizers:**
     - [ ] **Mini-Batch Gradient Descent**
     - [ ] **Adam Optimizer**
+    - [ ] **RMSProp**
 - [ ] **Model Serialization**
+- [ ] **Batch Normalization**
+- [ ] **Dropout Regularization**
 
 ### DL Architectures [ ]
 - [ ] **Convolutional Neural Networks (CNNs)** (For images)
