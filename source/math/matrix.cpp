@@ -122,6 +122,19 @@ Matrix Matrix::multiply(const Matrix& other) const {
     return result;
 }
 
+Matrix Matrix::hadamard(const Matrix& other) const {
+    if (m_rows != other.m_rows || m_cols != other.m_cols) {
+        throw std::invalid_argument("Matrix dimensions must match for element-wise multiplication");
+    }
+
+    Matrix result(m_rows, m_cols);
+    int size = m_rows * m_cols;
+    for (int i = 0; i < size; i++) {
+        result.m_data[i] = m_data[i] * other.m_data[i];
+    }
+    return result;
+}
+
 Matrix Matrix::scale(double scalar) const {
     Matrix result(m_rows, m_cols);
     int size = m_rows * m_cols;

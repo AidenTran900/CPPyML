@@ -34,6 +34,7 @@ class Matrix {
         Matrix add(const Matrix& other) const;
         Matrix sub(const Matrix& other) const;
         Matrix multiply(const Matrix& other) const;
+        Matrix hadamard(const Matrix& other) const;
         Matrix scale(double scalar) const;
 
         Matrix inverse() const;

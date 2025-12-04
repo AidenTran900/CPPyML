@@ -1,4 +1,4 @@
-#include "../models/perceptron.h";
+#include "../models/perceptron.h"
 
 // y^​=activation(XW+b)
 // y is our approximation
@@ -30,6 +30,7 @@ class NeuralNetworkLayer {
 
         Matrix last_input;
         Matrix last_output;
+        Matrix last_pre_activation;
 
         ACTIVATION_FUNC activation;
 
@@ -37,8 +38,9 @@ class NeuralNetworkLayer {
         NeuralNetworkLayer(int input_dim, int output_dim, ACTIVATION_FUNC act);
 
         double applyActivation(const double x);
+        double applyActivationDerivative(const double x);
 
         Matrix forward(const Matrix& X);
-        void backward(const Matrix &grad_output, double learning_rate);
+        Matrix backward(const Matrix &grad_output);
         void update(Optimizer* opt);
-}
+};
