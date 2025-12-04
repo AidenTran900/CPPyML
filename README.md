@@ -160,7 +160,6 @@ Run the examples:
 - [ ] **Convolutional Neural Networks (CNNs)** (For images)
 - [ ] **Recurrent Neural Networks (RNNs)** (For sequences)
 
-Stuff I'll probably never get to
 ### Modern NLP [ ]
 - [ ] **Embeddings (Word2Vec, GloVe)**
 - [ ] **Attention Mechanisms**
