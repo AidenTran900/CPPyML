@@ -49,9 +49,9 @@ Matrix RandomForest::predict(const Matrix &X)
     Matrix predictions = Matrix(m, 1, 0);
 
     for (DescisionTree* tree : trees) {
-        predictions.add(tree->predict(X));
+        predictions = predictions + tree->predict(X);
     }
 
-    predictions.scale(1.0/n_estimators);
+    predictions = predictions * (1.0/n_estimators);
     return predictions;
 }

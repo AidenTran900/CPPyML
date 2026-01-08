@@ -13,7 +13,7 @@ LinearRegression::LinearRegression(int input_dim, LossFunction* loss, Optimizer*
 Matrix LinearRegression::forward(const Matrix &X)
 {
     last_input = X;
-    Matrix result = X.multiply(weights);
+    Matrix result = X * weights;
 
     for (int i = 0; i < result.rows(); i++) {
         result(i, 0) = result(i, 0) + bias(0, 0);
@@ -33,7 +33,7 @@ void LinearRegression::backward(const Matrix& y_true)
     Matrix reg_vals = regularizer->gradient(weights);
 
     // Weights
-    grad_w = last_input.transpose().multiply(error).add(reg_vals);
+    grad_w = last_input.transpose() * error + reg_vals;
 
     // Bias
     double grad_b_sum = 0.0;

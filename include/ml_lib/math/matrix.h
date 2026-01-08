@@ -31,11 +31,11 @@ class Matrix {
         void swapRows(int row1, int row2);
         void print() const;
 
-        Matrix add(const Matrix& other) const;
-        Matrix sub(const Matrix& other) const;
-        Matrix multiply(const Matrix& other) const;
+        Matrix operator+(const Matrix& other) const;
+        Matrix operator-(const Matrix& other) const;
+        Matrix operator*(const Matrix& other) const;
+        Matrix operator*(double scalar) const;
         Matrix hadamard(const Matrix& other) const;
-        Matrix scale(double scalar) const;
 
         Matrix inverse() const;
         Matrix transpose() const;

@@ -93,7 +93,7 @@ void Matrix::print() const {
 //     return result;
 // }
 
-Matrix Matrix::add(const Matrix& other) const {
+Matrix Matrix::operator+(const Matrix& other) const {
     if (m_cols != other.m_cols || m_rows != other.m_rows) {
         throw std::invalid_argument("Matrix dimensions are incompatible.");
     }
@@ -129,7 +129,7 @@ Matrix Matrix::add(const Matrix& other) const {
 //     }
 //     return result;
 // }
-Matrix Matrix::sub(const Matrix& other) const {
+Matrix Matrix::operator-(const Matrix& other) const {
     if (m_cols != other.m_cols || m_rows != other.m_rows) {
         throw std::invalid_argument("Matrix dimensions are incompatible.");
     }
@@ -173,7 +173,7 @@ Matrix Matrix::sub(const Matrix& other) const {
 //     }
 //     return result;
 // }
-Matrix Matrix::multiply(const Matrix& other) const {
+Matrix Matrix::operator*(const Matrix& other) const {
     // Check dimensions
     if (m_cols != other.m_rows) {
         throw std::invalid_argument("Matrix dimensions are incompatible. "
@@ -207,7 +207,7 @@ Matrix Matrix::hadamard(const Matrix& other) const {
     return result;
 }
 
-Matrix Matrix::scale(double scalar) const {
+Matrix Matrix::operator*(double scalar) const {
     Matrix result(m_rows, m_cols);
     int size = m_rows * m_cols;
     for (int i = 0; i < size; i++) {
