@@ -111,13 +111,33 @@ Matrix Matrix::add(const Matrix& other) const {
     return result;
 }
 
+// Without SIMD
+// Matrix Matrix::sub(const Matrix& other) const {
+//     if (m_cols != other.m_cols || m_rows != other.m_rows) {
+//         throw std::invalid_argument("Matrix dimensions are incompatible.");
+//     }
 
+//     Matrix result(m_rows, m_cols);
+//     int size = m_rows * m_cols;
+//     for (int i = 0; i < size; i++) {
+//         result.m_data[i] = m_data[i] - other.m_data[i];
+//     }
+//     return result;
+// }
 Matrix Matrix::sub(const Matrix& other) const {
     if (m_cols != other.m_cols || m_rows != other.m_rows) {
         throw std::invalid_argument("Matrix dimensions are incompatible.");
     }
-
     Matrix result(m_rows, m_cols);
+    size_t i = 0;
+
+    for (; i + 4 <= m_rows * m_cols; i += 4) {
+        __m256d vec1 = _mm256_loadu_pd(&m_data[i]);
+        __m256d vec2 = _mm256_loadu_pd(&other.m_data[i]);
+        __m256d sum = _mm256_sub_pd(vec1, vec2);
+        _mm256_storeu_pd(&result.m_data[i], sum);
+    }
+    
     int size = m_rows * m_cols;
     for (int i = 0; i < size; i++) {
         result.m_data[i] = m_data[i] - other.m_data[i];
