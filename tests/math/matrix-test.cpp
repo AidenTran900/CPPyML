@@ -14,10 +14,10 @@ int matrixTest()
                                                         {-6, -6, -2}});
 
     fmt::print("Add:\n");
-    m1.add(m2).print();
+    (m1 + m2).print();
 
     fmt::print("Multiply:\n");
-    m1.multiply(m2).print();
+    (m1 * m2).print();
 
     fmt::print("REF of m3:\n");
     EliminationResult m3_elim = Matrix::forwardElimination(m3);

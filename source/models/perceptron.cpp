@@ -8,7 +8,7 @@ Perceptron::Perceptron(int input_dim, LossFunction* loss, Optimizer* opt, Regula
 Matrix Perceptron::forward(const Matrix &X)
 {
     last_input = X;
-    Matrix result = X.multiply(weights);
+    Matrix result = X * weights;
 
     // Step func
     for (int i = 0; i < result.rows(); i++) {
@@ -28,7 +28,7 @@ void Perceptron::backward(const Matrix& y_true) {
     Matrix error = loss_func->gradient(predictions, y_true);
     Matrix reg_vals = regularizer->gradient(weights);
 
-    grad_w = last_input.transpose().multiply(error).add(reg_vals);
+    grad_w = last_input.transpose() * error + reg_vals;
 
     double grad_b_sum = 0.0;
     for (int j = 0; j < error.rows(); j++) {

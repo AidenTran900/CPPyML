@@ -55,7 +55,7 @@ double NeuralNetworkLayer::applyActivationDerivative(const double x) {
 Matrix NeuralNetworkLayer::forward(const Matrix &X)
 {
     last_input = X;
-    last_pre_activation = X.multiply(weights).add(bias);
+    last_pre_activation = X * weights + bias;
 
     Matrix result = Matrix(last_pre_activation.rows(), last_pre_activation.cols());
     for (int i = 0; i < last_pre_activation.rows(); i++) {
@@ -75,16 +75,16 @@ Matrix NeuralNetworkLayer::backward(const Matrix &grad_output)
 
     Matrix grad = grad_output.hadamard(activation_deriv);
 
-    grad_w = last_input.transpose().multiply(grad);
+    grad_w = last_input.transpose() * grad;
     grad_b = grad;
 
-    Matrix grad_input = grad.multiply(weights.transpose());
+    Matrix grad_input = grad * weights.transpose();
 
     return grad_input;
 }
 
 void NeuralNetworkLayer::update(Optimizer *opt)
 {
-    weights = weights.sub(grad_w.scale(opt->getLearningRate()));
-    bias = bias.sub(grad_b.scale(opt->getLearningRate()));
+    weights = weights - grad_w * opt->getLearningRate();
+    bias = bias - grad_b * opt->getLearningRate();
 }

@@ -9,7 +9,7 @@ LogisticRegression::LogisticRegression(int input_dim, LossFunction* loss, Optimi
 Matrix LogisticRegression::forward(const Matrix &X)
 {
     last_input = X;
-    Matrix result = X.multiply(weights).add(bias);
+    Matrix result = X * weights + bias;
 
     for (int i = 0; i < result.rows(); i++) {
         result(i, 0) = 1 / (1 + pow(std::exp(1.0), -(result(i, 0))) );
@@ -27,7 +27,7 @@ void LogisticRegression::backward(const Matrix& y_true) {
     Matrix error = loss_func->gradient(predictions, y_true);
     Matrix reg_vals = regularizer->gradient(weights);
 
-    grad_w = last_input.transpose().multiply(error).add(reg_vals);
+    grad_w = last_input.transpose() * error + reg_vals;
 
     double grad_b_sum = 0.0;
     for (int j = 0; j < error.rows(); j++) {
