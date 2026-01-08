@@ -79,19 +79,6 @@ void Matrix::print() const {
     }
 }
 
-// Without SIMD
-// Matrix Matrix::add(const Matrix& other) const {
-//     if (m_cols != other.m_cols || m_rows != other.m_rows) {
-//         throw std::invalid_argument("Matrix dimensions are incompatible.");
-//     }
-
-//     Matrix result(m_rows, m_cols);
-//     int size = m_rows * m_cols;
-//     for (int i = 0; i < size; i++) {
-//         result.m_data[i] = m_data[i] + other.m_data[i];
-//     }
-//     return result;
-// }
 
 Matrix Matrix::add(const Matrix& other) const {
     if (m_cols != other.m_cols || m_rows != other.m_rows) {
@@ -116,19 +103,6 @@ Matrix Matrix::add(const Matrix& other) const {
     return result;
 }
 
-// Without SIMD
-// Matrix Matrix::sub(const Matrix& other) const {
-//     if (m_cols != other.m_cols || m_rows != other.m_rows) {
-//         throw std::invalid_argument("Matrix dimensions are incompatible.");
-//     }
-
-//     Matrix result(m_rows, m_cols);
-//     int size = m_rows * m_cols;
-//     for (int i = 0; i < size; i++) {
-//         result.m_data[i] = m_data[i] - other.m_data[i];
-//     }
-//     return result;
-// }
 Matrix Matrix::sub(const Matrix& other) const {
     if (m_cols != other.m_cols || m_rows != other.m_rows) {
         throw std::invalid_argument("Matrix dimensions are incompatible.");
@@ -151,28 +125,6 @@ Matrix Matrix::sub(const Matrix& other) const {
     }
     return result;
 }
-
-// Without SIMD
-// Matrix Matrix::multiply(const Matrix& other) const {
-//     // Check dimensions
-//     if (m_cols != other.m_rows) {
-//         throw std::invalid_argument("Matrix dimensions are incompatible. "
-//             "Matrix 1 cols (" + std::to_string(m_cols) +
-//             ") != Matrix 2 rows (" + std::to_string(other.m_rows) + ").");
-//     }
-
-//     Matrix result(m_rows, other.m_cols);
-
-//     // Do multiplication stuff
-//     for (int i = 0; i < m_rows; i++) {
-//         for (int j = 0; j < other.m_cols; j++) {
-//             for (int h = 0; h < m_cols; h++) {
-//                 result(i, j) += (*this)(i, h) * other(h, j);
-//             }
-//         }
-//     }
-//     return result;
-// }
 
 Matrix Matrix::multiply(const Matrix& other) const {
     // Check dimensions
@@ -475,7 +427,23 @@ double Matrix::dot(const Matrix& m) const {
 
     double result = 0.0;
     int size = m_rows * m_cols;
-    for (int i = 0; i < size; i++) {
+    size_t i = 0;
+    
+    #if ML_HAS_AVX2 && ML_USE_SIMD
+    __m256d sum_vec = _mm256_setzero_pd();
+    
+    for (; i + 4 <= size; i += 4) {
+        __m256d vec1 = _mm256_loadu_pd(&m_data[i]);
+        __m256d vec2 = _mm256_loadu_pd(&m.m_data[i]);
+        sum_vec = _mm256_fmadd_pd(vec1, vec2, sum_vec); 
+    }
+    
+    alignas(32) double temp[4];
+    _mm256_store_pd(temp, sum_vec);
+    result = temp[0] + temp[1] + temp[2] + temp[3];
+    #endif
+    
+    for (; i < size; i++) {
         result += m_data[i] * m.m_data[i];
     }
     return result;
