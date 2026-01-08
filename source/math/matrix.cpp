@@ -173,6 +173,7 @@ Matrix Matrix::sub(const Matrix& other) const {
 //     }
 //     return result;
 // }
+
 Matrix Matrix::multiply(const Matrix& other) const {
     // Check dimensions
     if (m_cols != other.m_rows) {
@@ -183,16 +184,37 @@ Matrix Matrix::multiply(const Matrix& other) const {
 
     Matrix result(m_rows, other.m_cols);
 
-    // Do multiplication stuff
-    for (int i = 0; i < m_rows; i++) {
-        for (int j = 0; j < other.m_cols; j++) {
+    #if ML_HAS_AVX2 && ML_USE_SIMD
+    for (size_t i = 0; i < m_rows; i++) {
+        size_t j = 0;
+        for (; j + 4 <= other.m_cols; j += 4) {
+            __m256d sum = _mm256_setzero_pd();
+            for (int h = 0; h < m_cols; h++) {
+                __m256d vec1 = _mm256_set1_pd((*this)(i, h));
+                __m256d vec2 = _mm256_loadu_pd(&other.m_data[h * other.m_cols + j]);
+                sum = _mm256_fmadd_pd(vec1, vec2, sum);
+            }
+            _mm256_storeu_pd(&result.m_data[i * other.m_cols + j], sum);
+        }
+        for (; j < other.m_cols; j++) {
             for (int h = 0; h < m_cols; h++) {
                 result(i, j) += (*this)(i, h) * other(h, j);
             }
         }
     }
+    #else
+    for (size_t i = 0; i < m_rows; i++) {
+        for (size_t j = 0; j < other.m_cols; j++) {
+            for (int h = 0; h < m_cols; h++) {
+                result(i, j) += (*this)(i, h) * other(h, j);
+            }
+        }
+    }
+    #endif
+
     return result;
 }
+
 
 Matrix Matrix::hadamard(const Matrix& other) const {
     if (m_rows != other.m_rows || m_cols != other.m_cols) {
