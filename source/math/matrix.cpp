@@ -243,7 +243,18 @@ Matrix Matrix::hadamard(const Matrix& other) const {
 Matrix Matrix::scale(double scalar) const {
     Matrix result(m_rows, m_cols);
     int size = m_rows * m_cols;
-    for (int i = 0; i < size; i++) {
+    size_t i = 0;
+    
+    #if ML_HAS_AVX2 && ML_USE_SIMD
+    __m256d scalar_vec = _mm256_set1_pd(scalar);
+    for (; i + 4 <= size; i += 4) {
+        __m256d vec = _mm256_loadu_pd(&m_data[i]);
+        __m256d scaled = _mm256_mul_pd(vec, scalar_vec);
+        _mm256_storeu_pd(&result.m_data[i], scaled);
+    }
+    #endif
+    
+    for (; i < size; i++) {
         result.m_data[i] = m_data[i] * scalar;
     }
     return result;
