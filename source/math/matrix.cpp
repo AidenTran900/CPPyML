@@ -1,7 +1,7 @@
 #include "ml_lib/math/matrix.h"
 #include "config.h"
 #include <cmath>
-#if ML_HAS_AVX2
+#if ML_HAS_AVX2 && ML_USE_SIMD
     #include <immintrin.h>
 #endif
 
@@ -100,7 +100,7 @@ Matrix Matrix::add(const Matrix& other) const {
     Matrix result(m_rows, m_cols);
     size_t i = 0;
 
-    #if ML_HAS_AVX2
+    #if ML_HAS_AVX2 && ML_USE_SIMD
     for (; i + 4 <= m_rows * m_cols; i += 4) {
         __m256d vec1 = _mm256_loadu_pd(&m_data[i]);
         __m256d vec2 = _mm256_loadu_pd(&other.m_data[i]);
@@ -136,7 +136,7 @@ Matrix Matrix::sub(const Matrix& other) const {
     Matrix result(m_rows, m_cols);
     size_t i = 0;
 
-    #if ML_HAS_AVX2
+    #if ML_HAS_AVX2 && ML_USE_SIMD
     for (; i + 4 <= m_rows * m_cols; i += 4) {
         __m256d vec1 = _mm256_loadu_pd(&m_data[i]);
         __m256d vec2 = _mm256_loadu_pd(&other.m_data[i]);
