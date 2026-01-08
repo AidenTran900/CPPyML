@@ -221,9 +221,20 @@ Matrix Matrix::hadamard(const Matrix& other) const {
         throw std::invalid_argument("Matrix dimensions must match for element-wise multiplication");
     }
 
+    size_t i = 0;
     Matrix result(m_rows, m_cols);
     int size = m_rows * m_cols;
-    for (int i = 0; i < size; i++) {
+
+    #if ML_HAS_AVX2 && ML_USE_SIMD
+    for (; i + 4 <= size; i += 4) {
+        __m256d vec1 = _mm256_loadu_pd(&m_data[i]);
+        __m256d vec2 = _mm256_loadu_pd(&other.m_data[i]);
+        __m256d product = _mm256_mul_pd(vec1, vec2);
+        _mm256_storeu_pd(&result.m_data[i], product);
+    }
+    #endif
+
+    for (; i < size; i++) {
         result.m_data[i] = m_data[i] * other.m_data[i];
     }
     return result;
