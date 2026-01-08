@@ -1,6 +1,9 @@
 #include "ml_lib/math/matrix.h"
+#include "config.h"
 #include <cmath>
-#include <immintrin.h>
+#if ML_HAS_AVX2
+    #include <immintrin.h>
+#endif
 
 Matrix::Matrix()
     : m_rows(0), 
@@ -97,15 +100,17 @@ Matrix Matrix::add(const Matrix& other) const {
     Matrix result(m_rows, m_cols);
     size_t i = 0;
 
+    #if ML_HAS_AVX2
     for (; i + 4 <= m_rows * m_cols; i += 4) {
         __m256d vec1 = _mm256_loadu_pd(&m_data[i]);
         __m256d vec2 = _mm256_loadu_pd(&other.m_data[i]);
         __m256d sum = _mm256_add_pd(vec1, vec2);
         _mm256_storeu_pd(&result.m_data[i], sum);
     }
+    #endif
     
     int size = m_rows * m_cols;
-    for (int i = 0; i < size; i++) {
+    for (; i < size; i++) {
         result.m_data[i] = m_data[i] + other.m_data[i];
     }
     return result;
@@ -131,20 +136,43 @@ Matrix Matrix::sub(const Matrix& other) const {
     Matrix result(m_rows, m_cols);
     size_t i = 0;
 
+    #if ML_HAS_AVX2
     for (; i + 4 <= m_rows * m_cols; i += 4) {
         __m256d vec1 = _mm256_loadu_pd(&m_data[i]);
         __m256d vec2 = _mm256_loadu_pd(&other.m_data[i]);
         __m256d sum = _mm256_sub_pd(vec1, vec2);
         _mm256_storeu_pd(&result.m_data[i], sum);
     }
+    #endif
     
     int size = m_rows * m_cols;
-    for (int i = 0; i < size; i++) {
+    for (; i < size; i++) {
         result.m_data[i] = m_data[i] - other.m_data[i];
     }
     return result;
 }
 
+// Without SIMD
+// Matrix Matrix::multiply(const Matrix& other) const {
+//     // Check dimensions
+//     if (m_cols != other.m_rows) {
+//         throw std::invalid_argument("Matrix dimensions are incompatible. "
+//             "Matrix 1 cols (" + std::to_string(m_cols) +
+//             ") != Matrix 2 rows (" + std::to_string(other.m_rows) + ").");
+//     }
+
+//     Matrix result(m_rows, other.m_cols);
+
+//     // Do multiplication stuff
+//     for (int i = 0; i < m_rows; i++) {
+//         for (int j = 0; j < other.m_cols; j++) {
+//             for (int h = 0; h < m_cols; h++) {
+//                 result(i, j) += (*this)(i, h) * other(h, j);
+//             }
+//         }
+//     }
+//     return result;
+// }
 Matrix Matrix::multiply(const Matrix& other) const {
     // Check dimensions
     if (m_cols != other.m_rows) {
