@@ -107,9 +107,8 @@ add_executable(Build
     source/models/linear-regression.cpp
     source/models/logistic-regression.cpp
     source/models/support-vector-machine.cpp
-    source/models/support-vector-machine-basic.cpp
     source/utils/csv_utils.cpp
-    examples/linear-regression/housing/housing-example.cpp
+    examples/c++/linear-regression/housing/housing-example.cpp
     examples/logistic-regression/h-disease-example.cpp
     tests/math/matrix-test.cpp
     tests/models/linear-regression-test.cpp
@@ -121,9 +120,8 @@ add_executable(Build
     include/ml_lib/models/linear-regression.h
     include/ml_lib/models/logistic-regression.h
     include/ml_lib/models/support-vector-machine.h
-    include/ml_lib/models/support-vector-machine-basic.h
     include/ml_lib/utils/csv_utils.h
-    examples/linear-regression/housing/housing-example.h
+    examples/c++/linear-regression/housing/housing-example.h
     examples/logistic-regression/h-disease-example.h
 )
 
@@ -132,7 +130,7 @@ target_include_directories(Build
         ${CMAKE_CURRENT_LIST_DIR}/source
         ${CMAKE_CURRENT_LIST_DIR}/include
         ${CMAKE_CURRENT_LIST_DIR}/tests
-        ${CMAKE_CURRENT_LIST_DIR}/examples/linear-regression/housing
+        ${CMAKE_CURRENT_LIST_DIR}/examples/c++/linear-regression/housing
         ${CMAKE_CURRENT_LIST_DIR}/examples/logistic-regression
 )
 

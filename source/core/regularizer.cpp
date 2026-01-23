@@ -12,7 +12,7 @@ double L1Regularizer::compute(const Matrix& weights) const {
 }
 
 Matrix L1Regularizer::gradient(const Matrix& weights) const {
-    return weights.sign().scale(lambda);
+    return weights.sign() * lambda;
 }
 
 double L2Regularizer::compute(const Matrix& weights) const {
@@ -28,7 +28,7 @@ double L2Regularizer::compute(const Matrix& weights) const {
 }
 
 Matrix L2Regularizer::gradient(const Matrix& weights) const {
-    return weights.scale(lambda);
+    return weights * lambda;
 }
 
 double NoRegularizer::compute(const Matrix&) const {

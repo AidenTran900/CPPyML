@@ -10,7 +10,7 @@
         #define ML_HAS_AVX2 1
     #else
         #define ML_HAS_AVX2 0
-        #warning "SIMD requested but AVX2 not available. Falling back to scalar."
+        #pragma message("SIMD requested but AVX2 not available. Falling back to scalar.")
     #endif
 #else
     #define ML_HAS_AVX2 0

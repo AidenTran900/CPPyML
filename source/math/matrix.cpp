@@ -95,8 +95,8 @@ Matrix Matrix::operator+(const Matrix& other) const {
         _mm256_storeu_pd(&result.m_data[i], sum);
     }
     #endif
-    
-    int size = m_rows * m_cols;
+
+    size_t size = static_cast<size_t>(m_rows) * static_cast<size_t>(m_cols);
     for (; i < size; i++) {
         result.m_data[i] = m_data[i] + other.m_data[i];
     }
@@ -119,8 +119,8 @@ Matrix Matrix::operator-(const Matrix& other) const {
         _mm256_storeu_pd(&result.m_data[i], sum);
     }
     #endif
-    
-    int size = m_rows * m_cols;
+
+    size_t size = static_cast<size_t>(m_rows) * static_cast<size_t>(m_cols);
     for (; i < size; i++) {
         result.m_data[i] = m_data[i] - other.m_data[i];
     }
@@ -138,8 +138,8 @@ Matrix Matrix::operator*(const Matrix& other) const {
     Matrix result(m_rows, other.m_cols);
 
     #if ML_HAS_AVX2 && ML_USE_SIMD
-    for (size_t i = 0; i < m_rows; i++) {
-        size_t j = 0;
+    for (int i = 0; i < m_rows; i++) {
+        int j = 0;
         for (; j + 4 <= other.m_cols; j += 4) {
             __m256d sum = _mm256_setzero_pd();
             for (int h = 0; h < m_cols; h++) {
@@ -156,8 +156,8 @@ Matrix Matrix::operator*(const Matrix& other) const {
         }
     }
     #else
-    for (size_t i = 0; i < m_rows; i++) {
-        for (size_t j = 0; j < other.m_cols; j++) {
+    for (int i = 0; i < m_rows; i++) {
+        for (int j = 0; j < other.m_cols; j++) {
             for (int h = 0; h < m_cols; h++) {
                 result(i, j) += (*this)(i, h) * other(h, j);
             }
@@ -176,7 +176,7 @@ Matrix Matrix::hadamard(const Matrix& other) const {
 
     size_t i = 0;
     Matrix result(m_rows, m_cols);
-    int size = m_rows * m_cols;
+    size_t size = static_cast<size_t>(m_rows) * static_cast<size_t>(m_cols);
 
     #if ML_HAS_AVX2 && ML_USE_SIMD
     for (; i + 4 <= size; i += 4) {
@@ -195,9 +195,9 @@ Matrix Matrix::hadamard(const Matrix& other) const {
 
 Matrix Matrix::operator*(double scalar) const {
     Matrix result(m_rows, m_cols);
-    int size = m_rows * m_cols;
+    size_t size = static_cast<size_t>(m_rows) * static_cast<size_t>(m_cols);
     size_t i = 0;
-    
+
     #if ML_HAS_AVX2 && ML_USE_SIMD
     __m256d scalar_vec = _mm256_set1_pd(scalar);
     for (; i + 4 <= size; i += 4) {
@@ -206,7 +206,7 @@ Matrix Matrix::operator*(double scalar) const {
         _mm256_storeu_pd(&result.m_data[i], scaled);
     }
     #endif
-    
+
     for (; i < size; i++) {
         result.m_data[i] = m_data[i] * scalar;
     }
@@ -427,23 +427,23 @@ double Matrix::dot(const Matrix& m) const {
     }
 
     double result = 0.0;
-    int size = m_rows * m_cols;
+    size_t size = static_cast<size_t>(m_rows) * static_cast<size_t>(m_cols);
     size_t i = 0;
-    
+
     #if ML_HAS_AVX2 && ML_USE_SIMD
     __m256d sum_vec = _mm256_setzero_pd();
-    
+
     for (; i + 4 <= size; i += 4) {
         __m256d vec1 = _mm256_loadu_pd(&m_data[i]);
         __m256d vec2 = _mm256_loadu_pd(&m.m_data[i]);
-        sum_vec = _mm256_fmadd_pd(vec1, vec2, sum_vec); 
+        sum_vec = _mm256_fmadd_pd(vec1, vec2, sum_vec);
     }
-    
+
     alignas(32) double temp[4];
     _mm256_store_pd(temp, sum_vec);
     result = temp[0] + temp[1] + temp[2] + temp[3];
     #endif
-    
+
     for (; i < size; i++) {
         result += m_data[i] * m.m_data[i];
     }

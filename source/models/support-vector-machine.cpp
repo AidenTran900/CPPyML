@@ -25,7 +25,7 @@ double SupportVectorMachine::kernel(const Matrix &X1, const Matrix &X2) {
         case KERNEL::POLYNOMIAL:
             return pow(this->gamma * X1.dot(X2) + this->coef0, this->degree);
         case KERNEL::RBF: {
-            Matrix diff = X1.sub(X2);
+            Matrix diff = X1 - X2;
             return exp(-this->gamma * diff.dot(diff));
         }
         case KERNEL::SIGMOID:

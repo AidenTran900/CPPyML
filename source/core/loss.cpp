@@ -23,7 +23,7 @@ Matrix MAELoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
     int m = y_pred.rows();
     if (m == 0) return Matrix(0, 0);
 
-    return y_pred.sub(y_true).sign().scale(1.0 / m);
+    return (y_pred - y_true).sign() * (1.0 / m);
 }
 
 // MSE
@@ -49,7 +49,7 @@ Matrix MSELoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
     int m = y_pred.rows();
     if (m == 0) return Matrix(0, 0);
 
-    return y_pred.sub(y_true).scale(2.0 / m);
+    return (y_pred - y_true) * (2.0 / m);
 }
 
 
@@ -77,7 +77,7 @@ Matrix RMSELoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
     int m = y_pred.rows();
     if (m == 0) return Matrix(0, 0);
 
-    Matrix error = y_pred.sub(y_true);
+    Matrix error = y_pred - y_true;
 
     double mse_sum = 0.0;
     for (int i = 0; i < error.rows(); i++) {
@@ -88,7 +88,7 @@ Matrix RMSELoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
     double rmse_val = (mse > 1e-9) ? sqrt(mse) : 1e-9;
 
     double final_rmse_scale = 1.0 / (m * 2.0 * rmse_val);
-    return error.scale(final_rmse_scale);
+    return error * final_rmse_scale;
 }
 
 
@@ -120,7 +120,7 @@ Matrix BCELoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
     int m = y_pred.rows();
     if (m == 0) return Matrix(0, 0);
 
-    return y_pred.sub(y_true).scale(1.0 / m);
+    return (y_pred - y_true) * (1.0 / m);
 }
 
 
