@@ -61,7 +61,7 @@ HousingData loadHousingCSV(const std::string& filename) {
         // Split into features and prices
         for (const auto& row : all_data) {
             if (!row.empty()) {
-                data.prices.push_back(row[0]); 
+                data.prices.push_back(row[0]);
                 data.features.push_back(std::vector<double>(row.begin() + 1, row.end()));
             }
         }
