@@ -11,7 +11,7 @@ def load_heart_data(file_path):
         return None
 
 def process_heart_data(df, test_ratio=0.2, random_seed=42):
-    feature_cols = ["male", "age", "education", "currentSmoker",
+    feature_cols = ["male", "age", "currentSmoker",
                     "cigsPerDay", "BPMeds", "prevalentStroke", "prevalentHyp",
                     "diabetes", "totChol", "sysBP", "diaBP",
                     "BMI", "heartRate", "glucose"]
@@ -27,8 +27,6 @@ def process_heart_data(df, test_ratio=0.2, random_seed=42):
     for col in binary_cols:
         X[col] = X[col].apply(lambda x: 1.0 if str(x).lower() == 'yes' else 0.0)
 
-    # Custom parsing
-    X['education'] = X['education'].apply(lambda x: float(x))
 
     X = X.astype(float)
 
