@@ -26,6 +26,6 @@ class KMeansClustering : public FitPredictModel {
         Matrix predict(const Matrix& X) override;
 
         Matrix updateCentroids(const Matrix& X, const std::vector<int> assignments);
-        int KMeansClustering::findNearestCentroid(const Matrix &row);
+        int findNearestCentroid(const Matrix &row);
 
 };

@@ -158,19 +158,19 @@ bool CSVUtils::readFeatureTarget(
 // Common parsing utilities
 double CSVUtils::parseBinary(const std::string& value) {
     if (value.empty()) return 0.0;
-    char first = std::tolower(value[0]);
+    char first = static_cast<char>(std::tolower(static_cast<unsigned char>(value[0])));
     return (first == 'y' || first == '1' || first == 't') ? 1.0 : 0.0;
 }
 
 double CSVUtils::parseYesNo(const std::string& value) {
     if (value.empty()) return 0.0;
-    char first = std::tolower(value[0]);
+    char first = static_cast<char>(std::tolower(static_cast<unsigned char>(value[0])));
     return (first == 'y') ? 1.0 : 0.0;
 }
 
 double CSVUtils::parseTrueFalse(const std::string& value) {
     if (value.empty()) return 0.0;
-    char first = std::tolower(value[0]);
+    char first = static_cast<char>(std::tolower(static_cast<unsigned char>(value[0])));
     return (first == 't') ? 1.0 : 0.0;
 }
 

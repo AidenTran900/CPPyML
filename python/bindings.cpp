@@ -276,53 +276,57 @@ PYBIND11_MODULE(ml_lib, m) {
         .export_values();
 
     // Metrics module
-    py::module_ metrics = m.def_submodule("metrics", "Evaluation metrics");
+    py::module_ metrics_module = m.def_submodule("metrics", "Evaluation metrics");
 
-    metrics.def("accuracy", [](py::array_t<double> y_true, py::array_t<double> y_pred) {
+    metrics_module.def("accuracy", [](py::array_t<double> y_true, py::array_t<double> y_pred) -> double {
         Matrix y_true_mat = numpy_to_matrix(y_true);
         Matrix y_pred_mat = numpy_to_matrix(y_pred);
-        return Metrics::accuracy(y_true_mat, y_pred_mat);
+        Matrix confusion = metrics::confusionMatrix(y_true_mat, y_pred_mat);
+        return metrics::accuracy(confusion);
     }, py::arg("y_true"), py::arg("y_pred"), "Calculate accuracy score");
 
-    metrics.def("precision", [](py::array_t<double> y_true, py::array_t<double> y_pred) {
+    metrics_module.def("precision", [](py::array_t<double> y_true, py::array_t<double> y_pred) -> double {
         Matrix y_true_mat = numpy_to_matrix(y_true);
         Matrix y_pred_mat = numpy_to_matrix(y_pred);
-        return Metrics::precision(y_true_mat, y_pred_mat);
+        Matrix confusion = metrics::confusionMatrix(y_true_mat, y_pred_mat);
+        return metrics::precision(confusion);
     }, py::arg("y_true"), py::arg("y_pred"), "Calculate precision score");
 
-    metrics.def("recall", [](py::array_t<double> y_true, py::array_t<double> y_pred) {
+    metrics_module.def("recall", [](py::array_t<double> y_true, py::array_t<double> y_pred) -> double {
         Matrix y_true_mat = numpy_to_matrix(y_true);
         Matrix y_pred_mat = numpy_to_matrix(y_pred);
-        return Metrics::recall(y_true_mat, y_pred_mat);
+        Matrix confusion = metrics::confusionMatrix(y_true_mat, y_pred_mat);
+        return metrics::recall(confusion);
     }, py::arg("y_true"), py::arg("y_pred"), "Calculate recall score");
 
-    metrics.def("f1_score", [](py::array_t<double> y_true, py::array_t<double> y_pred) {
+    metrics_module.def("f1_score", [](py::array_t<double> y_true, py::array_t<double> y_pred) -> double {
         Matrix y_true_mat = numpy_to_matrix(y_true);
         Matrix y_pred_mat = numpy_to_matrix(y_pred);
-        return Metrics::f1_score(y_true_mat, y_pred_mat);
+        Matrix confusion = metrics::confusionMatrix(y_true_mat, y_pred_mat);
+        return metrics::f1Score(confusion);
     }, py::arg("y_true"), py::arg("y_pred"), "Calculate F1 score");
 
-    metrics.def("mse", [](py::array_t<double> y_true, py::array_t<double> y_pred) {
+    metrics_module.def("mse", [](py::array_t<double> y_true, py::array_t<double> y_pred) -> double {
         Matrix y_true_mat = numpy_to_matrix(y_true);
         Matrix y_pred_mat = numpy_to_matrix(y_pred);
-        return Metrics::mse(y_true_mat, y_pred_mat);
+        return metrics::mse(y_true_mat, y_pred_mat);
     }, py::arg("y_true"), py::arg("y_pred"), "Calculate mean squared error");
 
-    metrics.def("mae", [](py::array_t<double> y_true, py::array_t<double> y_pred) {
+    metrics_module.def("mae", [](py::array_t<double> y_true, py::array_t<double> y_pred) -> double {
         Matrix y_true_mat = numpy_to_matrix(y_true);
         Matrix y_pred_mat = numpy_to_matrix(y_pred);
-        return Metrics::mae(y_true_mat, y_pred_mat);
+        return metrics::mae(y_true_mat, y_pred_mat);
     }, py::arg("y_true"), py::arg("y_pred"), "Calculate mean absolute error");
 
-    metrics.def("rmse", [](py::array_t<double> y_true, py::array_t<double> y_pred) {
+    metrics_module.def("rmse", [](py::array_t<double> y_true, py::array_t<double> y_pred) -> double {
         Matrix y_true_mat = numpy_to_matrix(y_true);
         Matrix y_pred_mat = numpy_to_matrix(y_pred);
-        return Metrics::rmse(y_true_mat, y_pred_mat);
+        return metrics::rmse(y_true_mat, y_pred_mat);
     }, py::arg("y_true"), py::arg("y_pred"), "Calculate root mean squared error");
 
-    metrics.def("r2_score", [](py::array_t<double> y_true, py::array_t<double> y_pred) {
+    metrics_module.def("r2_score", [](py::array_t<double> y_true, py::array_t<double> y_pred) -> double {
         Matrix y_true_mat = numpy_to_matrix(y_true);
         Matrix y_pred_mat = numpy_to_matrix(y_pred);
-        return Metrics::r2_score(y_true_mat, y_pred_mat);
+        return metrics::r2(y_true_mat, y_pred_mat);
     }, py::arg("y_true"), py::arg("y_pred"), "Calculate R² score");
 }

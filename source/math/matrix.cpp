@@ -1,6 +1,7 @@
 #include "ml_lib/math/matrix.h"
 #include "config.h"
 #include <cmath>
+#include <string>
 #if ML_HAS_AVX2 && ML_USE_SIMD
     #include <immintrin.h>
 #endif
@@ -21,8 +22,8 @@ Matrix::Matrix(const std::vector<std::vector<double>>& vec) {
         m_cols = 0;
         return;
     }
-    m_rows = vec.size();
-    m_cols = vec[0].size();
+    m_rows = static_cast<int>(vec.size());
+    m_cols = static_cast<int>(vec[0].size());
     m_data.resize(m_rows * m_cols);
     for (int i = 0; i < m_rows; i++) {
         for (int j = 0; j < m_cols; j++) {

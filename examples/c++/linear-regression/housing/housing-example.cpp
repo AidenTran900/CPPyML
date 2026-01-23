@@ -116,7 +116,6 @@ static void splitData(const HousingData& data,
         indices[i] = i;
     }
 
-    std::random_device rd;
     std::mt19937 gen(42);
     std::shuffle(indices.begin(), indices.end(), gen);
 

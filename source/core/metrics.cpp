@@ -107,10 +107,10 @@ Matrix confusionMatrix(const Matrix& y_true, const Matrix& y_pred)
 
 double accuracy(const Matrix& confusion)
 {
-    int TP = confusion(0, 0);
-    int TN = confusion(1, 1);
-    int FP = confusion(1, 0);
-    int FN = confusion(0, 1);
+    int TP = static_cast<int>(confusion(0, 0));
+    int TN = static_cast<int>(confusion(1, 1));
+    int FP = static_cast<int>(confusion(1, 0));
+    int FN = static_cast<int>(confusion(0, 1));
 
     int total = TP + TN + FP + FN;
     if (total == 0) {
@@ -121,8 +121,8 @@ double accuracy(const Matrix& confusion)
 
 double precision(const Matrix& confusion)
 {
-    int TP = confusion(0, 0);
-    int FP = confusion(1, 0);
+    int TP = static_cast<int>(confusion(0, 0));
+    int FP = static_cast<int>(confusion(1, 0));
 
     if (TP + FP == 0) {
         return 0.0;
@@ -132,8 +132,8 @@ double precision(const Matrix& confusion)
 
 double recall(const Matrix& confusion)
 {
-    int TP = confusion(0, 0);
-    int FN = confusion(0, 1);
+    int TP = static_cast<int>(confusion(0, 0));
+    int FN = static_cast<int>(confusion(0, 1));
 
     if (TP + FN == 0) {
         return 0.0;
@@ -143,8 +143,8 @@ double recall(const Matrix& confusion)
 
 double fpr(const Matrix& confusion)
 {
-    int TN = confusion(1, 1);
-    int FP = confusion(1, 0);
+    int TN = static_cast<int>(confusion(1, 1));
+    int FP = static_cast<int>(confusion(1, 0));
 
     if (FP + TN == 0) {
         return 0.0;

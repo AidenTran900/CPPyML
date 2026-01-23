@@ -92,8 +92,7 @@ static void splitData(const HeartDiseaseData& data,
         indices[i] = i;
     }
 
-    std::random_device rd;
-    std::mt19937 gen(42); 
+    std::mt19937 gen(42);
     std::shuffle(indices.begin(), indices.end(), gen);
 
     const size_t train_size = total_samples - static_cast<size_t>(total_samples * test_ratio);
