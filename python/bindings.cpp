@@ -213,7 +213,7 @@ PYBIND11_MODULE(ml_lib, m) {
         }, py::arg("X"), "Predict class labels (0 or 1)")
         .def("predict_proba", [](LogisticRegression& model, py::array_t<double> X) {
             Matrix X_mat = numpy_to_matrix(X);
-            Matrix result = model.predictProb(X_mat);
+            Matrix result = model.forward(X_mat);
             return matrix_to_numpy(result);
         }, py::arg("X"), "Predict class probabilities");
 

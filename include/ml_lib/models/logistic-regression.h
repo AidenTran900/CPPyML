@@ -26,5 +26,4 @@ class LogisticRegression : public LinearRegression {
         void update() override;
 
         Matrix predict(const Matrix& X);
-        Matrix predictProb(const Matrix& X);
 };
