@@ -207,20 +207,29 @@ PYBIND11_MODULE(ml_lib, m) {
 
     // Linear Regression
     py::class_<LinearRegression, GradientModelInterface>(m, "LinearRegression")
-        .def(py::init<int, LossFunction*, Optimizer*, Regularizer*>(),
+        .def(py::init([](int input_dim, LossType loss_type, OptimizerType opt_type,
+                         double learning_rate, RegularizerType reg_type, double lambda_) {
+            return LinearRegression(
+                input_dim,
+                createLoss(loss_type),
+                createOptimizer(opt_type, learning_rate),
+                createRegularizer(reg_type, lambda_)
+            );
+        }),
              py::arg("input_dim"),
-             py::arg("loss"),
-             py::arg("optimizer"),
-             py::arg("regularizer"),
+             py::arg("loss") = LossType::MSE,
+             py::arg("optimizer") = OptimizerType::BATCH,
+             py::arg("learning_rate") = 0.01,
+             py::arg("regularizer") = RegularizerType::L2,
+             py::arg("lambda_") = 0.01,
              "Linear Regression model\n\n"
              "Parameters:\n"
              "  input_dim: Number of input features\n"
-             "  loss: Loss function (MSELoss, MAELoss, etc.)\n"
-             "  optimizer: Optimizer (BatchOptimizer, etc.)\n"
-             "  regularizer: Regularizer (L1Regularizer, L2Regularizer, etc.)",
-             py::keep_alive<1, 2>(),
-             py::keep_alive<1, 3>(),
-             py::keep_alive<1, 4>())
+             "  loss: Loss type (LossType.MSE, LossType.MAE, etc.)\n"
+             "  optimizer: Optimizer type (OptimizerType.BATCH, etc.)\n"
+             "  learning_rate: Learning rate for optimizer (default=0.01)\n"
+             "  regularizer: Regularizer type (RegularizerType.L2, etc.)\n"
+             "  lambda_: Regularization strength (default=0.01)")
         .def("forward", [](LinearRegression& model, py::array_t<double> X) {
             Matrix X_mat = numpy_to_matrix(X);
             Matrix result = model.forward(X_mat);
@@ -229,20 +238,29 @@ PYBIND11_MODULE(ml_lib, m) {
 
     // Logistic Regression
     py::class_<LogisticRegression, LinearRegression>(m, "LogisticRegression")
-        .def(py::init<int, LossFunction*, Optimizer*, Regularizer*>(),
+        .def(py::init([](int input_dim, LossType loss_type, OptimizerType opt_type,
+                         double learning_rate, RegularizerType reg_type, double lambda_) {
+            return LogisticRegression(
+                input_dim,
+                createLoss(loss_type),
+                createOptimizer(opt_type, learning_rate),
+                createRegularizer(reg_type, lambda_)
+            );
+        }),
              py::arg("input_dim"),
-             py::arg("loss"),
-             py::arg("optimizer"),
-             py::arg("regularizer"),
+             py::arg("loss") = LossType::BCE,
+             py::arg("optimizer") = OptimizerType::BATCH,
+             py::arg("learning_rate") = 0.01,
+             py::arg("regularizer") = RegularizerType::L2,
+             py::arg("lambda_") = 0.01,
              "Logistic Regression model for binary classification\n\n"
              "Parameters:\n"
              "  input_dim: Number of input features\n"
-             "  loss: Loss function (BCELoss recommended)\n"
-             "  optimizer: Optimizer (BatchOptimizer, etc.)\n"
-             "  regularizer: Regularizer (L1Regularizer, L2Regularizer, etc.)",
-             py::keep_alive<1, 2>(),
-             py::keep_alive<1, 3>(),
-             py::keep_alive<1, 4>())
+             "  loss: Loss type (LossType.BCE recommended)\n"
+             "  optimizer: Optimizer type (OptimizerType.BATCH, etc.)\n"
+             "  learning_rate: Learning rate for optimizer (default=0.01)\n"
+             "  regularizer: Regularizer type (RegularizerType.L2, etc.)\n"
+             "  lambda_: Regularization strength (default=0.01)")
         .def("predict", [](LogisticRegression& model, py::array_t<double> X) {
             Matrix X_mat = numpy_to_matrix(X);
             Matrix result = model.predict(X_mat);
