@@ -157,9 +157,9 @@ if(${PROJECT_NAME}_USE_ADDITIONAL_SOURCEFILE)
 endif()
 
 
-# Require c++14, this is better than setting CMAKE_CXX_STANDARD since it won't pollute other targets
+# Require c++17, this is better than setting CMAKE_CXX_STANDARD since it won't pollute other targets
 # note : cxx_std_* features were added in CMake 3.8.2
-target_compile_features(Build PRIVATE cxx_std_14)
+target_compile_features(Build PRIVATE cxx_std_17)
 
 # CMake scripts extensions
 target_set_warnings(Build ENABLE ALL AS_ERROR ALL DISABLE Annoying) # Helper that can set default warning flags for you

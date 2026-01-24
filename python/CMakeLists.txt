@@ -34,8 +34,8 @@ target_include_directories(ml_lib
         ${CMAKE_CURRENT_SOURCE_DIR}/../source
 )
 
-# Set C++ standard
-target_compile_features(ml_lib PRIVATE cxx_std_14)
+# Set C++ standard (C++17 required for std::clamp)
+target_compile_features(ml_lib PRIVATE cxx_std_17)
 
 # Installation
 install(TARGETS ml_lib
