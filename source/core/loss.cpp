@@ -136,6 +136,8 @@ LossFunction* createLoss(LossType type)
             return new RMSELoss();
         case LossType::BCE:
             return new BCELoss();
+        default:
+            throw std::invalid_argument("Unsupported loss type.");
     }
     throw std::invalid_argument("Unsupported loss type.");
 }
