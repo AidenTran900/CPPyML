@@ -106,7 +106,18 @@ void KMeansClustering::fit(const Matrix &X, const Matrix &y)
         // update centroids
         Matrix new_centroids = updateCentroids(X, assignments);
 
+        // check for convergence
+        double diff = 0;
+        for (int i = 0; i < k; i++) {
+            for (int j = 0; j < n; j++) {
+                double d = new_centroids(i, j) - centroids(i, j);
+                diff += d * d;
+            }
+        }
+        converged = diff < threshold;
+
         centroids = new_centroids;
+        iterations++;
     }
     
 }
