@@ -1,5 +1,6 @@
 #pragma once
 #include "../math/matrix.h"
+#include <memory>
 
 enum class LossType {
     MAE,
