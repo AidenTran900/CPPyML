@@ -1,6 +1,7 @@
 #include "ml_lib/core/loss.h"
 #include <cmath>
 
+LossFunction::~LossFunction() {}
 
 // MAE
 double MAELoss::compute(const Matrix& y_pred, const Matrix& y_true) const
@@ -135,7 +136,6 @@ LossFunction* createLoss(LossType type)
             return new RMSELoss();
         case LossType::BCE:
             return new BCELoss();
-        default:
-            return new MSELoss();
     }
+    return new MSELoss();
 }

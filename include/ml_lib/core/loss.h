@@ -22,7 +22,7 @@ class LossFunction {
     public:
         virtual double compute(const Matrix& y_pred, const Matrix& y_true) const = 0;
         virtual Matrix gradient(const Matrix& y_pred, const Matrix& y_true) const = 0;
-        virtual ~LossFunction() {}
+        virtual ~LossFunction();
 };
 
 class MAELoss : public LossFunction {

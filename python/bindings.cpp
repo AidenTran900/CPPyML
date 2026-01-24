@@ -80,6 +80,43 @@ PYBIND11_MODULE(ml_lib, m) {
             return "<Matrix " + std::to_string(mat.rows()) + "x" + std::to_string(mat.cols()) + ">";
         });
 
+    // Enums
+    py::enum_<LossType>(m, "LossType")
+        .value("MAE", LossType::MAE, "Mean Absolute Error")
+        .value("MSE", LossType::MSE, "Mean Squared Error")
+        .value("RMSE", LossType::RMSE, "Root Mean Squared Error")
+        .value("BCE", LossType::BCE, "Binary Cross Entropy")
+        .export_values();
+
+    py::enum_<OptimizerType>(m, "OptimizerType")
+        .value("BATCH", OptimizerType::BATCH, "Batch gradient descent")
+        .value("STOCHASTIC", OptimizerType::STOCHASTIC, "Stochastic gradient descent")
+        .value("MINI_BATCH", OptimizerType::MINI_BATCH, "Mini-batch gradient descent")
+        .export_values();
+
+    py::enum_<RegularizerType>(m, "RegularizerType")
+        .value("NONE", RegularizerType::None, "No regularization")
+        .value("L1", RegularizerType::L1, "L1 (Lasso) regularization")
+        .value("L2", RegularizerType::L2, "L2 (Ridge) regularization")
+        .export_values();
+
+    py::enum_<KERNEL>(m, "Kernel")
+        .value("LINEAR", KERNEL::LINEAR, "Linear kernel")
+        .value("POLYNOMIAL", KERNEL::POLYNOMIAL, "Polynomial kernel")
+        .value("RBF", KERNEL::RBF, "Radial basis function kernel")
+        .value("SIGMOID", KERNEL::SIGMOID, "Sigmoid kernel")
+        .export_values();
+
+    py::enum_<CLUSTER_INIT>(m, "ClusterInit")
+        .value("RANDOM", CLUSTER_INIT::RANDOM, "Random initialization")
+        .value("SMART", CLUSTER_INIT::SMART, "Smart initialization (K-means++)")
+        .export_values();
+
+    py::enum_<IMPURITY>(m, "Impurity")
+        .value("GINI", IMPURITY::GINI, "Gini impurity")
+        .value("ENTROPY", IMPURITY::ENTROPY, "Entropy impurity")
+        .export_values();
+
     // Loss Functions
     py::class_<LossFunction>(m, "LossFunction");
 
@@ -236,44 +273,6 @@ PYBIND11_MODULE(ml_lib, m) {
              "  tolerance: Tolerance for stopping criterion (default=1e-3)\n"
              "  max_iter: Maximum iterations (default=1000)\n"
              "  coef0: Independent term in kernel function (default=0.0)");
-
-    // Enums
-    py::enum_<LossType>(m, "LossType")
-        .value("MAE", LossType::MAE, "Mean Absolute Error")
-        .value("MSE", LossType::MSE, "Mean Squared Error")
-        .value("RMSE", LossType::RMSE, "Root Mean Squared Error")
-        .value("BCE", LossType::BCE, "Binary Cross Entropy")
-        .export_values();
-
-    py::enum_<OptimizerType>(m, "OptimizerType")
-        .value("BATCH", OptimizerType::BATCH, "Batch gradient descent")
-        .value("STOCHASTIC", OptimizerType::STOCHASTIC, "Stochastic gradient descent")
-        .value("MINI_BATCH", OptimizerType::MINI_BATCH, "Mini-batch gradient descent")
-        .export_values();
-
-    py::enum_<RegularizerType>(m, "RegularizerType")
-        .value("NONE", RegularizerType::None, "No regularization")
-        .value("L1", RegularizerType::L1, "L1 (Lasso) regularization")
-        .value("L2", RegularizerType::L2, "L2 (Ridge) regularization")
-        .export_values();
-
-    py::enum_<KERNEL>(m, "Kernel")
-        .value("LINEAR", KERNEL::LINEAR, "Linear kernel")
-        .value("POLYNOMIAL", KERNEL::POLYNOMIAL, "Polynomial kernel")
-        .value("RBF", KERNEL::RBF, "Radial basis function kernel")
-        .value("SIGMOID", KERNEL::SIGMOID, "Sigmoid kernel")
-        .export_values();
-
-    // Enums
-    py::enum_<CLUSTER_INIT>(m, "ClusterInit")
-        .value("RANDOM", CLUSTER_INIT::RANDOM, "Random initialization")
-        .value("SMART", CLUSTER_INIT::SMART, "Smart initialization (K-means++)")
-        .export_values();
-
-    py::enum_<IMPURITY>(m, "Impurity")
-        .value("GINI", IMPURITY::GINI, "Gini impurity")
-        .value("ENTROPY", IMPURITY::ENTROPY, "Entropy impurity")
-        .export_values();
 
     // Metrics module
     py::module_ metrics_module = m.def_submodule("metrics", "Evaluation metrics");
