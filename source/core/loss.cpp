@@ -1,5 +1,6 @@
 #include "ml_lib/core/loss.h"
 #include <cmath>
+#include <memory>
 
 LossFunction::~LossFunction() {}
 
@@ -125,13 +126,13 @@ Matrix BCELoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
 }
 
 
-LossFunction* createLoss(LossType type)
+std::unique_ptr<LossFunction> createLoss(LossType type)
 {
     switch (type) {
-        case LossType::MAE:  return new MAELoss();
-        case LossType::MSE:  return new MSELoss();
-        case LossType::RMSE: return new RMSELoss();
-        case LossType::BCE:  return new BCELoss();
+        case LossType::MAE:  return std::make_unique<MAELoss>();
+        case LossType::MSE:  return std::make_unique<MSELoss>();
+        case LossType::RMSE: return std::make_unique<RMSELoss>();
+        case LossType::BCE:  return std::make_unique<BCELoss>();
     }
 
     throw std::invalid_argument("Unsupported loss type.");

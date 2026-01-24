@@ -49,4 +49,4 @@ class BCELoss : public LossFunction {
         Matrix gradient(const Matrix& y_pred, const Matrix& y_true) const override;
 };
 
-LossFunction* createLoss(LossType type);
+std::unique_ptr<LossFunction> createLoss(LossType type);

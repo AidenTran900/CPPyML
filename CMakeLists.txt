@@ -166,6 +166,14 @@ target_set_warnings(Build ENABLE ALL AS_ERROR ALL DISABLE Annoying) # Helper tha
 target_enable_lto(Build optimized) #enable lto if available for non-debug configurations
 copy_dlls_for_debug(Build "" "") # Copy dependencies next to the executable (DLLs for example)
 
+# Apple Clang is overly strict about switch/default warnings
+if (APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    add_compile_options(
+        -Wno-error=switch-default
+        -Wno-error=covered-switch-default
+    )
+endif()
+
 # Setup our project as the startup project for Visual so that people don't need to do it manually
 set_directory_properties(PROPERTIES VS_STARTUP_PROJECT Build)
 
