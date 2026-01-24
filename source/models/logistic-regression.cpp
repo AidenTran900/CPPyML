@@ -1,8 +1,12 @@
 #include "ml_lib/models/logistic-regression.h"
 #include <cmath>
 
-LogisticRegression::LogisticRegression(int input_dim, LossFunction* loss, Optimizer* opt, Regularizer* reg)
-    : LinearRegression(input_dim, loss, opt, reg), weights(input_dim, 1, 0.01), bias(1, 1, 0.0),
+LogisticRegression::LogisticRegression(int input_dim,
+                                       std::unique_ptr<LossFunction> loss,
+                                       std::unique_ptr<Optimizer> opt,
+                                       std::unique_ptr<Regularizer> reg)
+    : LinearRegression(input_dim, std::move(loss), std::move(opt), std::move(reg)),
+      weights(input_dim, 1, 0.01), bias(1, 1, 0.0),
       grad_w(input_dim, 1, 0.0), grad_b(1, 1, 0.0) {}
 
 // y^​=XW+b

@@ -39,15 +39,15 @@ Matrix NoRegularizer::gradient(const Matrix& weights) const {
     return Matrix(weights.rows(), weights.cols(), 0.0);
 }
 
-Regularizer* createRegularizer(RegularizerType type, double lambda) {
+std::unique_ptr<Regularizer> createRegularizer(RegularizerType type, double lambda) {
     switch (type) {
         case RegularizerType::None:
-            return new NoRegularizer();
+            return std::make_unique<NoRegularizer>();
         case RegularizerType::L1:
-            return new L1Regularizer(lambda);
+            return std::make_unique<L1Regularizer>(lambda);
         case RegularizerType::L2:
-            return new L2Regularizer(lambda);
+            return std::make_unique<L2Regularizer>(lambda);
         default:
-            return new NoRegularizer();
+            return std::make_unique<NoRegularizer>();
     }
 }

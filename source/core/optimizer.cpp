@@ -20,16 +20,16 @@ void MiniBatchOptimizer::step(Matrix& param, const Matrix& grad)
     param = param - grad * learning_rate;
 }
 
-Optimizer* createOptimizer(OptimizerType type, double lr)
+std::unique_ptr<Optimizer> createOptimizer(OptimizerType type, double lr)
 {
     switch (type) {
         case OptimizerType::BATCH:
-            return new BatchOptimizer(lr);
+            return std::make_unique<BatchOptimizer>(lr);
         case OptimizerType::STOCHASTIC:
-            return new StochasticOptimizer(lr);
+            return std::make_unique<StochasticOptimizer>(lr);
         case OptimizerType::MINI_BATCH:
-            return new MiniBatchOptimizer(lr);
+            return std::make_unique<MiniBatchOptimizer>(lr);
         default:
-            return new BatchOptimizer(lr);
+            return std::make_unique<BatchOptimizer>(lr);
     }
 }

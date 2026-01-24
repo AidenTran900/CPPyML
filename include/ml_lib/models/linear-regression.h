@@ -16,7 +16,10 @@ class LinearRegression : public GradientModel {
         Matrix grad_b;
 
     public:
-        LinearRegression(int input_dim, LossFunction* loss, Optimizer* opt, Regularizer* reg);
+        LinearRegression(int input_dim,
+                         std::unique_ptr<LossFunction> loss,
+                         std::unique_ptr<Optimizer> opt,
+                         std::unique_ptr<Regularizer> reg);
 
         Matrix forward(const Matrix& X) override;
         void backward(const Matrix& y_true) override;

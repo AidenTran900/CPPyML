@@ -1,7 +1,10 @@
 #include "ml_lib/models/linear-regression.h"
 
-LinearRegression::LinearRegression(int input_dim, LossFunction* loss, Optimizer* opt, Regularizer* reg)
-    : GradientModel(loss, opt, reg)
+LinearRegression::LinearRegression(int input_dim,
+                                   std::unique_ptr<LossFunction> loss,
+                                   std::unique_ptr<Optimizer> opt,
+                                   std::unique_ptr<Regularizer> reg)
+    : GradientModel(std::move(loss), std::move(opt), std::move(reg))
 {
     weights = Matrix(input_dim, 1);
     bias = Matrix(1, 1);

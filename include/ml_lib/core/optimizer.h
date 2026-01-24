@@ -1,5 +1,6 @@
 #pragma once
 #include "../math/matrix.h"
+#include <memory>
 
 enum OptimizerType {
     BATCH,
@@ -46,4 +47,4 @@ class MiniBatchOptimizer : public Optimizer {
         void step(Matrix& param, const Matrix& grad) override;
 };
 
-Optimizer* createOptimizer(OptimizerType type, double lr);
+std::unique_ptr<Optimizer> createOptimizer(OptimizerType type, double lr);

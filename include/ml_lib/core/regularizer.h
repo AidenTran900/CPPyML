@@ -41,4 +41,4 @@ class NoRegularizer : public Regularizer {
         Matrix gradient(const Matrix& weights) const override;
 };
 
-Regularizer* createRegularizer(RegularizerType type, double lambda);
+std::unique_ptr<Regularizer> createRegularizer(RegularizerType type, double lambda);

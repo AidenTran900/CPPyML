@@ -4,12 +4,13 @@
 #include "../core/optimizer.h"
 #include "../core/regularizer.h"
 #include "model-interface.h"
+#include <memory>
 
 class GradientModel : public GradientModelInterface {
     protected:
-        LossFunction* loss_func;
-        Optimizer* optimizer;
-        Regularizer* regularizer;
+        std::unique_ptr<LossFunction> loss_func;
+        std::unique_ptr<Optimizer> optimizer;
+        std::unique_ptr<Regularizer> regularizer;
 
         int batch_size;
         int epochs;
@@ -18,8 +19,14 @@ class GradientModel : public GradientModelInterface {
         Matrix last_output;
 
     public:
-        GradientModel(LossFunction* loss, Optimizer* opt, Regularizer* reg)
-            : loss_func(loss), optimizer(opt), regularizer(reg), batch_size(32), epochs(100) {}
+        GradientModel(std::unique_ptr<LossFunction> loss,
+                      std::unique_ptr<Optimizer> opt,
+                      std::unique_ptr<Regularizer> reg)
+            : loss_func(std::move(loss)),
+              optimizer(std::move(opt)),
+              regularizer(std::move(reg)),
+              batch_size(32),
+              epochs(100) {}
 
         virtual Matrix forward(const Matrix& X) = 0;
         virtual void backward(const Matrix& y_true) = 0;
@@ -43,9 +50,5 @@ class GradientModel : public GradientModelInterface {
             batch_size = b;
         }
 
-        virtual ~GradientModel() {
-            delete loss_func;
-            delete optimizer;
-            delete regularizer;
-        }
+        virtual ~GradientModel() = default;
 };
