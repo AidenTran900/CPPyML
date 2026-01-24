@@ -1,7 +1,7 @@
 #pragma once
 #include "../math/matrix.h"
 
-enum LossType {
+enum class LossType {
     MAE,
         // 1/N * | actual - predicted |
         // Errors treated equally
