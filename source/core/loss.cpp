@@ -128,16 +128,11 @@ Matrix BCELoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
 LossFunction* createLoss(LossType type)
 {
     switch (type) {
-        case LossType::MAE:
-            return new MAELoss();
-        case LossType::MSE:
-            return new MSELoss();
-        case LossType::RMSE:
-            return new RMSELoss();
-        case LossType::BCE:
-            return new BCELoss();
-        default:
-            throw std::invalid_argument("Unsupported loss type.");
+        case LossType::MAE:  return new MAELoss();
+        case LossType::MSE:  return new MSELoss();
+        case LossType::RMSE: return new RMSELoss();
+        case LossType::BCE:  return new BCELoss();
     }
+
     throw std::invalid_argument("Unsupported loss type.");
 }
