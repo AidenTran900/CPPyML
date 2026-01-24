@@ -139,4 +139,3 @@ LossFunction* createLoss(LossType type)
             return new MSELoss();
     }
 }
-

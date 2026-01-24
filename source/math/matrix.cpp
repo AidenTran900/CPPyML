@@ -7,14 +7,14 @@
 #endif
 
 Matrix::Matrix()
-    : m_rows(0), 
-      m_cols(0), 
-      m_data(0,0) {}
+    : m_rows(0),
+      m_cols(0),
+      m_data() {}
 
 Matrix::Matrix(int rows, int cols, double init_val)
-    : m_rows(rows), 
-      m_cols(cols), 
-      m_data(rows * cols, init_val) {}
+    : m_rows(rows),
+      m_cols(cols),
+      m_data(static_cast<size_t>(rows) * static_cast<size_t>(cols), init_val) {}
 
 Matrix::Matrix(const std::vector<std::vector<double>>& vec) {
     if (vec.empty()) {
@@ -24,28 +24,28 @@ Matrix::Matrix(const std::vector<std::vector<double>>& vec) {
     }
     m_rows = static_cast<int>(vec.size());
     m_cols = static_cast<int>(vec[0].size());
-    m_data.resize(m_rows * m_cols);
+    m_data.resize(static_cast<size_t>(m_rows) * static_cast<size_t>(m_cols));
     for (int i = 0; i < m_rows; i++) {
         for (int j = 0; j < m_cols; j++) {
-            m_data[i * m_cols + j] = vec[i][j];
+            m_data[static_cast<size_t>(i * m_cols + j)] = vec[static_cast<size_t>(i)][static_cast<size_t>(j)];
         }
     }
 }
 
 double& Matrix::operator()(int i, int j) { // Setter
-    return m_data[i * m_cols + j];
+    return m_data[static_cast<size_t>(i * m_cols + j)];
 }
 
 double Matrix::operator()(int i, int j) const {
-    return m_data[i * m_cols + j];
+    return m_data[static_cast<size_t>(i * m_cols + j)];
 }
 
 const double* Matrix::getRow(int row) const {
-    return &m_data[row * m_cols];
+    return &m_data[static_cast<size_t>(row * m_cols)];
 }
 
 double* Matrix::getRow(int row) {
-    return &m_data[row * m_cols];
+    return &m_data[static_cast<size_t>(row * m_cols)];
 }
 
 std::vector<double> Matrix::getRowVector(int row) const {
@@ -87,9 +87,10 @@ Matrix Matrix::operator+(const Matrix& other) const {
     }
     Matrix result(m_rows, m_cols);
     size_t i = 0;
+    size_t size = static_cast<size_t>(m_rows) * static_cast<size_t>(m_cols);
 
     #if ML_HAS_AVX2 && ML_USE_SIMD
-    for (; i + 4 <= m_rows * m_cols; i += 4) {
+    for (; i + 4 <= size; i += 4) {
         __m256d vec1 = _mm256_loadu_pd(&m_data[i]);
         __m256d vec2 = _mm256_loadu_pd(&other.m_data[i]);
         __m256d sum = _mm256_add_pd(vec1, vec2);
@@ -97,7 +98,6 @@ Matrix Matrix::operator+(const Matrix& other) const {
     }
     #endif
 
-    size_t size = static_cast<size_t>(m_rows) * static_cast<size_t>(m_cols);
     for (; i < size; i++) {
         result.m_data[i] = m_data[i] + other.m_data[i];
     }
@@ -111,9 +111,10 @@ Matrix Matrix::operator-(const Matrix& other) const {
     }
     Matrix result(m_rows, m_cols);
     size_t i = 0;
+    size_t size = static_cast<size_t>(m_rows) * static_cast<size_t>(m_cols);
 
     #if ML_HAS_AVX2 && ML_USE_SIMD
-    for (; i + 4 <= m_rows * m_cols; i += 4) {
+    for (; i + 4 <= size; i += 4) {
         __m256d vec1 = _mm256_loadu_pd(&m_data[i]);
         __m256d vec2 = _mm256_loadu_pd(&other.m_data[i]);
         __m256d sum = _mm256_sub_pd(vec1, vec2);
@@ -121,7 +122,6 @@ Matrix Matrix::operator-(const Matrix& other) const {
     }
     #endif
 
-    size_t size = static_cast<size_t>(m_rows) * static_cast<size_t>(m_cols);
     for (; i < size; i++) {
         result.m_data[i] = m_data[i] - other.m_data[i];
     }
@@ -145,10 +145,10 @@ Matrix Matrix::operator*(const Matrix& other) const {
             __m256d sum = _mm256_setzero_pd();
             for (int h = 0; h < m_cols; h++) {
                 __m256d vec1 = _mm256_set1_pd((*this)(i, h));
-                __m256d vec2 = _mm256_loadu_pd(&other.m_data[h * other.m_cols + j]);
+                __m256d vec2 = _mm256_loadu_pd(&other.m_data[static_cast<size_t>(h * other.m_cols + j)]);
                 sum = _mm256_fmadd_pd(vec1, vec2, sum);
             }
-            _mm256_storeu_pd(&result.m_data[i * other.m_cols + j], sum);
+            _mm256_storeu_pd(&result.m_data[static_cast<size_t>(i * other.m_cols + j)], sum);
         }
         for (; j < other.m_cols; j++) {
             for (int h = 0; h < m_cols; h++) {
@@ -230,19 +230,17 @@ EliminationResult Matrix::forwardElimination(const Matrix& m, const Matrix& aug)
     int pivot_row = 0;
     int swaps = 0;
 
-    for (int j = 0; j < m_c.m_cols && pivot_row < m_c.m_rows; j++) { // Condition means loop thru cols until we run out of rows to eliminate
+    for (int j = 0; j < m_c.m_cols && pivot_row < m_c.m_rows; j++) {
         int max_row_ind = pivot_row;
         double max_val = std::abs(m_c(pivot_row, j));
 
-        // Track > val in column for swap
-        for (int i = pivot_row + 1; i < m_c.m_rows; i++) { // Start at pivot_row so prevent unecessary checks
+        for (int i = pivot_row + 1; i < m_c.m_rows; i++) {
             if (std::abs(m_c(i, j)) > max_val) {
                 max_val = std::abs(m_c(i, j));
                 max_row_ind = i;
             }
         }
 
-        // Rows w/ greatest vals at col are on top
         if (max_row_ind != pivot_row) {
             m_c.swapRows(pivot_row, max_row_ind);
             if (is_augmented) {
@@ -251,7 +249,6 @@ EliminationResult Matrix::forwardElimination(const Matrix& m, const Matrix& aug)
             swaps++;
         }
 
-        // Prevent super large #s (1/0.000000001 super big), also floating pt errors :/
         if (std::abs(m_c(pivot_row, j)) < 1e-9) {
             m_c(pivot_row, j) = 0.0;
             continue;
@@ -301,7 +298,6 @@ EliminationResult Matrix::backwardElimination(const Matrix& m, const Matrix& aug
 
     for (int i = m_c.m_rows - 1; i >= 0; i--) {
 
-        // Get pivot
         int pivot_col = -1;
         for (int j = 0; j < m_c.m_cols; j++) {
             if (std::abs(m_c(i, j)) > 1e-9) {
@@ -366,7 +362,7 @@ Matrix Matrix::inverse() const {
 
     EliminationResult forward_result = forwardElimination(*this, identity);
 
-    for (int i = 0; i < m_rows; i++) { // Check if diagonal entry is 0
+    for (int i = 0; i < m_rows; i++) {
         if (std::abs(forward_result.matrix(i, i)) < 1e-9) {
             throw std::runtime_error("Matrix is singular and cannot be inverted.");
         }
@@ -393,7 +389,6 @@ double Matrix::determinant() const {
         return 0.0;
     }
 
-    // Check dimensions
     if (m_rows != m_cols) {
         throw std::invalid_argument("Matrix dimensions are not square.");
     }
@@ -409,7 +404,7 @@ double Matrix::determinant() const {
 
     double det = 1.0;
     for (int i = 0; i < m_rows; i++) {
-        if (std::abs(elim_result.matrix(i, i)) < 1e-9) { // Stop early if "0"
+        if (std::abs(elim_result.matrix(i, i)) < 1e-9) {
             return 0.0;
         }
         det *= elim_result.matrix(i, i);
@@ -453,8 +448,8 @@ double Matrix::dot(const Matrix& m) const {
 
 Matrix Matrix::sign() const {
     Matrix result(m_rows, m_cols);
-    int size = m_rows * m_cols;
-    for (int i = 0; i < size; i++) {
+    size_t size = static_cast<size_t>(m_rows) * static_cast<size_t>(m_cols);
+    for (size_t i = 0; i < size; i++) {
         double val = m_data[i];
         result.m_data[i] = (val > 0.0) ? 1.0 : ((val < 0.0) ? -1.0 : 0.0);
     }
@@ -466,9 +461,9 @@ bool Matrix::operator==(const Matrix& other) const {
         return false;
     }
 
-    int size = m_rows * m_cols;
-    for (int i = 0; i < size; i++) {
-        if (m_data[i] != other.m_data[i]) {
+    size_t size = static_cast<size_t>(m_rows) * static_cast<size_t>(m_cols);
+    for (size_t i = 0; i < size; i++) {
+        if (std::abs(m_data[i] - other.m_data[i]) > 1e-15) {
             return false;
         }
     }
@@ -484,8 +479,8 @@ bool Matrix::approxEqual(const Matrix& other, double epsilon) const {
         return false;
     }
 
-    int size = m_rows * m_cols;
-    for (int i = 0; i < size; i++) {
+    size_t size = static_cast<size_t>(m_rows) * static_cast<size_t>(m_cols);
+    for (size_t i = 0; i < size; i++) {
         if (std::abs(m_data[i] - other.m_data[i]) > epsilon) {
             return false;
         }

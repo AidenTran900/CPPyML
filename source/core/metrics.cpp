@@ -5,8 +5,8 @@ namespace metrics {
 
 double r2(const Matrix& y_true, const Matrix& y_pred)
 {
-    const double rows = y_pred.rows();
-    const double cols = y_pred.cols();
+    int rows = y_pred.rows();
+    int cols = y_pred.cols();
 
     double SSres = 0.0; // Residual
     double SStot = 0.0; // Total
@@ -38,7 +38,7 @@ double adjustedR2(const Matrix& y_true, const Matrix& y_pred, int num_predictors
     double r2_val = r2(y_true, y_pred);
     int n = y_true.rows();
 
-    return 1 - (1 - r2_val) * ((n - 1) / (n - num_predictors - 1));
+    return 1 - (1 - r2_val) * ((n - 1.0) / (n - num_predictors - 1));
 }
 
 double mse(const Matrix& y_true, const Matrix& y_pred)

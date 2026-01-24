@@ -6,6 +6,15 @@
 #include <limits>
 #include <random>
 
+RandomForest::RandomForest() {}
+
+RandomForest::~RandomForest() {
+    for (DescisionTree* tree : trees) {
+        delete tree;
+    }
+    trees.clear();
+}
+
 void RandomForest::fit(const Matrix &X, const Matrix &Y)
 {
     int m = X.rows();
