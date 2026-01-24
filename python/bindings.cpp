@@ -259,7 +259,7 @@ PYBIND11_MODULE(ml_lib, m) {
         .def(py::init<double, double, KERNEL, int, double, int, double>(),
              py::arg("C") = 1.0,
              py::arg("gamma") = 0.1,
-             py::arg("kernel") = KERNEL::LINEAR,
+             py::arg_v("kernel", KERNEL::LINEAR, "Kernel.LINEAR"),
              py::arg("degree") = 3,
              py::arg("tolerance") = 1e-3,
              py::arg("max_iter") = 1000,

@@ -98,7 +98,7 @@ void KMeansClustering::fit(const Matrix &X, const Matrix &y)
     bool converged = false;
     while (!converged && iterations < max_iter){
         // assign datapoints to centroids
-        std::vector<int> assignments;
+        std::vector<int> assignments(m);
         for (int i = 0; i < m; i++) {
             assignments[i] = findNearestCentroid(X.row(i));
         }
