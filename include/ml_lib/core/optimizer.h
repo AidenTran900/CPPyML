@@ -55,4 +55,23 @@ class MiniBatchOptimizer : public Optimizer {
         int getBatchSize() const { return batch_size; }
 };
 
+class AdamOptimizer : public Optimizer {
+   private:
+       double beta1;
+       double beta2;
+       double epsilon;
+       std::unordered_map<const Matrix*, Matrix> m;  // First moment
+       std::unordered_map<const Matrix*, Matrix> v;  // Second moment
+       std::unordered_map<const Matrix*, int> t;     // Timestep per parameter
+
+
+   public:
+       AdamOptimizer(double lr, double beta1 = 0.9, double beta2 = 0.999, double epsilon = 1e-8)
+           : Optimizer(lr), beta1(beta1), beta2(beta2), epsilon(epsilon) {}
+
+
+       void step(Matrix& param, const Matrix& grad) override;
+};
+
+
 std::unique_ptr<Optimizer> createOptimizer(OptimizerType type, double lr);
