@@ -50,5 +50,13 @@ class GradientModel : public GradientModelInterface {
             batch_size = b;
         }
 
+        // Move constructor and assignment for pybind11 compatibility
+        GradientModel(GradientModel&&) = default;
+        GradientModel& operator=(GradientModel&&) = default;
+
+        // Disable copy (unique_ptr members are not copyable)
+        GradientModel(const GradientModel&) = delete;
+        GradientModel& operator=(const GradientModel&) = delete;
+
         virtual ~GradientModel() = default;
 };
