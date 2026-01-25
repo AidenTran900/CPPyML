@@ -1,14 +1,21 @@
 #pragma once
 #include "../math/matrix.h"
 #include <memory>
+#include <unordered_map>
 
 enum OptimizerType {
-    BATCH,
-        // Using full dataset
     STOCHASTIC,
         // Update parameters after 1 sample
-    MINI_BATCH
+    MINI_BATCH,
         // Update parameters after small batches
+    MOMENTUM,
+        // SGD with momentum
+    ADAGRAD,
+        // Adaptive gradient algorithm
+    RMSPROP,
+        // Root mean square propagation
+    ADAM
+        // Adaptive moment estimation
 };
 
 class Optimizer {
@@ -26,13 +33,6 @@ class Optimizer {
         virtual ~Optimizer() {}
 };
 
-class BatchOptimizer : public Optimizer {
-    public:
-        BatchOptimizer(double lr) : Optimizer(lr) {}
-
-        void step(Matrix& param, const Matrix& grad) override;
-};
-
 class StochasticOptimizer : public Optimizer {
     public:
         StochasticOptimizer(double lr) : Optimizer(lr) {}
@@ -41,10 +41,18 @@ class StochasticOptimizer : public Optimizer {
 };
 
 class MiniBatchOptimizer : public Optimizer {
+    private:
+        int batch_size;
+        int current_step;
+        std::unordered_map<Matrix*, Matrix> accumulated_grads;
+
     public:
-        MiniBatchOptimizer(double lr) : Optimizer(lr) {}
+        MiniBatchOptimizer(double lr, int batch_size = 32)
+            : Optimizer(lr), batch_size(batch_size), current_step(0) {}
 
         void step(Matrix& param, const Matrix& grad) override;
+        void setBatchSize(int size) { batch_size = size; }
+        int getBatchSize() const { return batch_size; }
 };
 
 std::unique_ptr<Optimizer> createOptimizer(OptimizerType type, double lr);

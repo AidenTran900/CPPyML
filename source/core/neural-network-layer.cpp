@@ -149,6 +149,6 @@ Matrix NeuralNetworkLayer::backward(const Matrix &grad_output)
 
 void NeuralNetworkLayer::update(Optimizer *opt)
 {
-    weights = weights - grad_w * opt->getLearningRate();
-    bias = bias - grad_b * opt->getLearningRate();
+    opt->step(weights, grad_w);
+    opt->step(bias, grad_b);
 }
