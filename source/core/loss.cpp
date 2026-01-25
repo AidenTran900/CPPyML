@@ -125,6 +125,36 @@ Matrix BinaryCrossEntropyLoss::gradient(const Matrix& y_pred, const Matrix& y_tr
     return (y_pred - y_true) * (1.0 / m);
 }
 
+// CategoricalCrossEntropy
+double CategoricalCrossEntropyLoss::compute(const Matrix& y_pred, const Matrix& y_true) const
+{
+    double result = 0.0;
+    int m = y_pred.rows();
+    if (m == 0) {
+        return 0.0;
+    }
+
+    for (int i = 0; i < y_pred.rows(); i++) {
+        for (int j = 0; j < y_pred.cols(); j++) {
+            double pred_val = y_pred(i, j);
+            double true_val = y_true(i, j);
+            double epsilon = 1e-9;
+            pred_val = std::max(epsilon, std::min(1.0 - epsilon, pred_val));
+
+            result -= true_val * log(pred_val);
+        }
+    }
+
+    return result / m;
+}
+
+Matrix CategoricalCrossEntropyLoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
+{
+    int m = y_pred.rows();
+    if (m == 0) return Matrix(0, 0);
+
+    return (y_pred - y_true) * (1.0 / m);
+}
 
 std::unique_ptr<LossFunction> createLoss(LossType type)
 {
@@ -133,7 +163,6 @@ std::unique_ptr<LossFunction> createLoss(LossType type)
         case LossType::MEAN_SQUARED_ERROR:       return std::make_unique<MeanSquaredErrorLoss>();
         case LossType::ROOT_MEAN_SQUARED_ERROR:  return std::make_unique<RootMeanSquaredErrorLoss>();
         case LossType::BINARY_CROSS_ENTROPY:     return std::make_unique<BinaryCrossEntropyLoss>();
-        case LossType::SOFTMAX:                  return std::make_unique<SoftmaxLoss>();
         case LossType::CATEGORICAL_CROSS_ENTROPY:  return std::make_unique<CategoricalCrossEntropyLoss>();
     }
 
