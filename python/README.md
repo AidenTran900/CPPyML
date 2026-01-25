@@ -6,7 +6,7 @@ Complete Python bindings for the C++ ML library using pybind11.
 
 ### Regression Models
 - **Linear Regression** - Linear regression with gradient descent and regularization
-- Supports MSE, MAE, RMSE loss functions
+- Supports MeanSquaredError, MeanAbsoluteError, RootMeanSquaredError loss functions
 - L1/L2 regularization
 
 ### Classification Models
@@ -20,7 +20,7 @@ Complete Python bindings for the C++ ML library using pybind11.
 - **K-Means Clustering** - Unsupervised clustering algorithm
 
 ### Core Components
-- **Loss Functions**: MSE, MAE, RMSE, Binary Cross-Entropy (BCE)
+- **Loss Functions**: MeanSquaredError, MeanAbsoluteError, RootMeanSquaredError, BinaryCrossEntropy
 - **Optimizers**: Batch, Stochastic, Mini-batch gradient descent
 - **Regularizers**: L1 (Lasso), L2 (Ridge), None
 - **Matrix**: NumPy-compatible matrix operations
@@ -58,7 +58,7 @@ X_train = np.random.randn(100, 3)
 y_train = (2.5 * X_train[:, 0] + 1.5 * X_train[:, 1]).reshape(-1, 1)
 
 # Create model
-loss = ml_lib.MSELoss()
+loss = ml_lib.MeanSquaredErrorLoss()
 optimizer = ml_lib.BatchOptimizer(learning_rate=0.01)
 regularizer = ml_lib.L2Regularizer(lambda_=0.01)
 
@@ -84,7 +84,7 @@ X_train = np.random.randn(100, 2)
 y_train = (X_train[:, 0] + X_train[:, 1] > 0).astype(float).reshape(-1, 1)
 
 # Create model
-loss = ml_lib.BCELoss()
+loss = ml_lib.BinaryCrossEntropyLoss()
 optimizer = ml_lib.BatchOptimizer(learning_rate=0.01)
 regularizer = ml_lib.L2Regularizer(lambda_=0.01)
 
@@ -185,7 +185,7 @@ cluster_labels = kmeans.predict(X)
 #### `LinearRegression(input_dim, loss, optimizer, regularizer)`
 **Parameters:**
 - `input_dim` (int): Number of input features
-- `loss` (LossFunction): Loss function instance (MSELoss, MAELoss, RMSELoss)
+- `loss` (LossFunction): Loss function instance (MeanSquaredErrorLoss, MeanAbsoluteErrorLoss, RootMeanSquaredErrorLoss)
 - `optimizer` (Optimizer): Optimizer instance
 - `regularizer` (Regularizer): Regularizer instance
 
@@ -197,7 +197,7 @@ cluster_labels = kmeans.predict(X)
 #### `LogisticRegression(input_dim, loss, optimizer, regularizer)`
 **Parameters:**
 - `input_dim` (int): Number of input features
-- `loss` (LossFunction): Loss function (BCELoss recommended)
+- `loss` (LossFunction): Loss function (BinaryCrossEntropyLoss recommended)
 - `optimizer` (Optimizer): Optimizer instance
 - `regularizer` (Regularizer): Regularizer instance
 
@@ -265,10 +265,10 @@ Ensemble of decision trees with bootstrap aggregation.
 ### Loss Functions
 
 ```python
-ml_lib.MSELoss()       # Mean Squared Error
-ml_lib.MAELoss()       # Mean Absolute Error
-ml_lib.RMSELoss()      # Root Mean Squared Error
-ml_lib.BCELoss()       # Binary Cross Entropy
+ml_lib.MeanSquaredErrorLoss()       # Mean Squared Error
+ml_lib.MeanAbsoluteErrorLoss()      # Mean Absolute Error
+ml_lib.RootMeanSquaredErrorLoss()   # Root Mean Squared Error
+ml_lib.BinaryCrossEntropyLoss()     # Binary Cross Entropy
 ```
 
 ### Optimizers
@@ -312,10 +312,10 @@ ml_lib.metrics.r2_score(y_true, y_pred)
 
 ```python
 # Loss types
-ml_lib.LossType.MAE
-ml_lib.LossType.MSE
-ml_lib.LossType.RMSE
-ml_lib.LossType.BCE
+ml_lib.LossType.MEAN_ABSOLUTE_ERROR
+ml_lib.LossType.MEAN_SQUARED_ERROR
+ml_lib.LossType.ROOT_MEAN_SQUARED_ERROR
+ml_lib.LossType.BINARY_CROSS_ENTROPY
 
 # Optimizer types
 ml_lib.OptimizerType.BATCH

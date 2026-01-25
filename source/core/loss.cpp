@@ -4,8 +4,8 @@
 
 LossFunction::~LossFunction() {}
 
-// MAE
-double MAELoss::compute(const Matrix& y_pred, const Matrix& y_true) const
+// MeanAbsoluteError
+double MeanAbsoluteErrorLoss::compute(const Matrix& y_pred, const Matrix& y_true) const
 {
     double result = 0.0;
     int n = y_pred.rows() * y_pred.cols();
@@ -20,7 +20,7 @@ double MAELoss::compute(const Matrix& y_pred, const Matrix& y_true) const
     return result / n;
 }
 
-Matrix MAELoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
+Matrix MeanAbsoluteErrorLoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
 {
     int m = y_pred.rows();
     if (m == 0) return Matrix(0, 0);
@@ -28,8 +28,8 @@ Matrix MAELoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
     return (y_pred - y_true).sign() * (1.0 / m);
 }
 
-// MSE
-double MSELoss::compute(const Matrix& y_pred, const Matrix& y_true) const
+// MeanSquaredError
+double MeanSquaredErrorLoss::compute(const Matrix& y_pred, const Matrix& y_true) const
 {
     double result = 0.0;
     int n = y_pred.rows() * y_pred.cols();
@@ -46,7 +46,7 @@ double MSELoss::compute(const Matrix& y_pred, const Matrix& y_true) const
     return result / n;
 }
 
-Matrix MSELoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
+Matrix MeanSquaredErrorLoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
 {
     int m = y_pred.rows();
     if (m == 0) return Matrix(0, 0);
@@ -55,8 +55,8 @@ Matrix MSELoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
 }
 
 
-// RMSE
-double RMSELoss::compute(const Matrix& y_pred, const Matrix& y_true) const
+// RootMeanSquaredError
+double RootMeanSquaredErrorLoss::compute(const Matrix& y_pred, const Matrix& y_true) const
 {
     double result = 0.0;
     int n = y_pred.rows() * y_pred.cols();
@@ -74,7 +74,7 @@ double RMSELoss::compute(const Matrix& y_pred, const Matrix& y_true) const
     return sqrt(result / n);
 }
 
-Matrix RMSELoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
+Matrix RootMeanSquaredErrorLoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
 {
     int m = y_pred.rows();
     if (m == 0) return Matrix(0, 0);
@@ -94,8 +94,8 @@ Matrix RMSELoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
 }
 
 
-// Binary Cross Entropy
-double BCELoss::compute(const Matrix& y_pred, const Matrix& y_true) const
+// BinaryCrossEntropy
+double BinaryCrossEntropyLoss::compute(const Matrix& y_pred, const Matrix& y_true) const
 {
     double result = 0.0;
     int n = y_pred.rows() * y_pred.cols();
@@ -117,7 +117,7 @@ double BCELoss::compute(const Matrix& y_pred, const Matrix& y_true) const
     return (result / n);
 }
 
-Matrix BCELoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
+Matrix BinaryCrossEntropyLoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
 {
     int m = y_pred.rows();
     if (m == 0) return Matrix(0, 0);
@@ -129,10 +129,12 @@ Matrix BCELoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
 std::unique_ptr<LossFunction> createLoss(LossType type)
 {
     switch (type) {
-        case LossType::MAE:  return std::make_unique<MAELoss>();
-        case LossType::MSE:  return std::make_unique<MSELoss>();
-        case LossType::RMSE: return std::make_unique<RMSELoss>();
-        case LossType::BCE:  return std::make_unique<BCELoss>();
+        case LossType::MEAN_ABSOLUTE_ERROR:      return std::make_unique<MeanAbsoluteErrorLoss>();
+        case LossType::MEAN_SQUARED_ERROR:       return std::make_unique<MeanSquaredErrorLoss>();
+        case LossType::ROOT_MEAN_SQUARED_ERROR:  return std::make_unique<RootMeanSquaredErrorLoss>();
+        case LossType::BINARY_CROSS_ENTROPY:     return std::make_unique<BinaryCrossEntropyLoss>();
+        case LossType::SOFTMAX:                  return std::make_unique<SoftmaxLoss>();
+        case LossType::CATEGORICAL_CROSS_ENTROPY:  return std::make_unique<CategoricalCrossEntropyLoss>();
     }
 
     throw std::invalid_argument("Unsupported loss type.");
