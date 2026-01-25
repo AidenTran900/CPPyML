@@ -174,7 +174,7 @@ int runHeartDiseaseExample() {
 
     LogisticRegression model(
         X_train.cols(),
-        createLoss(LossType::BCE),
+        createLoss(LossType::BINARY_CROSS_ENTROPY),
         createOptimizer(OptimizerType::BATCH, 0.1),
         createRegularizer(RegularizerType::L2, 0.01)
     );

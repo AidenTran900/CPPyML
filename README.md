@@ -13,7 +13,7 @@ A C++ machine learning library built from the ground up. Implementing various ML
 - **K-Means Clustering** for unsupervised learning and data segmentation
 - **Neural Networks** with backpropagation and multiple activation functions (ReLU, Sigmoid, Tanh, Linear, Softplus)
 - Matrix operations library (addition, multiplication, transpose, inverse, element-wise operations)
-- Loss functions: MSE, MAE, RMSE, L1, L2, Binary Cross-Entropy (BCE)
+- Loss functions: MeanSquaredError, MeanAbsoluteError, RootMeanSquaredError, L1, L2, BinaryCrossEntropy
 - Evaluation metrics:
   - Regression: R2, Adjusted R2, MSE, MAE, RMSE
   - Classification: Accuracy, Precision, Recall, F1 Score, Confusion Matrix, ROC Curve, AUC

@@ -82,10 +82,10 @@ PYBIND11_MODULE(ml_lib, m) {
 
     // Enums
     py::enum_<LossType>(m, "LossType")
-        .value("MAE", LossType::MAE, "Mean Absolute Error")
-        .value("MSE", LossType::MSE, "Mean Squared Error")
-        .value("RMSE", LossType::RMSE, "Root Mean Squared Error")
-        .value("BCE", LossType::BCE, "Binary Cross Entropy")
+        .value("MEAN_ABSOLUTE_ERROR", LossType::MEAN_ABSOLUTE_ERROR, "Mean Absolute Error")
+        .value("MEAN_SQUARED_ERROR", LossType::MEAN_SQUARED_ERROR, "Mean Squared Error")
+        .value("ROOT_MEAN_SQUARED_ERROR", LossType::ROOT_MEAN_SQUARED_ERROR, "Root Mean Squared Error")
+        .value("BINARY_CROSS_ENTROPY", LossType::BINARY_CROSS_ENTROPY, "Binary Cross Entropy")
         .export_values();
 
     py::enum_<OptimizerType>(m, "OptimizerType")
@@ -120,16 +120,16 @@ PYBIND11_MODULE(ml_lib, m) {
     // Loss Functions
     py::class_<LossFunction>(m, "LossFunction");
 
-    py::class_<MSELoss, LossFunction>(m, "MSELoss")
+    py::class_<MeanSquaredErrorLoss, LossFunction>(m, "MeanSquaredErrorLoss")
         .def(py::init<>(), "Mean Squared Error loss");
 
-    py::class_<MAELoss, LossFunction>(m, "MAELoss")
+    py::class_<MeanAbsoluteErrorLoss, LossFunction>(m, "MeanAbsoluteErrorLoss")
         .def(py::init<>(), "Mean Absolute Error loss");
 
-    py::class_<RMSELoss, LossFunction>(m, "RMSELoss")
+    py::class_<RootMeanSquaredErrorLoss, LossFunction>(m, "RootMeanSquaredErrorLoss")
         .def(py::init<>(), "Root Mean Squared Error loss");
 
-    py::class_<BCELoss, LossFunction>(m, "BCELoss")
+    py::class_<BinaryCrossEntropyLoss, LossFunction>(m, "BinaryCrossEntropyLoss")
         .def(py::init<>(), "Binary Cross Entropy loss");
 
     // Optimizers
@@ -217,7 +217,7 @@ PYBIND11_MODULE(ml_lib, m) {
             );
         }),
              py::arg("input_dim"),
-             py::arg("loss") = LossType::MSE,
+             py::arg("loss") = LossType::MEAN_SQUARED_ERROR,
              py::arg("optimizer") = OptimizerType::BATCH,
              py::arg("learning_rate") = 0.01,
              py::arg("regularizer") = RegularizerType::L2,
@@ -225,7 +225,7 @@ PYBIND11_MODULE(ml_lib, m) {
              "Linear Regression model\n\n"
              "Parameters:\n"
              "  input_dim: Number of input features\n"
-             "  loss: Loss type (LossType.MSE, LossType.MAE, etc.)\n"
+             "  loss: Loss type (LossType.MEAN_SQUARED_ERROR, LossType.MEAN_ABSOLUTE_ERROR, etc.)\n"
              "  optimizer: Optimizer type (OptimizerType.BATCH, etc.)\n"
              "  learning_rate: Learning rate for optimizer (default=0.01)\n"
              "  regularizer: Regularizer type (RegularizerType.L2, etc.)\n"
@@ -248,7 +248,7 @@ PYBIND11_MODULE(ml_lib, m) {
             );
         }),
              py::arg("input_dim"),
-             py::arg("loss") = LossType::BCE,
+             py::arg("loss") = LossType::BINARY_CROSS_ENTROPY,
              py::arg("optimizer") = OptimizerType::BATCH,
              py::arg("learning_rate") = 0.01,
              py::arg("regularizer") = RegularizerType::L2,
@@ -256,7 +256,7 @@ PYBIND11_MODULE(ml_lib, m) {
              "Logistic Regression model for binary classification\n\n"
              "Parameters:\n"
              "  input_dim: Number of input features\n"
-             "  loss: Loss type (LossType.BCE recommended)\n"
+             "  loss: Loss type (LossType.BINARY_CROSS_ENTROPY recommended)\n"
              "  optimizer: Optimizer type (OptimizerType.BATCH, etc.)\n"
              "  learning_rate: Learning rate for optimizer (default=0.01)\n"
              "  regularizer: Regularizer type (RegularizerType.L2, etc.)\n"
