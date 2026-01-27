@@ -78,7 +78,7 @@ void Tokenizer::trainBPE(const std::vector<std::string>& corpus, size_t num_merg
         std::unordered_map<std::pair<std::string, std::string>, int, PairHash> pair_counts;
 
         // count pairs
-        for (const auto& [word, freq] : word_freqs) {
+        for (const auto &[word, freq] : word_freqs) {
             std::vector<std::string> symbols;
             std::string current = "";
             for (const char c : word) {
@@ -130,7 +130,7 @@ void Tokenizer::trainBPE(const std::vector<std::string>& corpus, size_t num_merg
 
     // build vocab
     int id = 0;
-    for (const auto& [word, _] : word_freqs) {
+    for (const auto &[word, _] : word_freqs) {
         std::string current = "";
         for (const char c : word) {
             if (c == ' ') {
@@ -157,7 +157,7 @@ std::vector<std::string> Tokenizer::applyBPEMerges(const std::string& word) {
     }
     tokens.back() += "</w>"; 
 
-    for (const auto& [first, second] : bpe_merges) {
+    for (const auto &[first, second] : bpe_merges) {
         std::vector<std::string> new_tokens;
         size_t i = 0;
         while (i < tokens.size()) {
