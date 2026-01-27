@@ -49,11 +49,13 @@ std::vector<std::string> Tokenizer::sentenceTokenize(const std::string& text) {
 }
 
 void Tokenizer::trainBPE(const std::vector<std::string>& corpus, size_t num_merges) {
+
+    // word frequencies
     std::unordered_map<std::string, int> word_freqs;
 
-    for (const auto& text : corpus) {
+    for (const std::string& text : corpus) {
         std::string word = "";
-        for (char c : text) {
+        for (const char c : text) {
             if (std::isspace(c)) {
                 if (!word.empty()) {
                     word += "</w>";
@@ -71,13 +73,15 @@ void Tokenizer::trainBPE(const std::vector<std::string>& corpus, size_t num_merg
         }
     }
 
+    // BPE merges
     for (size_t merge_idx = 0; merge_idx < num_merges; ++merge_idx) {
         std::unordered_map<std::pair<std::string, std::string>, int, PairHash> pair_counts;
 
+        // count pairs
         for (const auto& [word, freq] : word_freqs) {
             std::vector<std::string> symbols;
             std::string current = "";
-            for (char c : word) {
+            for (const char c : word) {
                 if (c == ' ') {
                     if (!current.empty()) {
                         symbols.push_back(current);
@@ -96,6 +100,7 @@ void Tokenizer::trainBPE(const std::vector<std::string>& corpus, size_t num_merg
 
         if (pair_counts.empty()) break;
 
+        // find best pair
         auto best_pair = std::max_element(
             pair_counts.begin(), pair_counts.end(),
             [](const auto& a, const auto& b) { return a.second < b.second; }
@@ -103,6 +108,7 @@ void Tokenizer::trainBPE(const std::vector<std::string>& corpus, size_t num_merg
 
         if (best_pair->second < 2) break;
 
+        // merge best pair
         auto [first, second] = best_pair->first;
         std::string merged = first + second;
 
@@ -122,10 +128,11 @@ void Tokenizer::trainBPE(const std::vector<std::string>& corpus, size_t num_merg
         word_freqs = std::move(new_word_freqs);
     }
 
+    // build vocab
     int id = 0;
     for (const auto& [word, _] : word_freqs) {
         std::string current = "";
-        for (char c : word) {
+        for (const char c : word) {
             if (c == ' ') {
                 if (!current.empty() && vocab.find(current) == vocab.end()) {
                     vocab[current] = id++;
@@ -176,6 +183,7 @@ std::vector<std::string> Tokenizer::bpeTokenize(const std::string& text) {
         return characterTokenize(text);
     }
 
+    // split text to words and merge
     std::string word = "";
     for (size_t i = 0; i < text.size(); ++i) {
         if (std::isspace(text[i])) {
