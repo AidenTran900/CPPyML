@@ -1,10 +1,13 @@
 #include "ml_lib/math/matrix.h"
 #include "config.h"
+#include <algorithm>
 #include <cmath>
 #include <string>
 #if ML_HAS_AVX2 && ML_USE_SIMD
     #include <immintrin.h>
 #endif
+
+const int DEFAULT_BLOCK_SIZE = 64;
 
 Matrix::Matrix()
     : m_rows(0),
@@ -157,10 +160,25 @@ Matrix Matrix::operator*(const Matrix& other) const {
         }
     }
     #else
-    for (int i = 0; i < m_rows; i++) {
-        for (int j = 0; j < other.m_cols; j++) {
-            for (int h = 0; h < m_cols; h++) {
-                result(i, j) += (*this)(i, h) * other(h, j);
+    // Blocking loop to fit in L1 Cache
+    for (int ii = 0; ii < m_rows; ii += DEFAULT_BLOCK_SIZE) {
+        const int i_end = std::min(ii + DEFAULT_BLOCK_SIZE, m_rows);
+
+        for (int kk = 0; kk < m_cols; kk += DEFAULT_BLOCK_SIZE) {
+            const int k_end = std::min(kk + DEFAULT_BLOCK_SIZE, m_cols);
+
+            for (int jj = 0; jj < other.m_cols; jj += DEFAULT_BLOCK_SIZE) {
+                const int j_end = std::min(jj + DEFAULT_BLOCK_SIZE, other.m_cols);
+
+                // Multiply block [ii:i_end, kk:k_end] by [kk:k_end, jj:j_end]
+                for (int i = ii; i < i_end; i++) {
+                    for (int k = kk; k < k_end; k++) {
+                        const double a_ik = (*this)(i, k);
+                        for (int j = jj; j < j_end; j++) {
+                            result(i, j) += a_ik * other(k, j);
+                        }
+                    }
+                }
             }
         }
     }
