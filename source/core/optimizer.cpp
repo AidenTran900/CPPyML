@@ -130,6 +130,6 @@ std::unique_ptr<Optimizer> createOptimizer(OptimizerType type, double lr)
        case OptimizerType::ADAM:
            return std::make_unique<AdamOptimizer>(lr);
        default:
-           return std::make_unique<BatchOptimizer>(lr);
+           return std::make_unique<StochasticOptimizer>(lr);
    }
 }
