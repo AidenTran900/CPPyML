@@ -60,18 +60,52 @@ class AdamOptimizer : public Optimizer {
        double beta1;
        double beta2;
        double epsilon;
-       std::unordered_map<const Matrix*, Matrix> m;  // First moment
-       std::unordered_map<const Matrix*, Matrix> v;  // Second moment
-       std::unordered_map<const Matrix*, int> t;     // Timestep per parameter
-
+       std::unordered_map<const Matrix*, Matrix> first_moment;
+       std::unordered_map<const Matrix*, Matrix> second_moment;
+       std::unordered_map<const Matrix*, int> timesteps;
 
    public:
        AdamOptimizer(double lr, double beta1 = 0.9, double beta2 = 0.999, double epsilon = 1e-8)
            : Optimizer(lr), beta1(beta1), beta2(beta2), epsilon(epsilon) {}
 
-
        void step(Matrix& param, const Matrix& grad) override;
 };
 
+class MomentumOptimizer : public Optimizer {
+    private:
+        double momentum;
+        std::unordered_map<const Matrix*, Matrix> velocity;
+
+    public:
+        MomentumOptimizer(double lr, double momentum = 0.9)
+            : Optimizer(lr), momentum(momentum) {}
+
+        void step(Matrix& param, const Matrix& grad) override;
+};
+
+class AdaGradOptimizer : public Optimizer {
+    private:
+        double epsilon;
+        std::unordered_map<const Matrix*, Matrix> accumulated_squared_grads;
+
+    public:
+        AdaGradOptimizer(double lr, double epsilon = 1e-8)
+            : Optimizer(lr), epsilon(epsilon) {}
+
+        void step(Matrix& param, const Matrix& grad) override;
+};
+
+class RMSpropOptimizer : public Optimizer {
+    private:
+        double decay_rate;
+        double epsilon;
+        std::unordered_map<const Matrix*, Matrix> mean_squared_grads;
+
+    public:
+        RMSpropOptimizer(double lr, double decay_rate = 0.9, double epsilon = 1e-8)
+            : Optimizer(lr), decay_rate(decay_rate), epsilon(epsilon) {}
+
+        void step(Matrix& param, const Matrix& grad) override;
+};
 
 std::unique_ptr<Optimizer> createOptimizer(OptimizerType type, double lr);
