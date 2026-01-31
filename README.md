@@ -20,6 +20,7 @@ A C++ machine learning library built from the ground up. Implementing various ML
 - **Activation Functions**: ReLU, Sigmoid, Tanh, Linear, Softplus, Softmax, Step, Sign
 - **Loss Functions**: MSE, MAE, RMSE, Binary Cross-Entropy, Categorical Cross-Entropy
 - **Optimizers**: SGD, Mini-Batch GD, Momentum, AdaGrad, RMSProp, Adam
+- **Normalization**: Layer Norm, RMS Norm
 - **Regularization**: L1 (Lasso) & L2 (Ridge)
 - **Metrics**:
   - Regression: R², Adjusted R², MSE, MAE, RMSE
@@ -169,6 +170,8 @@ Run the examples:
     - [x] Momentum SGD
 - [ ] **Model Serialization**
 - [ ] **Batch Normalization**
+- [x] **Layer Normalization**
+- [x] **RMS Normalization**
 - [ ] **Dropout Regularization**
 
 ### NLP [In Progress]
