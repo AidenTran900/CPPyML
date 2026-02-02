@@ -1,8 +1,7 @@
-#include "sin-positional-encoding.h"
+#include "sin-pos-encode.h"
 #include <cmath>
-#include <cassert>
 
-PositionalEncoding::PositionalEncoding(int features, int max_seq_len)
+SinPositionalEncoding::SinPositionalEncoding(int features, int max_seq_len)
 {
     this->features = features;
     this->max_seq_len = max_seq_len;
@@ -11,7 +10,7 @@ PositionalEncoding::PositionalEncoding(int features, int max_seq_len)
     // precompute positional encodings
     for (int pos = 0; pos < max_seq_len; pos++) {
         for (int i = 0; i < features; i++) {
-            double angle = pos / std::pow(10000.0, (2.0 * (i / 2)) / features);
+            double angle = pos / std::pow(period, (2.0 * (i / 2)) / features);
             if (i % 2 == 0) {
                 pe_matrix(pos, i) = std::sin(angle);
             } else {
@@ -21,7 +20,7 @@ PositionalEncoding::PositionalEncoding(int features, int max_seq_len)
     }
 }
 
-Matrix PositionalEncoding::forward(const Matrix &input)
+Matrix SinPositionalEncoding::forward(const Matrix &input)
 {
     Matrix output(input.rows(), input.cols());
 

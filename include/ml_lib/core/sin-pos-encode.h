@@ -3,13 +3,14 @@
 #include "optimizer.h"
 #include <vector>
 
-class PositionalEncoding {
+class SinPositionalEncoding {
     private:
         int features; // Size of the feature dimension
         int max_seq_len; // Maximum sequence length
+        double period = 10000.0; // Period for the sine and cosine functions
         Matrix pe_matrix; // Positional encoding matrix (max_seq_len x features)
     public:
-        PositionalEncoding(int features, int max_seq_len);
+        SinPositionalEncoding(int features, int max_seq_len);
 
         Matrix forward(const Matrix &input);
 };
