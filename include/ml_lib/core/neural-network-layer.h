@@ -40,8 +40,6 @@ class NeuralNetworkLayer {
 
         double applyActivation(const double x);
         double applyActivationDerivative(const double x);
-        Matrix applySoftmax(const Matrix& x);
-        Matrix applySoftmaxDerivative(const Matrix& softmax_output, const Matrix& grad_output);
 
         Matrix forward(const Matrix& X);
         Matrix backward(const Matrix &grad_output);

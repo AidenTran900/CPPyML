@@ -1,4 +1,5 @@
 #include "neural-network-layer.h"
+#include "softmax.h"
 #include <cmath>
 
 NeuralNetworkLayer::NeuralNetworkLayer(int input_dim, int output_dim, ACTIVATION_FUNC act)
@@ -56,56 +57,6 @@ double NeuralNetworkLayer::applyActivationDerivative(const double x) {
     }
 }
 
-// Softmax Stuff
-Matrix NeuralNetworkLayer::applySoftmax(const Matrix& x) {
-    Matrix result(x.rows(), x.cols());
-
-    double max_val = x(0,0);
-    for (int i = 0; i < x.rows(); i++) {
-        if (x(i,0) > max_val) {
-            max_val = x(i,0);  
-        }
-    }
-
-    // Exponentiation
-    double sum = 0.0;
-    for (int i = 0; i < x.rows(); i++) {
-        result(i, 0) = std::exp(x(i, 0) - max_val);
-        sum += result(i, 0);
-    }
-
-    // Normalization
-    for (int i = 0; i < x.rows(); i++) {
-        result(i, 0) /= sum;
-    }
-
-    return result;
-
-}
-
-Matrix NeuralNetworkLayer::applySoftmaxDerivative(const Matrix& softmax_output, const Matrix& grad_output) {
-    // Jacobian of softmax: dS_i/dx_j = S_i * (delta_ij - S_j)
-    // For backprop: grad_input_i = sum_j(grad_output_j * dS_j/dx_i)
-    //             = sum_j(grad_output_j * S_j * (delta_ji - S_i))
-    //             = S_i * grad_output_i - S_i * sum_j(grad_output_j * S_j)
-    //             = S_i * (grad_output_i - dot(grad_output, S))
-
-    int n = softmax_output.rows();
-    Matrix result(n, 1);
-
-    double dot_product = 0.0;
-    for (int i = 0; i < n; i++) {
-        dot_product += grad_output(i, 0) * softmax_output(i, 0);
-    }
-
-    for (int i = 0; i < n; i++) {
-        result(i, 0) = softmax_output(i, 0) * (grad_output(i, 0) - dot_product);
-    }
-
-    return result;
-}
-
-        
 // Main methods
 Matrix NeuralNetworkLayer::forward(const Matrix &X)
 {
@@ -114,7 +65,7 @@ Matrix NeuralNetworkLayer::forward(const Matrix &X)
 
     Matrix result;
     if (activation == ACTIVATION_FUNC::SOFTMAX) {
-        result = applySoftmax(last_pre_activation);
+        result = Softmax::applyColumn(last_pre_activation);
     } else {
         result = Matrix(last_pre_activation.rows(), last_pre_activation.cols());
         for (int i = 0; i < last_pre_activation.rows(); i++) {
@@ -130,7 +81,7 @@ Matrix NeuralNetworkLayer::backward(const Matrix &grad_output)
 {
     Matrix grad;
     if (activation == ACTIVATION_FUNC::SOFTMAX) {
-        grad = applySoftmaxDerivative(last_output, grad_output);
+        grad = Softmax::derivativeColumn(last_output, grad_output);
     } else {
         Matrix activation_deriv = Matrix(last_pre_activation.rows(), last_pre_activation.cols());
         for (int i = 0; i < last_pre_activation.rows(); i++) {
