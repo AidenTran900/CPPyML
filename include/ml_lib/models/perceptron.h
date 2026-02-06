@@ -17,7 +17,7 @@ class Perceptron : public GradientModel {
         Matrix grad_b;
 
     public:
-        Perceptron(int input_dim, LossFunction* loss, Optimizer* opt, Regularizer* reg);
+        Perceptron(int input_dim, std::unique_ptr<LossFunction> loss, std::unique_ptr<Optimizer> opt, std::unique_ptr<Regularizer> reg);
 
         Matrix forward(const Matrix& X) override;
         void backward(const Matrix& y_true) override;

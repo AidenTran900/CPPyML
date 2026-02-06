@@ -2,8 +2,8 @@
 #include "neural-network-layer.h"
 #include <algorithm>
 
-NeuralNetworkFF::NeuralNetworkFF(int input_dim, LossFunction *loss, Optimizer *opt, Regularizer *reg)
-    : GradientModel(loss, opt, reg)
+NeuralNetworkFF::NeuralNetworkFF(int input_dim, std::unique_ptr<LossFunction> loss, std::unique_ptr<Optimizer> opt, std::unique_ptr<Regularizer> reg)
+    : GradientModel(std::move(loss), std::move(opt), std::move(reg))
 {}
 
 void NeuralNetworkFF::addLayer(int input_dim, int output_dim, ACTIVATION_FUNC act)
