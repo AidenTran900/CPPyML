@@ -1,4 +1,4 @@
-#include "sin-pos-encode.h"
+#include "ml_lib/core/sin-pos-encode.h"
 #include <cmath>
 
 SinPositionalEncoding::SinPositionalEncoding(int features, int max_seq_len)

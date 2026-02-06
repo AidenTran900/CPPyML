@@ -9,7 +9,7 @@ int linearRegTest()
     LinearRegression model(
         2,
         createLoss(LossType::MEAN_SQUARED_ERROR),
-        createOptimizer(OptimizerType::BATCH, 0.01),
+        createOptimizer(OptimizerType::MINI_BATCH, 0.01),
         createRegularizer(RegularizerType::L2, 0.01)
     );
 

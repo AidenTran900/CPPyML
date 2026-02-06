@@ -89,9 +89,12 @@ PYBIND11_MODULE(ml_lib, m) {
         .export_values();
 
     py::enum_<OptimizerType>(m, "OptimizerType")
-        .value("BATCH", OptimizerType::BATCH, "Batch gradient descent")
         .value("STOCHASTIC", OptimizerType::STOCHASTIC, "Stochastic gradient descent")
         .value("MINI_BATCH", OptimizerType::MINI_BATCH, "Mini-batch gradient descent")
+        .value("MOMENTUM", OptimizerType::MOMENTUM, "SGD with momentum")
+        .value("ADAGRAD", OptimizerType::ADAGRAD, "Adaptive gradient algorithm")
+        .value("RMSPROP", OptimizerType::RMSPROP, "Root mean square propagation")
+        .value("ADAM", OptimizerType::ADAM, "Adaptive moment estimation")
         .export_values();
 
     py::enum_<RegularizerType>(m, "RegularizerType")
@@ -218,7 +221,7 @@ PYBIND11_MODULE(ml_lib, m) {
         }),
              py::arg("input_dim"),
              py::arg("loss") = LossType::MEAN_SQUARED_ERROR,
-             py::arg("optimizer") = OptimizerType::BATCH,
+             py::arg("optimizer") = OptimizerType::MINI_BATCH,
              py::arg("learning_rate") = 0.01,
              py::arg("regularizer") = RegularizerType::L2,
              py::arg("lambda_") = 0.01,
@@ -226,7 +229,7 @@ PYBIND11_MODULE(ml_lib, m) {
              "Parameters:\n"
              "  input_dim: Number of input features\n"
              "  loss: Loss type (LossType.MEAN_SQUARED_ERROR, LossType.MEAN_ABSOLUTE_ERROR, etc.)\n"
-             "  optimizer: Optimizer type (OptimizerType.BATCH, etc.)\n"
+             "  optimizer: Optimizer type (OptimizerType.MINI_BATCH, etc.)\n"
              "  learning_rate: Learning rate for optimizer (default=0.01)\n"
              "  regularizer: Regularizer type (RegularizerType.L2, etc.)\n"
              "  lambda_: Regularization strength (default=0.01)")
@@ -249,7 +252,7 @@ PYBIND11_MODULE(ml_lib, m) {
         }),
              py::arg("input_dim"),
              py::arg("loss") = LossType::BINARY_CROSS_ENTROPY,
-             py::arg("optimizer") = OptimizerType::BATCH,
+             py::arg("optimizer") = OptimizerType::MINI_BATCH,
              py::arg("learning_rate") = 0.01,
              py::arg("regularizer") = RegularizerType::L2,
              py::arg("lambda_") = 0.01,

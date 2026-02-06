@@ -15,6 +15,15 @@ set(ML_SOURCES
     ../source/core/optimizer.cpp
     ../source/core/regularizer.cpp
     ../source/core/metrics.cpp
+    ../source/core/neural-network-layer.cpp
+    ../source/core/embedding-layer.cpp
+    ../source/core/layer-norm.cpp
+    ../source/core/rms-norm.cpp
+    ../source/core/attention-layer.cpp
+    ../source/core/sin-pos-encode.cpp
+    ../source/core/rot-pos-encode.cpp
+    ../source/core/masking.cpp
+    ../source/core/transformer-block.cpp
     ../source/models/linear-regression.cpp
     ../source/models/logistic-regression.cpp
     ../source/models/support-vector-machine.cpp
@@ -22,6 +31,10 @@ set(ML_SOURCES
     ../source/models/k-nearest-neighbors.cpp
     ../source/models/descision-tree.cpp
     ../source/models/random-forest.cpp
+    ../source/models/perceptron.cpp
+    ../source/models/neural-network-ff.cpp
+    ../source/models/neural-network-ff-resnet.cpp
+    ../source/models/transformer.cpp
 )
 
 # Create Python module

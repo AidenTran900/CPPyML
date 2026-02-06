@@ -1,4 +1,4 @@
-#include "embedding-layer.h"
+#include "ml_lib/core/embedding-layer.h"
 
 EmbeddingLayer::EmbeddingLayer(int vocab_size, int embedding_dim)
 {
