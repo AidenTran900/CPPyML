@@ -33,4 +33,7 @@ class Transformer : public GradientModel {
         Matrix forward(const std::vector<int>& tokens);
         void backward(const Matrix& y_true) override;
         void update() override;
+
+        std::vector<int> generate(const std::vector<int>& prompt, int max_tokens);
+        void clear_cache();
 };

@@ -9,4 +9,4 @@ class Masking {
         ~Masking();
         Matrix apply(const Matrix& x);
 
-}
+};

@@ -13,4 +13,5 @@ class SinPositionalEncoding {
         SinPositionalEncoding(int features, int max_seq_len);
 
         Matrix forward(const Matrix &input);
+        Matrix forward(const Matrix &input, int position);
 };
