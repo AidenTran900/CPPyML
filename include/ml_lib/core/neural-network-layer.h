@@ -1,3 +1,4 @@
+#pragma once
 #include "../models/perceptron.h"
 
 // y^​=activation(XW+b)

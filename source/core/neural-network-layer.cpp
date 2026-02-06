@@ -1,5 +1,5 @@
-#include "neural-network-layer.h"
-#include "softmax.h"
+#include "ml_lib/core/neural-network-layer.h"
+#include "ml_lib/core/softmax.h"
 #include <cmath>
 
 NeuralNetworkLayer::NeuralNetworkLayer(int input_dim, int output_dim, ACTIVATION_FUNC act)
@@ -57,19 +57,28 @@ double NeuralNetworkLayer::applyActivationDerivative(const double x) {
     }
 }
 
-// Main methods
 Matrix NeuralNetworkLayer::forward(const Matrix &X)
 {
     last_input = X;
-    last_pre_activation = X * weights + bias;
+
+    Matrix linear = X * weights;
+
+    last_pre_activation = Matrix(linear.rows(), linear.cols());
+    for (int i = 0; i < linear.rows(); i++) {
+        for (int j = 0; j < linear.cols(); j++) {
+            last_pre_activation(i, j) = linear(i, j) + bias(j, 0);
+        }
+    }
 
     Matrix result;
     if (activation == ACTIVATION_FUNC::SOFTMAX) {
-        result = Softmax::applyColumn(last_pre_activation);
+        result = Softmax::apply(last_pre_activation);
     } else {
         result = Matrix(last_pre_activation.rows(), last_pre_activation.cols());
         for (int i = 0; i < last_pre_activation.rows(); i++) {
-            result(i, 0) = applyActivation(last_pre_activation(i,0));
+            for (int j = 0; j < last_pre_activation.cols(); j++) {
+                result(i, j) = applyActivation(last_pre_activation(i, j));
+            }
         }
     }
 
@@ -81,17 +90,25 @@ Matrix NeuralNetworkLayer::backward(const Matrix &grad_output)
 {
     Matrix grad;
     if (activation == ACTIVATION_FUNC::SOFTMAX) {
-        grad = Softmax::derivativeColumn(last_output, grad_output);
+        grad = Softmax::derivative(last_output, grad_output);
     } else {
         Matrix activation_deriv = Matrix(last_pre_activation.rows(), last_pre_activation.cols());
         for (int i = 0; i < last_pre_activation.rows(); i++) {
-            activation_deriv(i, 0) = applyActivationDerivative(last_pre_activation(i, 0));
+            for (int j = 0; j < last_pre_activation.cols(); j++) {
+                activation_deriv(i, j) = applyActivationDerivative(last_pre_activation(i, j));
+            }
         }
         grad = grad_output.hadamard(activation_deriv);
     }
 
     grad_w = last_input.transpose() * grad;
-    grad_b = grad;
+
+    grad_b = Matrix(grad.cols(), 1, 0.0);
+    for (int i = 0; i < grad.rows(); i++) {
+        for (int j = 0; j < grad.cols(); j++) {
+            grad_b(j, 0) += grad(i, j);
+        }
+    }
 
     Matrix grad_input = grad * weights.transpose();
 
