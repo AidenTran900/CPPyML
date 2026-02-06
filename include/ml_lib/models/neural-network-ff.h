@@ -3,7 +3,7 @@
 #include "gradient-model.h"
 #include "../core/neural-network-layer.h"
 
-class NeuralNetwork : public GradientModel {
+class NeuralNetworkFF : public GradientModel {
     private:
         std::vector<NeuralNetworkLayer> layers;
 
@@ -11,7 +11,7 @@ class NeuralNetwork : public GradientModel {
         Matrix last_output;
 
     public:
-        NeuralNetwork(int input_dim, LossFunction* loss, Optimizer* opt, Regularizer* reg);
+        NeuralNetworkFF(int input_dim, LossFunction* loss, Optimizer* opt, Regularizer* reg);
 
         void addLayer(int input_dim, int output_dim, ACTIVATION_FUNC act);
 
