@@ -1,8 +1,8 @@
 #include "ml_lib/models/perceptron.h"
 #include <cmath>
 
-Perceptron::Perceptron(int input_dim, LossFunction* loss, Optimizer* opt, Regularizer* reg)
-    : GradientModel(loss, opt, reg), weights(input_dim, 1, 0.01), bias(1, 1, 0.0),
+Perceptron::Perceptron(int input_dim, std::unique_ptr<LossFunction> loss, std::unique_ptr<Optimizer> opt, std::unique_ptr<Regularizer> reg)
+    : GradientModel(std::move(loss), std::move(opt), std::move(reg)), weights(input_dim, 1, 0.01), bias(1, 1, 0.0),
       grad_w(input_dim, 1, 0.0), grad_b(1, 1, 0.0) {}
 
 Matrix Perceptron::forward(const Matrix &X)
