@@ -31,6 +31,25 @@ Matrix TransformerBlock::forward(const Matrix& input)
     return output;
 }
 
+Matrix TransformerBlock::forward_cached(const Matrix& input)
+{
+    Matrix attn_out = attention.forward_cached(input);
+
+    Matrix residual1 = input + attn_out;
+    Matrix normed1 = norm1.forward(residual1);
+
+    Matrix ff_out = ff2.forward(ff1.forward(normed1));
+    Matrix residual2 = normed1 + ff_out;
+    Matrix output = norm2.forward(residual2);
+
+    return output;
+}
+
+void TransformerBlock::clear_cache()
+{
+    attention.clear_cache();
+}
+
 Matrix TransformerBlock::backward(const Matrix& grad_output)
 {
     Matrix grad_norm2 = norm2.backward(grad_output);

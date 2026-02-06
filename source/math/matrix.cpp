@@ -402,6 +402,26 @@ Matrix Matrix::transpose() const {
     return result;
 }
 
+Matrix Matrix::verticalConcat(const Matrix& other) const {
+    if (empty()) return other;
+    if (other.empty()) return *this;
+    if (m_cols != other.m_cols) {
+        throw std::invalid_argument("Column count must match for vertical concatenation.");
+    }
+    Matrix result(m_rows + other.m_rows, m_cols);
+    for (int i = 0; i < m_rows; i++) {
+        for (int j = 0; j < m_cols; j++) {
+            result(i, j) = (*this)(i, j);
+        }
+    }
+    for (int i = 0; i < other.m_rows; i++) {
+        for (int j = 0; j < m_cols; j++) {
+            result(m_rows + i, j) = other(i, j);
+        }
+    }
+    return result;
+}
+
 double Matrix::determinant() const {
     if (empty()) {
         return 0.0;

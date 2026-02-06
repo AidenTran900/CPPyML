@@ -1,4 +1,5 @@
 #include "ml_lib/core/attention-layer.h"
+#include "ml_lib/core/masking.h"
 #include "softmax.h"
 #include <cmath>
 #include <stdexcept>
@@ -76,6 +77,11 @@ Matrix AttentionLayer::forward(const Matrix& input)
             }
         }
 
+        // casual masking
+        Masking causal_mask(seq_len, seq_len);
+        scores = causal_mask.apply(scores);
+
+        // apply softmax
         Matrix attn_weights = Softmax::apply(scores);
         attention_weights_cache[h] = attn_weights;
 
@@ -89,6 +95,67 @@ Matrix AttentionLayer::forward(const Matrix& input)
     }
 
     return output * W_o;
+}
+
+Matrix AttentionLayer::forward_cached(const Matrix& input)
+{
+    Matrix Q_new = input * W_q;
+    Matrix K_new = input * W_k;
+    Matrix V_new = input * W_v;
+
+    // append to KV cache
+    if (kv_K_cache.empty()) {
+        kv_K_cache = K_new;
+        kv_V_cache = V_new;
+    } else {
+        kv_K_cache = kv_K_cache.verticalConcat(K_new);
+        kv_V_cache = kv_V_cache.verticalConcat(V_new);
+    }
+
+    int cached_len = kv_K_cache.rows();
+    double scale = 1.0 / std::sqrt((double)head_dim);
+
+    Matrix output(1, embed_dim);
+
+    for (int h = 0; h < num_heads; h++) {
+        int head_start = h * head_dim;
+
+        Matrix Q_h(1, head_dim);
+        Matrix K_h(cached_len, head_dim);
+        Matrix V_h(cached_len, head_dim);
+
+        for (int j = 0; j < head_dim; j++) {
+            Q_h(0, j) = Q_new(0, head_start + j);
+        }
+        for (int i = 0; i < cached_len; i++) {
+            for (int j = 0; j < head_dim; j++) {
+                K_h(i, j) = kv_K_cache(i, head_start + j);
+                V_h(i, j) = kv_V_cache(i, head_start + j);
+            }
+        }
+
+        // scores
+        Matrix scores = Q_h * K_h.transpose();
+        for (int j = 0; j < cached_len; j++) {
+            scores(0, j) *= scale;
+        }
+
+        // apply softmax
+        Matrix attn_weights = Softmax::apply(scores);
+        Matrix head_output = attn_weights * V_h;
+
+        for (int j = 0; j < head_dim; j++) {
+            output(0, head_start + j) = head_output(0, j);
+        }
+    }
+
+    return output * W_o;
+}
+
+void AttentionLayer::clear_cache()
+{
+    kv_K_cache = Matrix();
+    kv_V_cache = Matrix();
 }
 
 Matrix AttentionLayer::backward(const Matrix& grad_output)

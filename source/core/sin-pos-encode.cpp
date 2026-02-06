@@ -33,3 +33,13 @@ Matrix SinPositionalEncoding::forward(const Matrix &input)
     return output;
 }
 
+Matrix SinPositionalEncoding::forward(const Matrix &input, int position)
+{
+    Matrix output(input.rows(), input.cols());
+
+    for (int j = 0; j < input.cols(); j++) {
+        output(0, j) = input(0, j) + pe_matrix(position, j);
+    }
+    return output;
+}
+

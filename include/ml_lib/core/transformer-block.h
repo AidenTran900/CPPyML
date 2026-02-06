@@ -20,6 +20,8 @@ class TransformerBlock {
         TransformerBlock(int embed_dim, int num_heads, int ff_dim);
 
         Matrix forward(const Matrix& input);
+        Matrix forward_cached(const Matrix& input);
+        void clear_cache();
         Matrix backward(const Matrix& grad_output);
         void update(Optimizer* opt);
 };

@@ -65,3 +65,60 @@ void Transformer::update()
     }
     output_projection.update(optimizer.get());
 }
+
+std::vector<int> Transformer::generate(const std::vector<int>& prompt, int max_tokens)
+{
+    clear_cache();
+
+    std::vector<int> output = prompt;
+    Matrix x;
+
+    // prefill tokens to build up the KV cache
+    for (int i = 0; i < (int)prompt.size(); i++) {
+        Matrix embedded = embedding.forward({prompt[i]});
+        x = pos_encoding.forward(embedded, i);
+
+        for (auto& block : blocks) {
+            x = block->forward_cached(x);
+        }
+    }
+
+    // get first predicted token from last prefill
+    Matrix logits = output_projection.forward(x);
+    int pos = prompt.size();
+
+    for (int t = 0; t < max_tokens; t++) {
+        // pick token with highest logit
+        int best_token = 0;
+        double best_val = logits(0, 0);
+        for (int v = 1; v < vocab_size; v++) {
+            if (logits(0, v) > best_val) {
+                best_val = logits(0, v);
+                best_token = v;
+            }
+        }
+
+        output.push_back(best_token);
+        pos++;
+
+        if (pos >= max_seq_len) break;
+        if (t == max_tokens - 1) break;
+
+        // process new token through cache
+        Matrix embedded = embedding.forward({best_token});
+        x = pos_encoding.forward(embedded, pos - 1);
+        for (auto& block : blocks) {
+            x = block->forward_cached(x);
+        }
+        logits = output_projection.forward(x);
+    }
+
+    return output;
+}
+
+void Transformer::clear_cache()
+{
+    for (auto& block : blocks) {
+        block->clear_cache();
+    }
+}

@@ -29,10 +29,16 @@ class AttentionLayer {
         Matrix V_cache;
         std::vector<Matrix> attention_weights_cache;
 
+        // KV cache for inference
+        Matrix kv_K_cache;
+        Matrix kv_V_cache;
+
     public:
         AttentionLayer(int embed_dim, int num_heads);
 
         Matrix forward(const Matrix& input);
+        Matrix forward_cached(const Matrix& input);
+        void clear_cache();
         Matrix backward(const Matrix& grad_output);
         void update(Optimizer* opt);
 };
