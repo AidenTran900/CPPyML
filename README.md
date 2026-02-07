@@ -1,6 +1,6 @@
 # ML Models
 
-A C++ machine learning library built from the ground up. Implementing various ML algorithms and models using fundamental linear algebra and optimization techniques.
+A C++ machine learning library built from the ground up implementing various ML algorithms and models.
 
 ## Features
 
