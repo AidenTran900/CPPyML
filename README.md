@@ -203,7 +203,3 @@ Run the examples:
 ### DL Architectures [ ]
 - [ ] **Convolutional Neural Networks (CNNs)** (For images)
 - [ ] **Recurrent Neural Networks (RNNs)** (For sequences)
-
-## License
-
-This project is available for educational purposes.
