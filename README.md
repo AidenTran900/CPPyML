@@ -13,10 +13,12 @@ A C++ machine learning library built from the ground up. Implementing various ML
 - **Random Forests** with bootstrap aggregation
 - **K-Means Clustering** for unsupervised learning
 - **Neural Networks** with backpropagation and configurable layers
+- **Residual Networks (ResNet)** with skip connections
+- **Transformer** with multi-head self-attention, KV cache, and autoregressive generation
 - **Perceptron** for binary classification
 
 ### Core Components
-- **Matrix Operations**: Addition, multiplication, transpose, inverse, Hadamard product, determinant
+- **Matrix Operations**: Addition, multiplication, transpose, inverse, Hadamard product, determinant — templated for `float` and `double` (`Matrix<float>` / `Matrix<double>`)
 - **Activation Functions**: ReLU, Sigmoid, Tanh, Linear, Softplus, Softmax, Step, Sign
 - **Loss Functions**: MSE, MAE, RMSE, Binary Cross-Entropy, Categorical Cross-Entropy
 - **Optimizers**: SGD, Mini-Batch GD, Momentum, AdaGrad, RMSProp, Adam
@@ -26,12 +28,21 @@ A C++ machine learning library built from the ground up. Implementing various ML
   - Regression: R², Adjusted R², MSE, MAE, RMSE
   - Classification: Accuracy, Precision, Recall, F1 Score, Confusion Matrix, ROC Curve, AUC
 
-### NLP Components
+### NLP / Transformer Components
 - **Tokenizer**: Word, Character, BPE (Byte Pair Encoding), and Sentence tokenization
 - **Embedding Layer**: Trainable word embeddings
+- **Multi-Head Attention**: Scaled dot-product attention with KV cache for efficient inference
+- **Positional Encoding**: Sinusoidal and Rotary (RoPE)
+- **Transformer Blocks**: Pre-norm architecture with residual connections
+
+### Precision Support
+All core classes are templated on scalar type (`template<typename T = double>`), enabling both `float` (f32) and `double` (f64) precision:
+- `Matrix<float>` / `MatrixF32` for memory-efficient inference
+- `Matrix<double>` / `MatrixF64` for training precision (default)
+- Classical ML models default to `double`; the transformer stack supports both
 
 ### Language Bindings
-- **Python bindings** via pybind11 with NumPy array support
+- **Python bindings** via pybind11 with NumPy array support (both `float32` and `float64`)
 
 ## Prerequisites
 
@@ -96,6 +107,7 @@ LinearModel/
 ├── examples/
 │   ├── c++/               # C++ examples
 │   │   └── linear-regression/housing/
+│   ├── logistic-regression/ # Heart disease classification example
 │   ├── python/            # Python examples
 │   └── datasets/          # Example datasets
 ├── python/                # Python bindings (pybind11)
@@ -174,12 +186,19 @@ Run the examples:
 - [x] **RMS Normalization**
 - [ ] **Dropout Regularization**
 
-### NLP [In Progress]
+### NLP / Transformers [In Progress]
 - [x] **Tokenizer:** Word, Character, BPE, Sentence
 - [x] **Embedding Layer**
-- [ ] **Attention Mechanisms**
-- [ ] **Transformers**
-- [ ] **Language Models (Basic LLM architecture)**
+- [x] **Attention Mechanisms:** Multi-head self-attention with KV cache
+- [x] **Positional Encoding:** Sinusoidal, Rotary (RoPE)
+- [x] **Transformer Blocks:** Pre-norm with residual connections
+- [x] **Transformer Model:** Autoregressive generation with token sampling
+- [ ] **Language Models (Basic LLM architecture / GGUF loading)**
+
+### Precision [ ]
+- [x] **f64 (double):** Default precision for all operations
+- [x] **f32 (float):** Template support across the full stack
+- [ ] **f16 / Quantization:** For efficient model loading
 
 ### DL Architectures [ ]
 - [ ] **Convolutional Neural Networks (CNNs)** (For images)
