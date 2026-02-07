@@ -15,7 +15,7 @@ RandomForest::~RandomForest() {
     trees.clear();
 }
 
-void RandomForest::fit(const Matrix &X, const Matrix &Y)
+void RandomForest::fit(const Matrix<> &X, const Matrix<> &Y)
 {
     int m = X.rows();
     int n = X.cols();
@@ -27,8 +27,8 @@ void RandomForest::fit(const Matrix &X, const Matrix &Y)
     int max_features = std::max(1, (int)std::sqrt(n));
 
     for (int t = 0; t < n_estimators; t++) {
-        Matrix X_B(m, n);
-        Matrix Y_B(m, 1);
+        Matrix<> X_B(m, n);
+        Matrix<> Y_B(m, 1);
 
         for (int i = 0; i < m; i++) {
             int random_idx = row_dis(gen);
@@ -52,10 +52,10 @@ void RandomForest::fit(const Matrix &X, const Matrix &Y)
     }
 }
 
-Matrix RandomForest::predict(const Matrix &X)
+Matrix<> RandomForest::predict(const Matrix<> &X)
 {
     int m = X.rows();
-    Matrix predictions = Matrix(m, 1, 0);
+    Matrix<> predictions = Matrix<>(m, 1, 0);
 
     for (DescisionTree* tree : trees) {
         predictions = predictions + tree->predict(X);

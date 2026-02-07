@@ -2,79 +2,83 @@
 #include "ml_lib/core/softmax.h"
 #include <cmath>
 
-NeuralNetworkLayer::NeuralNetworkLayer(int input_dim, int output_dim, ACTIVATION_FUNC act)
+template<typename T>
+NeuralNetworkLayer<T>::NeuralNetworkLayer(int input_dim, int output_dim, ACTIVATION_FUNC act)
 {
-    weights = Matrix(input_dim, output_dim);
-    bias = Matrix(output_dim, 1);
-    grad_w = Matrix(input_dim, output_dim);
-    grad_b = Matrix(output_dim, 1);
+    weights = Matrix<T>(input_dim, output_dim);
+    bias = Matrix<T>(output_dim, 1);
+    grad_w = Matrix<T>(input_dim, output_dim);
+    grad_b = Matrix<T>(output_dim, 1);
     activation = act;
 }
 
-double NeuralNetworkLayer::applyActivation(const double x) {
+template<typename T>
+T NeuralNetworkLayer<T>::applyActivation(T x) {
     switch (activation) {
         case (ACTIVATION_FUNC::LINEAR):
             return x;
         case (ACTIVATION_FUNC::RELU):
-            return std::max(0.0, x);
+            return std::max(static_cast<T>(0.0), x);
         case (ACTIVATION_FUNC::SIGMOID):
-            return 1 / (1 + pow(exp(1.0), -x) );
+            return static_cast<T>(1.0) / (static_cast<T>(1.0) + pow(exp(static_cast<T>(1.0)), -x) );
         case (ACTIVATION_FUNC::SOFTMAX):
             return x;
         case (ACTIVATION_FUNC::SIGN):
-            return (x > 0)? 1 : -1;
+            return (x > static_cast<T>(0.0))? static_cast<T>(1.0) : static_cast<T>(-1.0);
         case (ACTIVATION_FUNC::SOFTPLUS):
-            return log(1 + pow(exp(1.0), x) );
+            return log(static_cast<T>(1.0) + pow(exp(static_cast<T>(1.0)), x) );
         case (ACTIVATION_FUNC::STEP):
-            return (x > 0)? 1 : 0;
+            return (x > static_cast<T>(0.0))? static_cast<T>(1.0) : static_cast<T>(0.0);
         case (ACTIVATION_FUNC::TANH):
-            return (2 / (1 + pow(exp(1.0), -2*x) )) - 1;
+            return (static_cast<T>(2.0) / (static_cast<T>(1.0) + pow(exp(static_cast<T>(1.0)), static_cast<T>(-2.0)*x) )) - static_cast<T>(1.0);
     }
 }
 
-double NeuralNetworkLayer::applyActivationDerivative(const double x) {
+template<typename T>
+T NeuralNetworkLayer<T>::applyActivationDerivative(T x) {
     switch (activation) {
         case (ACTIVATION_FUNC::LINEAR):
-            return 1.0;
+            return static_cast<T>(1.0);
         case (ACTIVATION_FUNC::RELU):
-            return (x > 0) ? 1.0 : 0.0;
+            return (x > static_cast<T>(0.0)) ? static_cast<T>(1.0) : static_cast<T>(0.0);
         case (ACTIVATION_FUNC::SIGMOID): {
-            double sig = 1.0 / (1.0 + pow(exp(1.0), -x));
-            return sig * (1.0 - sig);
+            T sig = static_cast<T>(1.0) / (static_cast<T>(1.0) + pow(exp(static_cast<T>(1.0)), -x));
+            return sig * (static_cast<T>(1.0) - sig);
         }
         case (ACTIVATION_FUNC::SIGN):
-            return 0.0;
+            return static_cast<T>(0.0);
         case (ACTIVATION_FUNC::SOFTPLUS):
-            return 1.0 / (1.0 + pow(exp(1.0), -x));
+            return static_cast<T>(1.0) / (static_cast<T>(1.0) + pow(exp(static_cast<T>(1.0)), -x));
         case (ACTIVATION_FUNC::STEP):
-            return 0.0;
+            return static_cast<T>(0.0);
         case (ACTIVATION_FUNC::TANH): {
-            double tanh_x = (2.0 / (1.0 + pow(exp(1.0), -2*x))) - 1.0;
-            return 1.0 - tanh_x * tanh_x;
+            T tanh_x = (static_cast<T>(2.0) / (static_cast<T>(1.0) + pow(exp(static_cast<T>(1.0)), static_cast<T>(-2.0)*x))) - static_cast<T>(1.0);
+            return static_cast<T>(1.0) - tanh_x * tanh_x;
         }
         case (ACTIVATION_FUNC::SOFTMAX):
-            return 1.0;
+            return static_cast<T>(1.0);
     }
 }
 
-Matrix NeuralNetworkLayer::forward(const Matrix &X)
+template<typename T>
+Matrix<T> NeuralNetworkLayer<T>::forward(const Matrix<T> &X)
 {
     last_input = X;
 
-    Matrix linear = X * weights;
+    Matrix<T> linear = X * weights;
 
-    last_pre_activation = Matrix(linear.rows(), linear.cols());
+    last_pre_activation = Matrix<T>(linear.rows(), linear.cols());
     for (int i = 0; i < linear.rows(); i++) {
         for (int j = 0; j < linear.cols(); j++) {
             last_pre_activation(i, j) = linear(i, j) + bias(j, 0);
         }
     }
 
-    Matrix result;
+    Matrix<T> result;
     if (activation == ACTIVATION_FUNC::SOFTMAX) {
-        result = Softmax::apply(last_pre_activation);
+        result = Softmax::apply<T>(last_pre_activation);
     } else {
-        result = Matrix(last_pre_activation.rows(), last_pre_activation.cols());
+        result = Matrix<T>(last_pre_activation.rows(), last_pre_activation.cols());
         for (int i = 0; i < last_pre_activation.rows(); i++) {
             for (int j = 0; j < last_pre_activation.cols(); j++) {
                 result(i, j) = applyActivation(last_pre_activation(i, j));
@@ -86,13 +90,14 @@ Matrix NeuralNetworkLayer::forward(const Matrix &X)
     return result;
 }
 
-Matrix NeuralNetworkLayer::backward(const Matrix &grad_output)
+template<typename T>
+Matrix<T> NeuralNetworkLayer<T>::backward(const Matrix<T> &grad_output)
 {
-    Matrix grad;
+    Matrix<T> grad;
     if (activation == ACTIVATION_FUNC::SOFTMAX) {
-        grad = Softmax::derivative(last_output, grad_output);
+        grad = Softmax::derivative<T>(last_output, grad_output);
     } else {
-        Matrix activation_deriv = Matrix(last_pre_activation.rows(), last_pre_activation.cols());
+        Matrix<T> activation_deriv = Matrix<T>(last_pre_activation.rows(), last_pre_activation.cols());
         for (int i = 0; i < last_pre_activation.rows(); i++) {
             for (int j = 0; j < last_pre_activation.cols(); j++) {
                 activation_deriv(i, j) = applyActivationDerivative(last_pre_activation(i, j));
@@ -103,20 +108,24 @@ Matrix NeuralNetworkLayer::backward(const Matrix &grad_output)
 
     grad_w = last_input.transpose() * grad;
 
-    grad_b = Matrix(grad.cols(), 1, 0.0);
+    grad_b = Matrix<T>(grad.cols(), 1, 0.0);
     for (int i = 0; i < grad.rows(); i++) {
         for (int j = 0; j < grad.cols(); j++) {
             grad_b(j, 0) += grad(i, j);
         }
     }
 
-    Matrix grad_input = grad * weights.transpose();
+    Matrix<T> grad_input = grad * weights.transpose();
 
     return grad_input;
 }
 
-void NeuralNetworkLayer::update(Optimizer *opt)
+template<typename T>
+void NeuralNetworkLayer<T>::update(Optimizer<T> *opt)
 {
     opt->step(weights, grad_w);
     opt->step(bias, grad_b);
 }
+
+template class NeuralNetworkLayer<float>;
+template class NeuralNetworkLayer<double>;

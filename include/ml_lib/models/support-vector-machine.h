@@ -22,15 +22,15 @@ class SupportVectorMachine : public FitPredictModel {
         double coef0;
         double bias;
 
-        Matrix support_vectors;
-        Matrix support_labels;
+        Matrix<> support_vectors;
+        Matrix<> support_labels;
         std::vector<double> support_alphas;
 
-        double kernel(const Matrix& X1, const Matrix& X2);
-        double decision(const Matrix& X);
-        double decisionCached(int idx, const Matrix& K_cache, const std::vector<double>& alphas, const Matrix& Y_train);
-        int examineExample(int I2, const Matrix& X_train, const Matrix& Y_train, Matrix& K_cache, std::vector<double>& alphas, std::vector<double>& errors);
-        int takeStep(int I1, int I2, const Matrix& X_train, const Matrix& Y_train, const Matrix& K_cache, std::vector<double>& alphas, std::vector<double>& errors);
+        double kernel(const Matrix<>& X1, const Matrix<>& X2);
+        double decision(const Matrix<>& X);
+        double decisionCached(int idx, const Matrix<>& K_cache, const std::vector<double>& alphas, const Matrix<>& Y_train);
+        int examineExample(int I2, const Matrix<>& X_train, const Matrix<>& Y_train, Matrix<>& K_cache, std::vector<double>& alphas, std::vector<double>& errors);
+        int takeStep(int I1, int I2, const Matrix<>& X_train, const Matrix<>& Y_train, const Matrix<>& K_cache, std::vector<double>& alphas, std::vector<double>& errors);
 
     public:
         SupportVectorMachine(
@@ -43,6 +43,6 @@ class SupportVectorMachine : public FitPredictModel {
             double coef0 = 0.0
         );
 
-        void fit(const Matrix& X, const Matrix& y) override;
-        Matrix predict(const Matrix& X) override;
+        void fit(const Matrix<>& X, const Matrix<>& y) override;
+        Matrix<> predict(const Matrix<>& X) override;
 };

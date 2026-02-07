@@ -2,21 +2,23 @@
 #include <limits>
 #include <cassert>
 
-Masking::Masking(int dim, int tokens)
+template<typename T>
+Masking<T>::Masking(int dim, int tokens)
 {
-    mask = Matrix(dim, tokens);
+    mask = Matrix<T>(dim, tokens);
     for (int i = 0; i < dim; i++) {
         for (int j = 0; j < tokens; j++) {
-            mask(i, j) = (j <= i) ? 0.0 : -std::numeric_limits<double>::infinity();
+            mask(i, j) = (j <= i) ? static_cast<T>(0.0) : -std::numeric_limits<T>::infinity();
         }
     }
 }
 
-Matrix Masking::apply(const Matrix& x)
+template<typename T>
+Matrix<T> Masking<T>::apply(const Matrix<T>& x)
 {
     assert(x.rows() == mask.rows() && x.cols() == mask.cols());
 
-    Matrix result = x;
+    Matrix<T> result = x;
     int rows = x.rows();
     int cols = x.cols();
 
@@ -28,4 +30,8 @@ Matrix Masking::apply(const Matrix& x)
     return result;
 }
 
-Masking::~Masking(){}
+template<typename T>
+Masking<T>::~Masking(){}
+
+template class Masking<float>;
+template class Masking<double>;

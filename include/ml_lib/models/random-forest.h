@@ -16,6 +16,6 @@ class RandomForest : public FitPredictModel {
         RandomForest();
         ~RandomForest();
 
-        void fit(const Matrix& X, const Matrix& y) override;
-        Matrix predict(const Matrix& X) override;
+        void fit(const Matrix<>& X, const Matrix<>& y) override;
+        Matrix<> predict(const Matrix<>& X) override;
 };

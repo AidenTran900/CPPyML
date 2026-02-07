@@ -44,7 +44,7 @@ std::vector<int> KNearestNeighbors::findKNearest(const std::vector<double> &test
     int nearest_ind[k];
     std::vector<double> neighbor_dist = std::vector<double>(k, -1.0);
     std::vector<int> neighbor_ind = std::vector<int>(k, -1);
-    
+
     for (size_t i = 0; i < X_rows; i++) {
         std::vector<double> row_vec = this->X_train.getRowVector(i);
         double dist = calculateDistance(row_vec, test_point);
@@ -60,16 +60,16 @@ std::vector<int> KNearestNeighbors::findKNearest(const std::vector<double> &test
 }
 
 
-void KNearestNeighbors::fit(const Matrix &X, const Matrix &y)
+void KNearestNeighbors::fit(const Matrix<> &X, const Matrix<> &y)
 {
     X_train = X;
     y_train = y;
 }
 
-Matrix KNearestNeighbors::predict(const Matrix &X)
+Matrix<> KNearestNeighbors::predict(const Matrix<> &X)
 {
     int n_samples = X.rows();
-    Matrix predictions(n_samples, 1);
+    Matrix<> predictions(n_samples, 1);
 
     for (int i = 0; i < n_samples; i++) {
         std::vector<double> test_point = X.getRowVector(i);

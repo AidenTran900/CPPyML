@@ -5,23 +5,24 @@
 #include "neural-network-layer.h"
 #include "optimizer.h"
 
+template<typename T = double>
 class TransformerBlock {
     private:
-        AttentionLayer attention;
-        LayerNorm norm1;
-        LayerNorm norm2;
-        NeuralNetworkLayer ff1;
-        NeuralNetworkLayer ff2;
+        AttentionLayer<T> attention;
+        LayerNorm<T> norm1;
+        LayerNorm<T> norm2;
+        NeuralNetworkLayer<T> ff1;
+        NeuralNetworkLayer<T> ff2;
 
-        Matrix attention_input_cache;
-        Matrix ff_input_cache;
+        Matrix<T> attention_input_cache;
+        Matrix<T> ff_input_cache;
 
     public:
         TransformerBlock(int embed_dim, int num_heads, int ff_dim);
 
-        Matrix forward(const Matrix& input);
-        Matrix forward_cached(const Matrix& input);
+        Matrix<T> forward(const Matrix<T>& input);
+        Matrix<T> forward_cached(const Matrix<T>& input);
         void clear_cache();
-        Matrix backward(const Matrix& grad_output);
-        void update(Optimizer* opt);
+        Matrix<T> backward(const Matrix<T>& grad_output);
+        void update(Optimizer<T>* opt);
 };

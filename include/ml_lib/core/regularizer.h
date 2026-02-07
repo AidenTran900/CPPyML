@@ -8,37 +8,42 @@ enum class RegularizerType {
     L2
 };
 
+template<typename T = double>
 class Regularizer {
     protected:
         double lambda;
     public:
-        virtual double compute(const Matrix& weights) const = 0;
-        virtual Matrix gradient(const Matrix& weights) const = 0;
+        virtual double compute(const Matrix<T>& weights) const = 0;
+        virtual Matrix<T> gradient(const Matrix<T>& weights) const = 0;
 
         Regularizer(double l) : lambda(l) {}
 
         virtual ~Regularizer() {}
 };
 
-class L1Regularizer : public Regularizer {
+template<typename T = double>
+class L1Regularizer : public Regularizer<T> {
     public:
-        L1Regularizer(double l) : Regularizer(l) {}
-        double compute(const Matrix& weights) const override;
-        Matrix gradient(const Matrix& weights) const override;
+        L1Regularizer(double l) : Regularizer<T>(l) {}
+        double compute(const Matrix<T>& weights) const override;
+        Matrix<T> gradient(const Matrix<T>& weights) const override;
 };
 
-class L2Regularizer : public Regularizer {
+template<typename T = double>
+class L2Regularizer : public Regularizer<T> {
     public:
-        L2Regularizer(double l) : Regularizer(l) {}
-        double compute(const Matrix& weights) const override;
-        Matrix gradient(const Matrix& weights) const override;
+        L2Regularizer(double l) : Regularizer<T>(l) {}
+        double compute(const Matrix<T>& weights) const override;
+        Matrix<T> gradient(const Matrix<T>& weights) const override;
 };
 
-class NoRegularizer : public Regularizer {
+template<typename T = double>
+class NoRegularizer : public Regularizer<T> {
     public:
-        NoRegularizer() : Regularizer(0.0) {}
-        double compute(const Matrix&) const override;
-        Matrix gradient(const Matrix& weights) const override;
+        NoRegularizer() : Regularizer<T>(0.0) {}
+        double compute(const Matrix<T>&) const override;
+        Matrix<T> gradient(const Matrix<T>& weights) const override;
 };
 
-std::unique_ptr<Regularizer> createRegularizer(RegularizerType type, double lambda);
+template<typename T = double>
+std::unique_ptr<Regularizer<T>> createRegularizer(RegularizerType type, double lambda);

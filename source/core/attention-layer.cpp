@@ -4,7 +4,8 @@
 #include <cmath>
 #include <stdexcept>
 
-AttentionLayer::AttentionLayer(int embed_dim, int num_heads)
+template<typename T>
+AttentionLayer<T>::AttentionLayer(int embed_dim, int num_heads)
 {
     if (embed_dim % num_heads != 0) {
         throw std::invalid_argument("embed_dim must be divisible by num_heads");
@@ -14,50 +15,51 @@ AttentionLayer::AttentionLayer(int embed_dim, int num_heads)
     this->num_heads = num_heads;
     this->head_dim = embed_dim / num_heads;
 
-    W_q = Matrix(embed_dim, embed_dim);
-    W_k = Matrix(embed_dim, embed_dim);
-    W_v = Matrix(embed_dim, embed_dim);
-    W_o = Matrix(embed_dim, embed_dim);
+    W_q = Matrix<T>(embed_dim, embed_dim);
+    W_k = Matrix<T>(embed_dim, embed_dim);
+    W_v = Matrix<T>(embed_dim, embed_dim);
+    W_o = Matrix<T>(embed_dim, embed_dim);
 
-    grad_W_q = Matrix(embed_dim, embed_dim);
-    grad_W_k = Matrix(embed_dim, embed_dim);
-    grad_W_v = Matrix(embed_dim, embed_dim);
-    grad_W_o = Matrix(embed_dim, embed_dim);
+    grad_W_q = Matrix<T>(embed_dim, embed_dim);
+    grad_W_k = Matrix<T>(embed_dim, embed_dim);
+    grad_W_v = Matrix<T>(embed_dim, embed_dim);
+    grad_W_o = Matrix<T>(embed_dim, embed_dim);
 
     double scale = std::sqrt(2.0 / (embed_dim + embed_dim));
     for (int i = 0; i < embed_dim; i++) {
         for (int j = 0; j < embed_dim; j++) {
-            W_q(i, j) = ((double)rand() / RAND_MAX * 2 - 1) * scale;
-            W_k(i, j) = ((double)rand() / RAND_MAX * 2 - 1) * scale;
-            W_v(i, j) = ((double)rand() / RAND_MAX * 2 - 1) * scale;
-            W_o(i, j) = ((double)rand() / RAND_MAX * 2 - 1) * scale;
+            W_q(i, j) = static_cast<T>(((double)rand() / RAND_MAX * 2 - 1) * scale);
+            W_k(i, j) = static_cast<T>(((double)rand() / RAND_MAX * 2 - 1) * scale);
+            W_v(i, j) = static_cast<T>(((double)rand() / RAND_MAX * 2 - 1) * scale);
+            W_o(i, j) = static_cast<T>(((double)rand() / RAND_MAX * 2 - 1) * scale);
         }
     }
 }
 
-Matrix AttentionLayer::forward(const Matrix& input)
+template<typename T>
+Matrix<T> AttentionLayer<T>::forward(const Matrix<T>& input)
 {
     int seq_len = input.rows();
 
     input_cache = input;
 
-    Q_cache = input * W_q; 
+    Q_cache = input * W_q;
     K_cache = input * W_k;
     V_cache = input * W_v;
 
     // multi-head attention
-    Matrix output(seq_len, embed_dim);
+    Matrix<T> output(seq_len, embed_dim);
     attention_weights_cache.clear();
     attention_weights_cache.resize(num_heads);
 
-    double scale = 1.0 / std::sqrt((double)head_dim);
+    T scale = static_cast<T>(1.0) / static_cast<T>(std::sqrt((double)head_dim));
 
     for (int h = 0; h < num_heads; h++) {
         int head_start = h * head_dim;
 
-        Matrix Q_h(seq_len, head_dim);
-        Matrix K_h(seq_len, head_dim);
-        Matrix V_h(seq_len, head_dim);
+        Matrix<T> Q_h(seq_len, head_dim);
+        Matrix<T> K_h(seq_len, head_dim);
+        Matrix<T> V_h(seq_len, head_dim);
 
         for (int i = 0; i < seq_len; i++) {
             for (int j = 0; j < head_dim; j++) {
@@ -68,8 +70,8 @@ Matrix AttentionLayer::forward(const Matrix& input)
         }
 
         // compute attention scores
-        Matrix K_h_T = K_h.transpose();
-        Matrix scores = Q_h * K_h_T;
+        Matrix<T> K_h_T = K_h.transpose();
+        Matrix<T> scores = Q_h * K_h_T;
 
         for (int i = 0; i < seq_len; i++) {
             for (int j = 0; j < seq_len; j++) {
@@ -78,14 +80,14 @@ Matrix AttentionLayer::forward(const Matrix& input)
         }
 
         // casual masking
-        Masking causal_mask(seq_len, seq_len);
+        Masking<T> causal_mask(seq_len, seq_len);
         scores = causal_mask.apply(scores);
 
         // apply softmax
-        Matrix attn_weights = Softmax::apply(scores);
+        Matrix<T> attn_weights = Softmax::apply<T>(scores);
         attention_weights_cache[h] = attn_weights;
 
-        Matrix head_output = attn_weights * V_h;
+        Matrix<T> head_output = attn_weights * V_h;
 
         for (int i = 0; i < seq_len; i++) {
             for (int j = 0; j < head_dim; j++) {
@@ -97,11 +99,12 @@ Matrix AttentionLayer::forward(const Matrix& input)
     return output * W_o;
 }
 
-Matrix AttentionLayer::forward_cached(const Matrix& input)
+template<typename T>
+Matrix<T> AttentionLayer<T>::forward_cached(const Matrix<T>& input)
 {
-    Matrix Q_new = input * W_q;
-    Matrix K_new = input * W_k;
-    Matrix V_new = input * W_v;
+    Matrix<T> Q_new = input * W_q;
+    Matrix<T> K_new = input * W_k;
+    Matrix<T> V_new = input * W_v;
 
     // append to KV cache
     if (kv_K_cache.empty()) {
@@ -113,16 +116,16 @@ Matrix AttentionLayer::forward_cached(const Matrix& input)
     }
 
     int cached_len = kv_K_cache.rows();
-    double scale = 1.0 / std::sqrt((double)head_dim);
+    T scale = static_cast<T>(1.0) / static_cast<T>(std::sqrt((double)head_dim));
 
-    Matrix output(1, embed_dim);
+    Matrix<T> output(1, embed_dim);
 
     for (int h = 0; h < num_heads; h++) {
         int head_start = h * head_dim;
 
-        Matrix Q_h(1, head_dim);
-        Matrix K_h(cached_len, head_dim);
-        Matrix V_h(cached_len, head_dim);
+        Matrix<T> Q_h(1, head_dim);
+        Matrix<T> K_h(cached_len, head_dim);
+        Matrix<T> V_h(cached_len, head_dim);
 
         for (int j = 0; j < head_dim; j++) {
             Q_h(0, j) = Q_new(0, head_start + j);
@@ -135,14 +138,14 @@ Matrix AttentionLayer::forward_cached(const Matrix& input)
         }
 
         // scores
-        Matrix scores = Q_h * K_h.transpose();
+        Matrix<T> scores = Q_h * K_h.transpose();
         for (int j = 0; j < cached_len; j++) {
             scores(0, j) *= scale;
         }
 
         // apply softmax
-        Matrix attn_weights = Softmax::apply(scores);
-        Matrix head_output = attn_weights * V_h;
+        Matrix<T> attn_weights = Softmax::apply<T>(scores);
+        Matrix<T> head_output = attn_weights * V_h;
 
         for (int j = 0; j < head_dim; j++) {
             output(0, head_start + j) = head_output(0, j);
@@ -152,30 +155,32 @@ Matrix AttentionLayer::forward_cached(const Matrix& input)
     return output * W_o;
 }
 
-void AttentionLayer::clear_cache()
+template<typename T>
+void AttentionLayer<T>::clear_cache()
 {
-    kv_K_cache = Matrix();
-    kv_V_cache = Matrix();
+    kv_K_cache = Matrix<T>();
+    kv_V_cache = Matrix<T>();
 }
 
-Matrix AttentionLayer::backward(const Matrix& grad_output)
+template<typename T>
+Matrix<T> AttentionLayer<T>::backward(const Matrix<T>& grad_output)
 {
     int seq_len = grad_output.rows();
-    double scale = 1.0 / std::sqrt((double)head_dim);
+    T scale = static_cast<T>(1.0) / static_cast<T>(std::sqrt((double)head_dim));
 
     // distribute error and update output projection
-    Matrix grad_concat = grad_output * W_o.transpose();
+    Matrix<T> grad_concat = grad_output * W_o.transpose();
 
-    Matrix concat_output(seq_len, embed_dim);
+    Matrix<T> concat_output(seq_len, embed_dim);
     for (int h = 0; h < num_heads; h++) {
         int head_start = h * head_dim;
-        Matrix V_h(seq_len, head_dim);
+        Matrix<T> V_h(seq_len, head_dim);
         for (int i = 0; i < seq_len; i++) {
             for (int j = 0; j < head_dim; j++) {
                 V_h(i, j) = V_cache(i, head_start + j);
             }
         }
-        Matrix head_output = attention_weights_cache[h] * V_h;
+        Matrix<T> head_output = attention_weights_cache[h] * V_h;
         for (int i = 0; i < seq_len; i++) {
             for (int j = 0; j < head_dim; j++) {
                 concat_output(i, head_start + j) = head_output(i, j);
@@ -184,17 +189,17 @@ Matrix AttentionLayer::backward(const Matrix& grad_output)
     }
     grad_W_o = concat_output.transpose() * grad_output;
 
-    Matrix grad_Q(seq_len, embed_dim);
-    Matrix grad_K(seq_len, embed_dim);
-    Matrix grad_V(seq_len, embed_dim);
+    Matrix<T> grad_Q(seq_len, embed_dim);
+    Matrix<T> grad_K(seq_len, embed_dim);
+    Matrix<T> grad_V(seq_len, embed_dim);
 
     for (int h = 0; h < num_heads; h++) {
         int head_start = h * head_dim;
 
-        Matrix grad_head(seq_len, head_dim);
-        Matrix Q_h(seq_len, head_dim);
-        Matrix K_h(seq_len, head_dim);
-        Matrix V_h(seq_len, head_dim);
+        Matrix<T> grad_head(seq_len, head_dim);
+        Matrix<T> Q_h(seq_len, head_dim);
+        Matrix<T> K_h(seq_len, head_dim);
+        Matrix<T> V_h(seq_len, head_dim);
 
         for (int i = 0; i < seq_len; i++) {
             for (int j = 0; j < head_dim; j++) {
@@ -205,19 +210,19 @@ Matrix AttentionLayer::backward(const Matrix& grad_output)
             }
         }
 
-        Matrix attn_weights = attention_weights_cache[h];
+        Matrix<T> attn_weights = attention_weights_cache[h];
 
         // gradient V
         // paid attenttion to the right word but info was useless
-        Matrix grad_V_h = attn_weights.transpose() * grad_head;  
+        Matrix<T> grad_V_h = attn_weights.transpose() * grad_head;
 
         // gradient attention
         // paid attention to the wrong word
-        Matrix grad_attn = grad_head * V_h.transpose();
+        Matrix<T> grad_attn = grad_head * V_h.transpose();
 
         // gradient softmax
         // too much attention paid to one word
-        Matrix grad_scores = Softmax::derivative(attn_weights, grad_attn);
+        Matrix<T> grad_scores = Softmax::derivative<T>(attn_weights, grad_attn);
 
         for (int i = 0; i < seq_len; i++) {
             for (int j = 0; j < seq_len; j++) {
@@ -227,11 +232,11 @@ Matrix AttentionLayer::backward(const Matrix& grad_output)
 
         // gradient Q
         // looked at the wrong key
-        Matrix grad_Q_h = grad_scores * K_h;
+        Matrix<T> grad_Q_h = grad_scores * K_h;
 
         // gradient K
         // key representation was poor
-        Matrix grad_K_h = grad_scores.transpose() * Q_h; 
+        Matrix<T> grad_K_h = grad_scores.transpose() * Q_h;
 
         // accumulate into gradients
         for (int i = 0; i < seq_len; i++) {
@@ -250,15 +255,19 @@ Matrix AttentionLayer::backward(const Matrix& grad_output)
     return grad_Q * W_q.transpose() + grad_K * W_k.transpose() + grad_V * W_v.transpose();
 }
 
-void AttentionLayer::update(Optimizer* opt)
+template<typename T>
+void AttentionLayer<T>::update(Optimizer<T>* opt)
 {
     opt->step(W_q, grad_W_q);
     opt->step(W_k, grad_W_k);
     opt->step(W_v, grad_W_v);
     opt->step(W_o, grad_W_o);
 
-    grad_W_q = Matrix(embed_dim, embed_dim);
-    grad_W_k = Matrix(embed_dim, embed_dim);
-    grad_W_v = Matrix(embed_dim, embed_dim);
-    grad_W_o = Matrix(embed_dim, embed_dim);
+    grad_W_q = Matrix<T>(embed_dim, embed_dim);
+    grad_W_k = Matrix<T>(embed_dim, embed_dim);
+    grad_W_v = Matrix<T>(embed_dim, embed_dim);
+    grad_W_o = Matrix<T>(embed_dim, embed_dim);
 }
+
+template class AttentionLayer<float>;
+template class AttentionLayer<double>;

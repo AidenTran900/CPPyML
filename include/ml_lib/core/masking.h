@@ -1,12 +1,13 @@
 #pragma once
 #include "../math/matrix.h"
 
+template<typename T = double>
 class Masking {
     private:
-        Matrix mask;
+        Matrix<T> mask;
     public:
         Masking(int dim, int tokens);
         ~Masking();
-        Matrix apply(const Matrix& x);
+        Matrix<T> apply(const Matrix<T>& x);
 
 };

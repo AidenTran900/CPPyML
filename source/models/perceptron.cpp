@@ -1,14 +1,14 @@
 #include "ml_lib/models/perceptron.h"
 #include <cmath>
 
-Perceptron::Perceptron(int input_dim, std::unique_ptr<LossFunction> loss, std::unique_ptr<Optimizer> opt, std::unique_ptr<Regularizer> reg)
-    : GradientModel(std::move(loss), std::move(opt), std::move(reg)), weights(input_dim, 1, 0.01), bias(1, 1, 0.0),
+Perceptron::Perceptron(int input_dim, std::unique_ptr<LossFunction<>> loss, std::unique_ptr<Optimizer<>> opt, std::unique_ptr<Regularizer<>> reg)
+    : GradientModel<>(std::move(loss), std::move(opt), std::move(reg)), weights(input_dim, 1, 0.01), bias(1, 1, 0.0),
       grad_w(input_dim, 1, 0.0), grad_b(1, 1, 0.0) {}
 
-Matrix Perceptron::forward(const Matrix &X)
+Matrix<> Perceptron::forward(const Matrix<> &X)
 {
     last_input = X;
-    Matrix result = X * weights;
+    Matrix<> result = X * weights;
 
     // Step func
     for (int i = 0; i < result.rows(); i++) {
@@ -20,13 +20,13 @@ Matrix Perceptron::forward(const Matrix &X)
     return result;
 }
 
-void Perceptron::backward(const Matrix& y_true) {
+void Perceptron::backward(const Matrix<>& y_true) {
     int m = last_input.rows();
     if (m == 0) return;
 
-    Matrix predictions = last_output;
-    Matrix error = loss_func->gradient(predictions, y_true);
-    Matrix reg_vals = regularizer->gradient(weights);
+    Matrix<> predictions = last_output;
+    Matrix<> error = loss_func->gradient(predictions, y_true);
+    Matrix<> reg_vals = regularizer->gradient(weights);
 
     grad_w = last_input.transpose() * error + reg_vals;
 
@@ -34,7 +34,7 @@ void Perceptron::backward(const Matrix& y_true) {
     for (int j = 0; j < error.rows(); j++) {
         grad_b_sum += error(j, 0);
     }
-    grad_b = Matrix(bias.rows(), bias.cols(), grad_b_sum);
+    grad_b = Matrix<>(bias.rows(), bias.cols(), grad_b_sum);
 }
 
 void Perceptron::update() {
@@ -42,6 +42,6 @@ void Perceptron::update() {
     optimizer->step(bias, grad_b);
 }
 
-Matrix Perceptron::predict(const Matrix& X) {
+Matrix<> Perceptron::predict(const Matrix<>& X) {
     return forward(X);
 }

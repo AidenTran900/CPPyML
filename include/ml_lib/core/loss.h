@@ -24,42 +24,49 @@ enum class LossType {
 
 
 
+template<typename T = double>
 class LossFunction {
     public:
-        virtual double compute(const Matrix& y_pred, const Matrix& y_true) const = 0;
-        virtual Matrix gradient(const Matrix& y_pred, const Matrix& y_true) const = 0;
+        virtual double compute(const Matrix<T>& y_pred, const Matrix<T>& y_true) const = 0;
+        virtual Matrix<T> gradient(const Matrix<T>& y_pred, const Matrix<T>& y_true) const = 0;
         virtual ~LossFunction();
 };
 
-class MeanAbsoluteErrorLoss : public LossFunction {
+template<typename T = double>
+class MeanAbsoluteErrorLoss : public LossFunction<T> {
     public:
-        double compute(const Matrix& y_pred, const Matrix& y_true) const override;
-        Matrix gradient(const Matrix& y_pred, const Matrix& y_true) const override;
+        double compute(const Matrix<T>& y_pred, const Matrix<T>& y_true) const override;
+        Matrix<T> gradient(const Matrix<T>& y_pred, const Matrix<T>& y_true) const override;
 };
 
-class MeanSquaredErrorLoss : public LossFunction {
+template<typename T = double>
+class MeanSquaredErrorLoss : public LossFunction<T> {
     public:
-        double compute(const Matrix& y_pred, const Matrix& y_true) const override;
-        Matrix gradient(const Matrix& y_pred, const Matrix& y_true) const override;
+        double compute(const Matrix<T>& y_pred, const Matrix<T>& y_true) const override;
+        Matrix<T> gradient(const Matrix<T>& y_pred, const Matrix<T>& y_true) const override;
 };
 
-class RootMeanSquaredErrorLoss : public LossFunction {
+template<typename T = double>
+class RootMeanSquaredErrorLoss : public LossFunction<T> {
     public:
-        double compute(const Matrix& y_pred, const Matrix& y_true) const override;
-        Matrix gradient(const Matrix& y_pred, const Matrix& y_true) const override;
+        double compute(const Matrix<T>& y_pred, const Matrix<T>& y_true) const override;
+        Matrix<T> gradient(const Matrix<T>& y_pred, const Matrix<T>& y_true) const override;
 };
 
-class BinaryCrossEntropyLoss : public LossFunction {
+template<typename T = double>
+class BinaryCrossEntropyLoss : public LossFunction<T> {
     public:
-        double compute(const Matrix& y_pred, const Matrix& y_true) const override;
-        Matrix gradient(const Matrix& y_pred, const Matrix& y_true) const override;
+        double compute(const Matrix<T>& y_pred, const Matrix<T>& y_true) const override;
+        Matrix<T> gradient(const Matrix<T>& y_pred, const Matrix<T>& y_true) const override;
 };
 
-class CategoricalCrossEntropyLoss : public LossFunction {
+template<typename T = double>
+class CategoricalCrossEntropyLoss : public LossFunction<T> {
     public:
-        double compute(const Matrix& y_pred, const Matrix& y_true) const override;
-        Matrix gradient(const Matrix& y_pred, const Matrix& y_true) const override;
+        double compute(const Matrix<T>& y_pred, const Matrix<T>& y_true) const override;
+        Matrix<T> gradient(const Matrix<T>& y_pred, const Matrix<T>& y_true) const override;
 };
 
 
-std::unique_ptr<LossFunction> createLoss(LossType type);
+template<typename T = double>
+std::unique_ptr<LossFunction<T>> createLoss(LossType type);

@@ -1,43 +1,45 @@
 #include "ml_lib/core/layer-norm.h"
 #include <cmath>
 
-LayerNorm::LayerNorm(int features, double epsilon)
+template<typename T>
+LayerNorm<T>::LayerNorm(int features, double epsilon)
 {
     this->features = features;
     this->epsilon = epsilon;
-    gamma = Matrix(features, 1, 1.0);
-    beta = Matrix(features, 1, 0.0);
-    grad_gamma = Matrix(features, 1, 0.0);
-    grad_beta = Matrix(features, 1, 0.0);
+    gamma = Matrix<T>(features, 1, 1.0);
+    beta = Matrix<T>(features, 1, 0.0);
+    grad_gamma = Matrix<T>(features, 1, 0.0);
+    grad_beta = Matrix<T>(features, 1, 0.0);
 }
 
-Matrix LayerNorm::forward(const Matrix &input)
+template<typename T>
+Matrix<T> LayerNorm<T>::forward(const Matrix<T> &input)
 {
     int rows = input.rows();
     int cols = input.cols();
 
-    normalized_cache = Matrix(rows, cols);
+    normalized_cache = Matrix<T>(rows, cols);
     std_cache.resize(rows);
-    Matrix output(rows, cols);
+    Matrix<T> output(rows, cols);
 
     for (int i = 0; i < rows; i++) {
-        double mean = 0.0;
+        T mean = static_cast<T>(0.0);
         for (int j = 0; j < cols; j++) {
             mean += input(i, j);
         }
-        mean /= cols;
+        mean /= static_cast<T>(cols);
 
-        double variance = 0.0;
+        T variance = static_cast<T>(0.0);
         for (int j = 0; j < cols; j++) {
             variance += (input(i, j) - mean) * (input(i, j) - mean);
         }
-        variance /= cols;
+        variance /= static_cast<T>(cols);
 
-        double std = std::sqrt(variance + epsilon);
+        T std = static_cast<T>(std::sqrt(static_cast<double>(variance) + epsilon));
         std_cache[i] = std;
 
         for (int j = 0; j < cols; j++) {
-            double normalized = (input(i, j) - mean) / std;
+            T normalized = (input(i, j) - mean) / std;
             normalized_cache(i, j) = normalized;
             output(i, j) = normalized * gamma(j, 0) + beta(j, 0);
         }
@@ -45,15 +47,16 @@ Matrix LayerNorm::forward(const Matrix &input)
     return output;
 }
 
-Matrix LayerNorm::backward(const Matrix &grad_output)
+template<typename T>
+Matrix<T> LayerNorm<T>::backward(const Matrix<T> &grad_output)
 {
     int rows = grad_output.rows();
     int cols = grad_output.cols();
-    Matrix grad_input(rows, cols);
+    Matrix<T> grad_input(rows, cols);
 
     for (int i = 0; i < rows; i++) {
         // normalized gradients
-        std::vector<double> grad_norm(cols);
+        std::vector<T> grad_norm(cols);
         for (int j = 0; j < cols; j++) {
             grad_norm[j] = grad_output(i, j) * gamma(j, 0);
         }
@@ -65,15 +68,15 @@ Matrix LayerNorm::backward(const Matrix &grad_output)
         }
 
         // compute means
-        double mean_gn = 0.0;
-        double mean_gn_x_n = 0.0;
+        T mean_gn = static_cast<T>(0.0);
+        T mean_gn_x_n = static_cast<T>(0.0);
 
         for (int j = 0; j < cols; j++) {
             mean_gn += grad_norm[j];
             mean_gn_x_n += grad_norm[j] * normalized_cache(i, j);
         }
-        mean_gn /= cols;
-        mean_gn_x_n /= cols;
+        mean_gn /= static_cast<T>(cols);
+        mean_gn_x_n /= static_cast<T>(cols);
 
         // grad input
         for (int j = 0; j < cols; j++) {
@@ -83,12 +86,16 @@ Matrix LayerNorm::backward(const Matrix &grad_output)
     return grad_input;
 }
 
-void LayerNorm::update(Optimizer *opt)
+template<typename T>
+void LayerNorm<T>::update(Optimizer<T> *opt)
 {
     opt->step(gamma, grad_gamma);
     opt->step(beta, grad_beta);
 
     // reset gradients
-    grad_gamma = Matrix(features, 1, 0.0);
-    grad_beta = Matrix(features, 1, 0.0);
+    grad_gamma = Matrix<T>(features, 1, 0.0);
+    grad_beta = Matrix<T>(features, 1, 0.0);
 }
+
+template class LayerNorm<float>;
+template class LayerNorm<double>;

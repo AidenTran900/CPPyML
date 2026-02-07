@@ -37,10 +37,10 @@ class DescisionTree : public FitPredictModel {
         int features = 0;
         std::vector<int> feature_indices;
 
-        std::pair<int, int> countClasses(const Matrix& Y, const std::vector<int>& indices);
-        double calculateImpurity(const Matrix& Y, std::vector<int> indices);
-        void evaluateNode(const Matrix& X, const Matrix& Y, Node* node, std::vector<int> indices, int depth);
-        int getMajorityClass(const Matrix& Y, std::vector<int> indices);
+        std::pair<int, int> countClasses(const Matrix<>& Y, const std::vector<int>& indices);
+        double calculateImpurity(const Matrix<>& Y, std::vector<int> indices);
+        void evaluateNode(const Matrix<>& X, const Matrix<>& Y, Node* node, std::vector<int> indices, int depth);
+        int getMajorityClass(const Matrix<>& Y, std::vector<int> indices);
 
         void deleteTree(Node* node);
 
@@ -49,6 +49,6 @@ class DescisionTree : public FitPredictModel {
         ~DescisionTree();
 
         void setFeatureIndices(const std::vector<int>& indices);
-        void fit(const Matrix& X, const Matrix& y) override;
-        Matrix predict(const Matrix& X) override;
+        void fit(const Matrix<>& X, const Matrix<>& y) override;
+        Matrix<> predict(const Matrix<>& X) override;
 };

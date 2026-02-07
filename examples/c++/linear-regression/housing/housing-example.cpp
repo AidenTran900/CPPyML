@@ -105,8 +105,8 @@ static void normalizeFeatures(std::vector<std::vector<double>>& features) {
 }
 
 static void splitData(const HousingData& data,
-               Matrix& X_train, Matrix& y_train,
-               Matrix& X_test, Matrix& y_test,
+               Matrix<>& X_train, Matrix<>& y_train,
+               Matrix<>& X_test, Matrix<>& y_test,
                double test_ratio = 0.2) {
 
     const size_t total_samples = data.features.size();
@@ -143,10 +143,10 @@ static void splitData(const HousingData& data,
         test_prices.push_back({data.prices[idx]});
     }
 
-    X_train = Matrix(std::move(train_features));
-    y_train = Matrix(std::move(train_prices));
-    X_test = Matrix(std::move(test_features));
-    y_test = Matrix(std::move(test_prices));
+    X_train = Matrix<>(std::move(train_features));
+    y_train = Matrix<>(std::move(train_prices));
+    X_test = Matrix<>(std::move(test_features));
+    y_test = Matrix<>(std::move(test_prices));
 }
 
 int runHousingExample() {
@@ -164,7 +164,7 @@ int runHousingExample() {
     normalizeFeatures(data.features);
     fmt::print("Features normalized using z-score normalization\n\n");
 
-    Matrix X_train, y_train, X_test, y_test;
+    Matrix<> X_train, y_train, X_test, y_test;
     splitData(data, X_train, y_train, X_test, y_test, 0.2);
 
     fmt::print("{:-<60}\n", "");
@@ -179,9 +179,9 @@ int runHousingExample() {
 
     LinearRegression model(
         X_train.cols(),
-        createLoss(LossType::ROOT_MEAN_SQUARED_ERROR),
-        createOptimizer(OptimizerType::MINI_BATCH, 0.01),
-        createRegularizer(RegularizerType::L2, 0.01)
+        createLoss<>(LossType::ROOT_MEAN_SQUARED_ERROR),
+        createOptimizer<>(OptimizerType::MINI_BATCH, 0.01),
+        createRegularizer<>(RegularizerType::L2, 0.01)
     );
 
     fmt::print("{:-<60}\n", "");
@@ -190,7 +190,7 @@ int runHousingExample() {
 
     constexpr int epochs = 2000;
     for (int epoch = 0; epoch < epochs; epoch++) {
-        Matrix y_pred = model.forward(X_train);
+        Matrix<> y_pred = model.forward(X_train);
         double loss = model.computeLoss(y_pred, y_train);
         model.backward(y_train);
         model.update();
@@ -204,7 +204,7 @@ int runHousingExample() {
     fmt::print("\n{:-<60}\n", "");
     fmt::print("Training Set Metrics:\n");
     fmt::print("{:-<60}\n", "");
-    Matrix y_train_pred = model.forward(X_train);
+    Matrix<> y_train_pred = model.forward(X_train);
 
     fmt::print("MSE:  {:.4f} (million²)\n", metrics::mse(y_train, y_train_pred));
     fmt::print("RMSE: {:.4f} million\n", metrics::rmse(y_train, y_train_pred));
@@ -214,7 +214,7 @@ int runHousingExample() {
     fmt::print("\n{:-<60}\n", "");
     fmt::print("Test Set Metrics:\n");
     fmt::print("{:-<60}\n", "");
-    Matrix y_test_pred = model.forward(X_test);
+    Matrix<> y_test_pred = model.forward(X_test);
 
     fmt::print("MSE:  {:.4f} (million²)\n", metrics::mse(y_test, y_test_pred));
     fmt::print("RMSE: {:.4f} million\n", metrics::rmse(y_test, y_test_pred));

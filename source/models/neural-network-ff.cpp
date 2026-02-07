@@ -2,16 +2,16 @@
 #include "neural-network-layer.h"
 #include <algorithm>
 
-NeuralNetworkFF::NeuralNetworkFF(int input_dim, std::unique_ptr<LossFunction> loss, std::unique_ptr<Optimizer> opt, std::unique_ptr<Regularizer> reg)
-    : GradientModel(std::move(loss), std::move(opt), std::move(reg))
+NeuralNetworkFF::NeuralNetworkFF(int input_dim, std::unique_ptr<LossFunction<>> loss, std::unique_ptr<Optimizer<>> opt, std::unique_ptr<Regularizer<>> reg)
+    : GradientModel<>(std::move(loss), std::move(opt), std::move(reg))
 {}
 
 void NeuralNetworkFF::addLayer(int input_dim, int output_dim, ACTIVATION_FUNC act)
 {
-    this->layers.push_back(NeuralNetworkLayer(input_dim, output_dim, act));
+    this->layers.push_back(NeuralNetworkLayer<>(input_dim, output_dim, act));
 }
 
-Matrix NeuralNetworkFF::forward(const Matrix &X)
+Matrix<> NeuralNetworkFF::forward(const Matrix<> &X)
 {
     last_input = X;
     for (auto& layer : layers) {
@@ -22,9 +22,9 @@ Matrix NeuralNetworkFF::forward(const Matrix &X)
     return last_output;
 }
 
-void NeuralNetworkFF::backward(const Matrix &y_true)
+void NeuralNetworkFF::backward(const Matrix<> &y_true)
 {
-    Matrix last_gradient = loss_func->gradient(last_output, y_true);
+    Matrix<> last_gradient = loss_func->gradient(last_output, y_true);
     for (int i = layers.size() - 1; i >= 0; i--) {
         last_gradient = layers[i].backward(last_gradient);
     }

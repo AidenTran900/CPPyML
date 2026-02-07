@@ -6,33 +6,34 @@
 #include "model-interface.h"
 #include <memory>
 
-class GradientModel : public GradientModelInterface {
+template<typename T = double>
+class GradientModel : public GradientModelInterface<T> {
     protected:
-        std::unique_ptr<LossFunction> loss_func;
-        std::unique_ptr<Optimizer> optimizer;
-        std::unique_ptr<Regularizer> regularizer;
+        std::unique_ptr<LossFunction<T>> loss_func;
+        std::unique_ptr<Optimizer<T>> optimizer;
+        std::unique_ptr<Regularizer<T>> regularizer;
 
         int batch_size;
         int epochs;
 
-        Matrix last_input;
-        Matrix last_output;
+        Matrix<T> last_input;
+        Matrix<T> last_output;
 
     public:
-        GradientModel(std::unique_ptr<LossFunction> loss,
-                      std::unique_ptr<Optimizer> opt,
-                      std::unique_ptr<Regularizer> reg)
+        GradientModel(std::unique_ptr<LossFunction<T>> loss,
+                      std::unique_ptr<Optimizer<T>> opt,
+                      std::unique_ptr<Regularizer<T>> reg)
             : loss_func(std::move(loss)),
               optimizer(std::move(opt)),
               regularizer(std::move(reg)),
               batch_size(32),
               epochs(100) {}
 
-        virtual Matrix forward(const Matrix& X) = 0;
-        virtual void backward(const Matrix& y_true) = 0;
+        virtual Matrix<T> forward(const Matrix<T>& X) = 0;
+        virtual void backward(const Matrix<T>& y_true) = 0;
         virtual void update() = 0;
 
-        double computeLoss(const Matrix& y_pred, const Matrix& y_true) {
+        double computeLoss(const Matrix<T>& y_pred, const Matrix<T>& y_true) {
             return loss_func->compute(y_pred, y_true);
         }
 

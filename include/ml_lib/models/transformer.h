@@ -8,30 +8,31 @@
 #include <vector>
 #include <memory>
 
-class Transformer : public GradientModel {
+template<typename T = double>
+class Transformer : public GradientModel<T> {
     private:
         int vocab_size;
         int embed_dim;
         int max_seq_len;
 
-        EmbeddingLayer embedding;
-        SinPositionalEncoding pos_encoding;
-        std::vector<std::shared_ptr<TransformerBlock>> blocks;
-        NeuralNetworkLayer output_projection;
+        EmbeddingLayer<T> embedding;
+        SinPositionalEncoding<T> pos_encoding;
+        std::vector<std::shared_ptr<TransformerBlock<T>>> blocks;
+        NeuralNetworkLayer<T> output_projection;
 
         std::vector<int> last_token_input;
-        Matrix last_logits;
+        Matrix<T> last_logits;
 
     public:
         Transformer(int vocab_size, int embed_dim, int num_heads,
                     int num_layers, int ff_dim, int max_seq_len,
-                    std::unique_ptr<LossFunction> loss,
-                    std::unique_ptr<Optimizer> opt,
-                    std::unique_ptr<Regularizer> reg);
+                    std::unique_ptr<LossFunction<T>> loss,
+                    std::unique_ptr<Optimizer<T>> opt,
+                    std::unique_ptr<Regularizer<T>> reg);
 
-        Matrix forward(const Matrix& X) override;
-        Matrix forward(const std::vector<int>& tokens);
-        void backward(const Matrix& y_true) override;
+        Matrix<T> forward(const Matrix<T>& X) override;
+        Matrix<T> forward(const std::vector<int>& tokens);
+        void backward(const Matrix<T>& y_true) override;
         void update() override;
 
         std::vector<int> generate(const std::vector<int>& prompt, int max_tokens);

@@ -1,22 +1,22 @@
 #include "ml_lib/models/linear-regression.h"
 
 LinearRegression::LinearRegression(int input_dim,
-                                   std::unique_ptr<LossFunction> loss,
-                                   std::unique_ptr<Optimizer> opt,
-                                   std::unique_ptr<Regularizer> reg)
-    : GradientModel(std::move(loss), std::move(opt), std::move(reg))
+                                   std::unique_ptr<LossFunction<>> loss,
+                                   std::unique_ptr<Optimizer<>> opt,
+                                   std::unique_ptr<Regularizer<>> reg)
+    : GradientModel<>(std::move(loss), std::move(opt), std::move(reg))
 {
-    weights = Matrix(input_dim, 1);
-    bias = Matrix(1, 1);
-    grad_w = Matrix(input_dim, 1);
-    grad_b = Matrix(1, 1);
+    weights = Matrix<>(input_dim, 1);
+    bias = Matrix<>(1, 1);
+    grad_w = Matrix<>(input_dim, 1);
+    grad_b = Matrix<>(1, 1);
 }
 
 // y^​=XW+b
-Matrix LinearRegression::forward(const Matrix &X)
+Matrix<> LinearRegression::forward(const Matrix<> &X)
 {
     last_input = X;
-    Matrix result = X * weights;
+    Matrix<> result = X * weights;
 
     for (int i = 0; i < result.rows(); i++) {
         result(i, 0) = result(i, 0) + bias(0, 0);
@@ -26,14 +26,14 @@ Matrix LinearRegression::forward(const Matrix &X)
     return result;
 }
 
-void LinearRegression::backward(const Matrix& y_true)
+void LinearRegression::backward(const Matrix<>& y_true)
 {
     int m = last_input.rows();
     if (m == 0) return;
 
-    Matrix predictions = last_output;
-    Matrix error = loss_func->gradient(predictions, y_true);
-    Matrix reg_vals = regularizer->gradient(weights);
+    Matrix<> predictions = last_output;
+    Matrix<> error = loss_func->gradient(predictions, y_true);
+    Matrix<> reg_vals = regularizer->gradient(weights);
 
     // Weights
     grad_w = last_input.transpose() * error + reg_vals;
@@ -43,7 +43,7 @@ void LinearRegression::backward(const Matrix& y_true)
     for (int j = 0; j < error.rows(); j++) {
         grad_b_sum += error(j, 0);
     }
-    grad_b = Matrix(bias.rows(), bias.cols(), grad_b_sum);
+    grad_b = Matrix<>(bias.rows(), bias.cols(), grad_b_sum);
 }
 
 void LinearRegression::update()

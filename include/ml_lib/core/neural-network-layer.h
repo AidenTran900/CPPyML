@@ -22,27 +22,28 @@ enum ACTIVATION_FUNC {
     SOFTMAX
 };
 
+template<typename T = double>
 class NeuralNetworkLayer {
     private:
-        Matrix weights;
-        Matrix bias;
+        Matrix<T> weights;
+        Matrix<T> bias;
 
-        Matrix grad_w;
-        Matrix grad_b;
+        Matrix<T> grad_w;
+        Matrix<T> grad_b;
 
-        Matrix last_input;
-        Matrix last_output;
-        Matrix last_pre_activation;
+        Matrix<T> last_input;
+        Matrix<T> last_output;
+        Matrix<T> last_pre_activation;
 
         ACTIVATION_FUNC activation;
 
     public:
         NeuralNetworkLayer(int input_dim, int output_dim, ACTIVATION_FUNC act);
 
-        double applyActivation(const double x);
-        double applyActivationDerivative(const double x);
+        T applyActivation(T x);
+        T applyActivationDerivative(T x);
 
-        Matrix forward(const Matrix& X);
-        Matrix backward(const Matrix &grad_output);
-        void update(Optimizer* opt);
+        Matrix<T> forward(const Matrix<T>& X);
+        Matrix<T> backward(const Matrix<T> &grad_output);
+        void update(Optimizer<T>* opt);
 };

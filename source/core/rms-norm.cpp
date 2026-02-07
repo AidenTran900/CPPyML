@@ -1,35 +1,37 @@
 #include "ml_lib/core/rms-norm.h"
 #include <cmath>
 
-RMSNorm::RMSNorm(int features, double epsilon)
+template<typename T>
+RMSNorm<T>::RMSNorm(int features, double epsilon)
 {
     this->features = features;
     this->epsilon = epsilon;
-    gamma = Matrix(features, 1, 1.0);
-    grad_gamma = Matrix(features, 1, 0.0);
+    gamma = Matrix<T>(features, 1, 1.0);
+    grad_gamma = Matrix<T>(features, 1, 0.0);
 }
 
-Matrix RMSNorm::forward(const Matrix &input)
+template<typename T>
+Matrix<T> RMSNorm<T>::forward(const Matrix<T> &input)
 {
     int rows = input.rows();
     int cols = input.cols();
 
-    normalized_cache = Matrix(rows, cols);
+    normalized_cache = Matrix<T>(rows, cols);
     rms_cache.resize(rows);
-    Matrix output(rows, cols);
+    Matrix<T> output(rows, cols);
 
     for (int i = 0; i < rows; i++) {
-        double sum_squared = 0.0;
+        T sum_squared = static_cast<T>(0.0);
         for (int j = 0; j < cols; j++) {
             sum_squared += input(i, j) * input(i, j);
         }
-        sum_squared /= cols;
+        sum_squared /= static_cast<T>(cols);
 
-        double rms = std::sqrt(sum_squared + epsilon);
+        T rms = static_cast<T>(std::sqrt(static_cast<double>(sum_squared) + epsilon));
         rms_cache[i] = rms;
 
         for (int j = 0; j < cols; j++) {
-            double normalized = input(i, j) / rms;
+            T normalized = input(i, j) / rms;
             normalized_cache(i, j) = normalized;
             output(i, j) = normalized * gamma(j, 0);
         }
@@ -37,15 +39,16 @@ Matrix RMSNorm::forward(const Matrix &input)
     return output;
 }
 
-Matrix RMSNorm::backward(const Matrix &grad_output)
+template<typename T>
+Matrix<T> RMSNorm<T>::backward(const Matrix<T> &grad_output)
 {
     int rows = grad_output.rows();
     int cols = grad_output.cols();
-    Matrix grad_input(rows, cols);
+    Matrix<T> grad_input(rows, cols);
 
     for (int i = 0; i < rows; i++) {
         // normalized gradients
-        std::vector<double> grad_norm(cols);
+        std::vector<T> grad_norm(cols);
         for (int j = 0; j < cols; j++) {
             grad_norm[j] = grad_output(i, j) * gamma(j, 0);
         }
@@ -56,12 +59,12 @@ Matrix RMSNorm::backward(const Matrix &grad_output)
         }
 
         // compute means
-        double mean_gn_x_n = 0.0;
+        T mean_gn_x_n = static_cast<T>(0.0);
 
         for (int j = 0; j < cols; j++) {
             mean_gn_x_n += grad_norm[j] * normalized_cache(i, j);
         }
-        mean_gn_x_n /= cols;
+        mean_gn_x_n /= static_cast<T>(cols);
 
         // grad input
         for (int j = 0; j < cols; j++) {
@@ -71,10 +74,14 @@ Matrix RMSNorm::backward(const Matrix &grad_output)
     return grad_input;
 }
 
-void RMSNorm::update(Optimizer *opt)
+template<typename T>
+void RMSNorm<T>::update(Optimizer<T> *opt)
 {
     opt->step(gamma, grad_gamma);
 
     // reset gradient
-    grad_gamma = Matrix(features, 1, 0.0);
+    grad_gamma = Matrix<T>(features, 1, 0.0);
 }
+
+template class RMSNorm<float>;
+template class RMSNorm<double>;

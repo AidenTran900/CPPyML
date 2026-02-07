@@ -3,7 +3,7 @@
 
 namespace metrics {
 
-double r2(const Matrix& y_true, const Matrix& y_pred)
+double r2(const Matrix<>& y_true, const Matrix<>& y_pred)
 {
     int rows = y_pred.rows();
     int cols = y_pred.cols();
@@ -33,7 +33,7 @@ double r2(const Matrix& y_true, const Matrix& y_pred)
     return 1 - (SSres/SStot);
 }
 
-double adjustedR2(const Matrix& y_true, const Matrix& y_pred, int num_predictors)
+double adjustedR2(const Matrix<>& y_true, const Matrix<>& y_pred, int num_predictors)
 {
     double r2_val = r2(y_true, y_pred);
     int n = y_true.rows();
@@ -41,7 +41,7 @@ double adjustedR2(const Matrix& y_true, const Matrix& y_pred, int num_predictors
     return 1 - (1 - r2_val) * ((n - 1.0) / (n - num_predictors - 1));
 }
 
-double mse(const Matrix& y_true, const Matrix& y_pred)
+double mse(const Matrix<>& y_true, const Matrix<>& y_pred)
 {
     double result = 0.0;
     int n = y_pred.rows() * y_pred.cols();
@@ -58,12 +58,12 @@ double mse(const Matrix& y_true, const Matrix& y_pred)
     return result / n;
 }
 
-double rmse(const Matrix& y_true, const Matrix& y_pred)
+double rmse(const Matrix<>& y_true, const Matrix<>& y_pred)
 {
     return sqrt(mse(y_true, y_pred));
 }
 
-double mae(const Matrix& y_true, const Matrix& y_pred)
+double mae(const Matrix<>& y_true, const Matrix<>& y_pred)
 {
     double result = 0.0;
     int n = y_pred.rows() * y_pred.cols();
@@ -79,9 +79,9 @@ double mae(const Matrix& y_true, const Matrix& y_pred)
     return result / n;
 }
 
-Matrix confusionMatrix(const Matrix& y_true, const Matrix& y_pred)
+Matrix<> confusionMatrix(const Matrix<>& y_true, const Matrix<>& y_pred)
 {
-    Matrix confusion = Matrix(2, 2, 0);
+    Matrix<> confusion = Matrix<>(2, 2, 0);
     for (int i = 0; i < y_pred.rows(); i++) {
         for (int j = 0; j < y_pred.cols(); j++) {
             double pred_val = y_pred(i, j);
@@ -105,7 +105,7 @@ Matrix confusionMatrix(const Matrix& y_true, const Matrix& y_pred)
     return confusion;
 }
 
-double accuracy(const Matrix& confusion)
+double accuracy(const Matrix<>& confusion)
 {
     int TP = static_cast<int>(confusion(0, 0));
     int TN = static_cast<int>(confusion(1, 1));
@@ -119,7 +119,7 @@ double accuracy(const Matrix& confusion)
     return static_cast<double>(TP + TN) / total;
 }
 
-double precision(const Matrix& confusion)
+double precision(const Matrix<>& confusion)
 {
     int TP = static_cast<int>(confusion(0, 0));
     int FP = static_cast<int>(confusion(1, 0));
@@ -130,7 +130,7 @@ double precision(const Matrix& confusion)
     return static_cast<double>(TP) / (TP + FP);
 }
 
-double recall(const Matrix& confusion)
+double recall(const Matrix<>& confusion)
 {
     int TP = static_cast<int>(confusion(0, 0));
     int FN = static_cast<int>(confusion(0, 1));
@@ -141,7 +141,7 @@ double recall(const Matrix& confusion)
     return static_cast<double>(TP) / (TP + FN);
 }
 
-double fpr(const Matrix& confusion)
+double fpr(const Matrix<>& confusion)
 {
     int TN = static_cast<int>(confusion(1, 1));
     int FP = static_cast<int>(confusion(1, 0));
@@ -152,7 +152,7 @@ double fpr(const Matrix& confusion)
     return static_cast<double>(FP) / (FP + TN);
 }
 
-double f1Score(const Matrix& confusion)
+double f1Score(const Matrix<>& confusion)
 {
     double recall_val = recall(confusion);
     double precision_val = precision(confusion);
@@ -163,19 +163,19 @@ double f1Score(const Matrix& confusion)
     return 2.0 * (precision_val * recall_val) / (precision_val + recall_val);
 }
 
-ROCResult rocCurve(const Matrix& y_true, const Matrix& y_pred, double resolution)
+ROCResult rocCurve(const Matrix<>& y_true, const Matrix<>& y_pred, double resolution)
 {
     ROCResult result;
 
     for (double threshold = 1.0; threshold >= 0; threshold -= resolution) {
-        Matrix y_predThresholded = Matrix(y_pred.rows(), y_pred.cols(), 0.0);
+        Matrix<> y_predThresholded = Matrix<>(y_pred.rows(), y_pred.cols(), 0.0);
         for (int i = 0; i < y_pred.rows(); i++) {
             for (int j = 0; j < y_pred.cols(); j++) {
                 y_predThresholded(i, j) = (y_pred(i, j) >= threshold) ? 1.0 : 0.0;
             }
         }
 
-        Matrix confusion = confusionMatrix(y_true, y_predThresholded);
+        Matrix<> confusion = confusionMatrix(y_true, y_predThresholded);
 
         double tpr = recall(confusion);
         double fpr_val = fpr(confusion);

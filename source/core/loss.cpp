@@ -2,10 +2,12 @@
 #include <cmath>
 #include <memory>
 
-LossFunction::~LossFunction() {}
+template<typename T>
+LossFunction<T>::~LossFunction() {}
 
 // MeanAbsoluteError
-double MeanAbsoluteErrorLoss::compute(const Matrix& y_pred, const Matrix& y_true) const
+template<typename T>
+double MeanAbsoluteErrorLoss<T>::compute(const Matrix<T>& y_pred, const Matrix<T>& y_true) const
 {
     double result = 0.0;
     int n = y_pred.rows() * y_pred.cols();
@@ -14,22 +16,24 @@ double MeanAbsoluteErrorLoss::compute(const Matrix& y_pred, const Matrix& y_true
     }
     for (int i = 0; i < y_pred.rows(); i++) {
         for (int j = 0; j < y_pred.cols(); j++) {
-            result += abs(y_pred(i, j) - y_true(i, j));
+            result += std::abs(static_cast<double>(y_pred(i, j)) - static_cast<double>(y_true(i, j)));
         }
     }
     return result / n;
 }
 
-Matrix MeanAbsoluteErrorLoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
+template<typename T>
+Matrix<T> MeanAbsoluteErrorLoss<T>::gradient(const Matrix<T>& y_pred, const Matrix<T>& y_true) const
 {
     int m = y_pred.rows();
-    if (m == 0) return Matrix(0, 0);
+    if (m == 0) return Matrix<T>(0, 0);
 
     return (y_pred - y_true).sign() * (1.0 / m);
 }
 
 // MeanSquaredError
-double MeanSquaredErrorLoss::compute(const Matrix& y_pred, const Matrix& y_true) const
+template<typename T>
+double MeanSquaredErrorLoss<T>::compute(const Matrix<T>& y_pred, const Matrix<T>& y_true) const
 {
     double result = 0.0;
     int n = y_pred.rows() * y_pred.cols();
@@ -39,24 +43,26 @@ double MeanSquaredErrorLoss::compute(const Matrix& y_pred, const Matrix& y_true)
 
     for (int i = 0; i < y_pred.rows(); i++) {
         for (int j = 0; j < y_pred.cols(); j++) {
-            double diff = y_pred(i, j) - y_true(i, j);
+            double diff = static_cast<double>(y_pred(i, j)) - static_cast<double>(y_true(i, j));
             result += diff * diff;
         }
     }
     return result / n;
 }
 
-Matrix MeanSquaredErrorLoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
+template<typename T>
+Matrix<T> MeanSquaredErrorLoss<T>::gradient(const Matrix<T>& y_pred, const Matrix<T>& y_true) const
 {
     int m = y_pred.rows();
-    if (m == 0) return Matrix(0, 0);
+    if (m == 0) return Matrix<T>(0, 0);
 
     return (y_pred - y_true) * (2.0 / m);
 }
 
 
 // RootMeanSquaredError
-double RootMeanSquaredErrorLoss::compute(const Matrix& y_pred, const Matrix& y_true) const
+template<typename T>
+double RootMeanSquaredErrorLoss<T>::compute(const Matrix<T>& y_pred, const Matrix<T>& y_true) const
 {
     double result = 0.0;
     int n = y_pred.rows() * y_pred.cols();
@@ -66,7 +72,7 @@ double RootMeanSquaredErrorLoss::compute(const Matrix& y_pred, const Matrix& y_t
 
     for (int i = 0; i < y_pred.rows(); i++) {
         for (int j = 0; j < y_pred.cols(); j++) {
-            double diff = y_pred(i, j) - y_true(i, j);
+            double diff = static_cast<double>(y_pred(i, j)) - static_cast<double>(y_true(i, j));
             result += diff * diff;
         }
     }
@@ -74,16 +80,17 @@ double RootMeanSquaredErrorLoss::compute(const Matrix& y_pred, const Matrix& y_t
     return sqrt(result / n);
 }
 
-Matrix RootMeanSquaredErrorLoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
+template<typename T>
+Matrix<T> RootMeanSquaredErrorLoss<T>::gradient(const Matrix<T>& y_pred, const Matrix<T>& y_true) const
 {
     int m = y_pred.rows();
-    if (m == 0) return Matrix(0, 0);
+    if (m == 0) return Matrix<T>(0, 0);
 
-    Matrix error = y_pred - y_true;
+    Matrix<T> error = y_pred - y_true;
 
     double mse_sum = 0.0;
     for (int i = 0; i < error.rows(); i++) {
-        double err = error(i, 0);
+        double err = static_cast<double>(error(i, 0));
         mse_sum += err * err;
     }
     double mse = mse_sum / m;
@@ -95,7 +102,8 @@ Matrix RootMeanSquaredErrorLoss::gradient(const Matrix& y_pred, const Matrix& y_
 
 
 // BinaryCrossEntropy
-double BinaryCrossEntropyLoss::compute(const Matrix& y_pred, const Matrix& y_true) const
+template<typename T>
+double BinaryCrossEntropyLoss<T>::compute(const Matrix<T>& y_pred, const Matrix<T>& y_true) const
 {
     double result = 0.0;
     int n = y_pred.rows() * y_pred.cols();
@@ -105,8 +113,8 @@ double BinaryCrossEntropyLoss::compute(const Matrix& y_pred, const Matrix& y_tru
 
     for (int i = 0; i < y_pred.rows(); i++) {
         for (int j = 0; j < y_pred.cols(); j++) {
-            double pred_val = y_pred(i, j);
-            double true_val = y_true(i, j);
+            double pred_val = static_cast<double>(y_pred(i, j));
+            double true_val = static_cast<double>(y_true(i, j));
             double epsilon = 1e-9;
             pred_val = std::max(epsilon, std::min(1.0 - epsilon, pred_val));
 
@@ -117,16 +125,18 @@ double BinaryCrossEntropyLoss::compute(const Matrix& y_pred, const Matrix& y_tru
     return (result / n);
 }
 
-Matrix BinaryCrossEntropyLoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
+template<typename T>
+Matrix<T> BinaryCrossEntropyLoss<T>::gradient(const Matrix<T>& y_pred, const Matrix<T>& y_true) const
 {
     int m = y_pred.rows();
-    if (m == 0) return Matrix(0, 0);
+    if (m == 0) return Matrix<T>(0, 0);
 
     return (y_pred - y_true) * (1.0 / m);
 }
 
 // CategoricalCrossEntropy
-double CategoricalCrossEntropyLoss::compute(const Matrix& y_pred, const Matrix& y_true) const
+template<typename T>
+double CategoricalCrossEntropyLoss<T>::compute(const Matrix<T>& y_pred, const Matrix<T>& y_true) const
 {
     double result = 0.0;
     int m = y_pred.rows();
@@ -136,8 +146,8 @@ double CategoricalCrossEntropyLoss::compute(const Matrix& y_pred, const Matrix& 
 
     for (int i = 0; i < y_pred.rows(); i++) {
         for (int j = 0; j < y_pred.cols(); j++) {
-            double pred_val = y_pred(i, j);
-            double true_val = y_true(i, j);
+            double pred_val = static_cast<double>(y_pred(i, j));
+            double true_val = static_cast<double>(y_true(i, j));
             double epsilon = 1e-9;
             pred_val = std::max(epsilon, std::min(1.0 - epsilon, pred_val));
 
@@ -148,23 +158,47 @@ double CategoricalCrossEntropyLoss::compute(const Matrix& y_pred, const Matrix& 
     return result / m;
 }
 
-Matrix CategoricalCrossEntropyLoss::gradient(const Matrix& y_pred, const Matrix& y_true) const
+template<typename T>
+Matrix<T> CategoricalCrossEntropyLoss<T>::gradient(const Matrix<T>& y_pred, const Matrix<T>& y_true) const
 {
     int m = y_pred.rows();
-    if (m == 0) return Matrix(0, 0);
+    if (m == 0) return Matrix<T>(0, 0);
 
     return (y_pred - y_true) * (1.0 / m);
 }
 
-std::unique_ptr<LossFunction> createLoss(LossType type)
+template<typename T>
+std::unique_ptr<LossFunction<T>> createLoss(LossType type)
 {
     switch (type) {
-        case LossType::MEAN_ABSOLUTE_ERROR:      return std::make_unique<MeanAbsoluteErrorLoss>();
-        case LossType::MEAN_SQUARED_ERROR:       return std::make_unique<MeanSquaredErrorLoss>();
-        case LossType::ROOT_MEAN_SQUARED_ERROR:  return std::make_unique<RootMeanSquaredErrorLoss>();
-        case LossType::BINARY_CROSS_ENTROPY:     return std::make_unique<BinaryCrossEntropyLoss>();
-        case LossType::CATEGORICAL_CROSS_ENTROPY:  return std::make_unique<CategoricalCrossEntropyLoss>();
+        case LossType::MEAN_ABSOLUTE_ERROR:      return std::make_unique<MeanAbsoluteErrorLoss<T>>();
+        case LossType::MEAN_SQUARED_ERROR:       return std::make_unique<MeanSquaredErrorLoss<T>>();
+        case LossType::ROOT_MEAN_SQUARED_ERROR:  return std::make_unique<RootMeanSquaredErrorLoss<T>>();
+        case LossType::BINARY_CROSS_ENTROPY:     return std::make_unique<BinaryCrossEntropyLoss<T>>();
+        case LossType::CATEGORICAL_CROSS_ENTROPY:  return std::make_unique<CategoricalCrossEntropyLoss<T>>();
     }
 
     throw std::invalid_argument("Unsupported loss type.");
 }
+
+// Explicit instantiations
+template class LossFunction<float>;
+template class LossFunction<double>;
+
+template class MeanAbsoluteErrorLoss<float>;
+template class MeanAbsoluteErrorLoss<double>;
+
+template class MeanSquaredErrorLoss<float>;
+template class MeanSquaredErrorLoss<double>;
+
+template class RootMeanSquaredErrorLoss<float>;
+template class RootMeanSquaredErrorLoss<double>;
+
+template class BinaryCrossEntropyLoss<float>;
+template class BinaryCrossEntropyLoss<double>;
+
+template class CategoricalCrossEntropyLoss<float>;
+template class CategoricalCrossEntropyLoss<double>;
+
+template std::unique_ptr<LossFunction<float>> createLoss<float>(LossType type);
+template std::unique_ptr<LossFunction<double>> createLoss<double>(LossType type);

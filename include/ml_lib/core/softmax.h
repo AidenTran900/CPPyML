@@ -4,19 +4,20 @@
 
 namespace Softmax {
 
-    inline Matrix apply(const Matrix& x)
+    template<typename T = double>
+    inline Matrix<T> apply(const Matrix<T>& x)
     {
-        Matrix result(x.rows(), x.cols());
+        Matrix<T> result(x.rows(), x.cols());
 
         for (int i = 0; i < x.rows(); i++) {
-            double max_val = x(i, 0);
+            T max_val = x(i, 0);
             for (int j = 1; j < x.cols(); j++) {
                 if (x(i, j) > max_val) {
                     max_val = x(i, j);
                 }
             }
 
-            double sum = 0.0;
+            T sum = 0.0;
             for (int j = 0; j < x.cols(); j++) {
                 result(i, j) = std::exp(x(i, j) - max_val);
                 sum += result(i, j);
@@ -29,18 +30,19 @@ namespace Softmax {
         return result;
     }
 
-    inline Matrix applyColumn(const Matrix& x)
+    template<typename T = double>
+    inline Matrix<T> applyColumn(const Matrix<T>& x)
     {
-        Matrix result(x.rows(), x.cols());
+        Matrix<T> result(x.rows(), x.cols());
 
-        double max_val = x(0, 0);
+        T max_val = x(0, 0);
         for (int i = 1; i < x.rows(); i++) {
             if (x(i, 0) > max_val) {
                 max_val = x(i, 0);
             }
         }
 
-        double sum = 0.0;
+        T sum = 0.0;
         for (int i = 0; i < x.rows(); i++) {
             result(i, 0) = std::exp(x(i, 0) - max_val);
             sum += result(i, 0);
@@ -53,12 +55,13 @@ namespace Softmax {
         return result;
     }
 
-    inline Matrix derivative(const Matrix& softmax_out, const Matrix& grad)
+    template<typename T = double>
+    inline Matrix<T> derivative(const Matrix<T>& softmax_out, const Matrix<T>& grad)
     {
-        Matrix result(grad.rows(), grad.cols());
+        Matrix<T> result(grad.rows(), grad.cols());
 
         for (int i = 0; i < grad.rows(); i++) {
-            double dot_product = 0.0;
+            T dot_product = 0.0;
             for (int j = 0; j < grad.cols(); j++) {
                 dot_product += grad(i, j) * softmax_out(i, j);
             }
@@ -70,12 +73,13 @@ namespace Softmax {
         return result;
     }
 
-    inline Matrix derivativeColumn(const Matrix& softmax_out, const Matrix& grad)
+    template<typename T = double>
+    inline Matrix<T> derivativeColumn(const Matrix<T>& softmax_out, const Matrix<T>& grad)
     {
         int n = softmax_out.rows();
-        Matrix result(n, 1);
+        Matrix<T> result(n, 1);
 
-        double dot_product = 0.0;
+        T dot_product = 0.0;
         for (int i = 0; i < n; i++) {
             dot_product += grad(i, 0) * softmax_out(i, 0);
         }

@@ -3,20 +3,20 @@
 #include "gradient-model.h"
 #include "../core/neural-network-layer.h"
 
-class NeuralNetworkResNet : public GradientModel {
+class NeuralNetworkResNet : public GradientModel<> {
     private:
-        std::vector<NeuralNetworkLayer> layers;
+        std::vector<NeuralNetworkLayer<>> layers;
 
-        Matrix last_input;
-        Matrix last_output;
+        Matrix<> last_input;
+        Matrix<> last_output;
         int skips = 2; // Number of layers after which to add a skip connection
 
     public:
-        NeuralNetworkResNet(int input_dim, std::unique_ptr<LossFunction> loss, std::unique_ptr<Optimizer> opt, std::unique_ptr<Regularizer> reg, int skips = 2);
+        NeuralNetworkResNet(int input_dim, std::unique_ptr<LossFunction<>> loss, std::unique_ptr<Optimizer<>> opt, std::unique_ptr<Regularizer<>> reg, int skips = 2);
 
         void addLayer(int input_dim, int output_dim, ACTIVATION_FUNC act);
 
-        Matrix forward(const Matrix& X) override;
-        void backward(const Matrix& y_true) override;
+        Matrix<> forward(const Matrix<>& X) override;
+        void backward(const Matrix<>& y_true) override;
         void update() override;
 };

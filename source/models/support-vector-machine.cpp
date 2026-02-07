@@ -18,14 +18,14 @@ SupportVectorMachine::SupportVectorMachine(
       tolerance(tolerance), max_iter(max_iter), coef0(coef0), bias(0.0)
 {}
 
-double SupportVectorMachine::kernel(const Matrix &X1, const Matrix &X2) {
+double SupportVectorMachine::kernel(const Matrix<> &X1, const Matrix<> &X2) {
     switch(this->kernel_type) {
         case KERNEL::LINEAR:
             return X1.dot(X2);
         case KERNEL::POLYNOMIAL:
             return pow(this->gamma * X1.dot(X2) + this->coef0, this->degree);
         case KERNEL::RBF: {
-            Matrix diff = X1 - X2;
+            Matrix<> diff = X1 - X2;
             return exp(-this->gamma * diff.dot(diff));
         }
         case KERNEL::SIGMOID:
@@ -35,7 +35,7 @@ double SupportVectorMachine::kernel(const Matrix &X1, const Matrix &X2) {
     }
 }
 
-double SupportVectorMachine::decision(const Matrix& X) {
+double SupportVectorMachine::decision(const Matrix<>& X) {
     double result = 0.0;
     int m = this->support_vectors.rows();
 
@@ -45,7 +45,7 @@ double SupportVectorMachine::decision(const Matrix& X) {
     return result + bias;
 }
 
-double SupportVectorMachine::decisionCached(int idx, const Matrix& K_cache, const std::vector<double>& alphas, const Matrix& Y_train) {
+double SupportVectorMachine::decisionCached(int idx, const Matrix<>& K_cache, const std::vector<double>& alphas, const Matrix<>& Y_train) {
     double result = 0.0;
     int m = Y_train.rows();
 
@@ -57,7 +57,7 @@ double SupportVectorMachine::decisionCached(int idx, const Matrix& K_cache, cons
     return result + bias;
 }
 
-int SupportVectorMachine::takeStep(int I1, int I2, const Matrix& X_train, const Matrix& Y_train, const Matrix& K_cache, std::vector<double>& alphas, std::vector<double>& errors) {
+int SupportVectorMachine::takeStep(int I1, int I2, const Matrix<>& X_train, const Matrix<>& Y_train, const Matrix<>& K_cache, std::vector<double>& alphas, std::vector<double>& errors) {
     if (I1 == I2) return 0;
 
     double alpha1 = alphas[I1];
@@ -113,7 +113,7 @@ int SupportVectorMachine::takeStep(int I1, int I2, const Matrix& X_train, const 
     return 1;
 }
 
-int SupportVectorMachine::examineExample(int I2, const Matrix& X_train, const Matrix& Y_train, Matrix& K_cache, std::vector<double>& alphas, std::vector<double>& errors) {
+int SupportVectorMachine::examineExample(int I2, const Matrix<>& X_train, const Matrix<>& Y_train, Matrix<>& K_cache, std::vector<double>& alphas, std::vector<double>& errors) {
     double alpha2 = alphas[I2];
     double r2 = errors[I2] * Y_train(I2, 0);
     double E2 = errors[I2];
@@ -146,7 +146,7 @@ int SupportVectorMachine::examineExample(int I2, const Matrix& X_train, const Ma
     return 0;
 }
 
-void SupportVectorMachine::fit(const Matrix &X, const Matrix &Y)
+void SupportVectorMachine::fit(const Matrix<> &X, const Matrix<> &Y)
 {
     int m = X.rows();
     int n = X.cols();
@@ -155,7 +155,7 @@ void SupportVectorMachine::fit(const Matrix &X, const Matrix &Y)
     std::vector<double> errors(m);
     bias = 0.0;
 
-    Matrix K_cache(m, m);
+    Matrix<> K_cache(m, m);
     for (int i = 0; i < m; i++) {
         for (int j = i; j < m; j++) {
             double k_val = kernel(X.row(i), X.row(j));
@@ -193,8 +193,8 @@ void SupportVectorMachine::fit(const Matrix &X, const Matrix &Y)
         if (alphas[i] > 0) sv_count++;
     }
 
-    support_vectors = Matrix(sv_count, n);
-    support_labels = Matrix(sv_count, 1);
+    support_vectors = Matrix<>(sv_count, n);
+    support_labels = Matrix<>(sv_count, 1);
     support_alphas = std::vector<double>(sv_count);
 
     int sv_idx = 0;
@@ -210,10 +210,10 @@ void SupportVectorMachine::fit(const Matrix &X, const Matrix &Y)
     }
 }
 
-Matrix SupportVectorMachine::predict(const Matrix &X)
+Matrix<> SupportVectorMachine::predict(const Matrix<> &X)
 {
     int m = X.rows();
-    Matrix predictions(m, 1);
+    Matrix<> predictions(m, 1);
 
     for (int i = 0; i < m; i++) {
         predictions(i, 0) = decision(X.row(i));
@@ -221,4 +221,3 @@ Matrix SupportVectorMachine::predict(const Matrix &X)
 
     return predictions.sign();
 }
- 

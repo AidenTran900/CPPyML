@@ -4,6 +4,7 @@
 #include <vector>
 #include <cmath>
 
+template<typename T = double>
 class AttentionLayer {
     private:
         int embed_dim;      // Input embedding dimension
@@ -11,34 +12,34 @@ class AttentionLayer {
         int head_dim;       // Dimension per head (embed_dim / num_heads)
 
         // Projection weights for Q, K, V
-        Matrix W_q;
-        Matrix W_k;
-        Matrix W_v;
-        Matrix W_o;  // Output projection
+        Matrix<T> W_q;
+        Matrix<T> W_k;
+        Matrix<T> W_v;
+        Matrix<T> W_o;  // Output projection
 
         // Gradients
-        Matrix grad_W_q;
-        Matrix grad_W_k;
-        Matrix grad_W_v;
-        Matrix grad_W_o;
+        Matrix<T> grad_W_q;
+        Matrix<T> grad_W_k;
+        Matrix<T> grad_W_v;
+        Matrix<T> grad_W_o;
 
         // Cached values for backward pass
-        Matrix input_cache;
-        Matrix Q_cache;
-        Matrix K_cache;
-        Matrix V_cache;
-        std::vector<Matrix> attention_weights_cache;
+        Matrix<T> input_cache;
+        Matrix<T> Q_cache;
+        Matrix<T> K_cache;
+        Matrix<T> V_cache;
+        std::vector<Matrix<T>> attention_weights_cache;
 
         // KV cache for inference
-        Matrix kv_K_cache;
-        Matrix kv_V_cache;
+        Matrix<T> kv_K_cache;
+        Matrix<T> kv_V_cache;
 
     public:
         AttentionLayer(int embed_dim, int num_heads);
 
-        Matrix forward(const Matrix& input);
-        Matrix forward_cached(const Matrix& input);
+        Matrix<T> forward(const Matrix<T>& input);
+        Matrix<T> forward_cached(const Matrix<T>& input);
         void clear_cache();
-        Matrix backward(const Matrix& grad_output);
-        void update(Optimizer* opt);
+        Matrix<T> backward(const Matrix<T>& grad_output);
+        void update(Optimizer<T>* opt);
 };

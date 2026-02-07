@@ -1,24 +1,26 @@
 #include "ml_lib/core/embedding-layer.h"
 
-EmbeddingLayer::EmbeddingLayer(int vocab_size, int embedding_dim)
+template<typename T>
+EmbeddingLayer<T>::EmbeddingLayer(int vocab_size, int embedding_dim)
 {
     this->vocab_size = vocab_size;
     this->embedding_dim = embedding_dim;
-    weights = Matrix(vocab_size, embedding_dim);
-    grad_weights = Matrix(vocab_size, embedding_dim);
+    weights = Matrix<T>(vocab_size, embedding_dim);
+    grad_weights = Matrix<T>(vocab_size, embedding_dim);
 
     //randomly initialize weights
     for (int i = 0; i < vocab_size; i++) {
         for (int j = 0; j < embedding_dim; j++) {
-            weights(i, j) = ((double)rand() / RAND_MAX) * 0.2 - 0.1;
+            weights(i, j) = static_cast<T>(((double)rand() / RAND_MAX) * 0.2 - 0.1);
         }
     }
 }
 
-Matrix EmbeddingLayer::forward(const std::vector<int> &input)
+template<typename T>
+Matrix<T> EmbeddingLayer<T>::forward(const std::vector<int> &input)
 {
     input_cache = input;
-    Matrix output(input.size(), embedding_dim);
+    Matrix<T> output(input.size(), embedding_dim);
 
     for (size_t i = 0; i < input.size(); ++i) {
         for (int j = 0; j < embedding_dim; j++) {
@@ -28,9 +30,10 @@ Matrix EmbeddingLayer::forward(const std::vector<int> &input)
     return output;
 }
 
-void EmbeddingLayer::backward(const Matrix &grad_output)
+template<typename T>
+void EmbeddingLayer<T>::backward(const Matrix<T> &grad_output)
 {
-    grad_weights = Matrix(vocab_size, embedding_dim);
+    grad_weights = Matrix<T>(vocab_size, embedding_dim);
     for (size_t i = 0; i < grad_output.rows(); ++i) {
         int token_id = input_cache[i];
         for (int j = 0; j < embedding_dim; ++j) {
@@ -39,7 +42,11 @@ void EmbeddingLayer::backward(const Matrix &grad_output)
     }
 }
 
-void EmbeddingLayer::update(Optimizer *opt)
+template<typename T>
+void EmbeddingLayer<T>::update(Optimizer<T> *opt)
 {
     opt->step(weights, grad_weights);
 }
+
+template class EmbeddingLayer<float>;
+template class EmbeddingLayer<double>;

@@ -81,8 +81,8 @@ static void normalizeFeatures(std::vector<std::vector<double>>& features) {
 }
 
 static void splitData(const HeartDiseaseData& data,
-               Matrix& X_train, Matrix& y_train,
-               Matrix& X_test, Matrix& y_test,
+               Matrix<>& X_train, Matrix<>& y_train,
+               Matrix<>& X_test, Matrix<>& y_test,
                double test_ratio = 0.2) {
 
     const size_t total_samples = data.features.size();
@@ -119,10 +119,10 @@ static void splitData(const HeartDiseaseData& data,
         test_labels.push_back({data.labels[idx]});
     }
 
-    X_train = Matrix(std::move(train_features));
-    y_train = Matrix(std::move(train_labels));
-    X_test = Matrix(std::move(test_features));
-    y_test = Matrix(std::move(test_labels));
+    X_train = Matrix<>(std::move(train_features));
+    y_train = Matrix<>(std::move(train_labels));
+    X_test = Matrix<>(std::move(test_features));
+    y_test = Matrix<>(std::move(test_labels));
 }
 
 int runHeartDiseaseExample() {
@@ -141,7 +141,7 @@ int runHeartDiseaseExample() {
     normalizeFeatures(data.features);
     fmt::print("Features normalized using z-score normalization\n\n");
 
-    Matrix X_train, y_train, X_test, y_test;
+    Matrix<> X_train, y_train, X_test, y_test;
     splitData(data, X_train, y_train, X_test, y_test, 0.2);
 
     fmt::print("{:-<70}\n", "");
@@ -174,9 +174,9 @@ int runHeartDiseaseExample() {
 
     LogisticRegression model(
         X_train.cols(),
-        createLoss(LossType::BINARY_CROSS_ENTROPY),
-        createOptimizer(OptimizerType::MINI_BATCH, 0.1),
-        createRegularizer(RegularizerType::L2, 0.01)
+        createLoss<>(LossType::BINARY_CROSS_ENTROPY),
+        createOptimizer<>(OptimizerType::MINI_BATCH, 0.1),
+        createRegularizer<>(RegularizerType::L2, 0.01)
     );
 
     fmt::print("{:-<70}\n", "");
@@ -185,7 +185,7 @@ int runHeartDiseaseExample() {
 
     constexpr int epochs = 1000;
     for (int epoch = 0; epoch < epochs; epoch++) {
-        Matrix y_pred = model.forward(X_train);
+        Matrix<> y_pred = model.forward(X_train);
         double loss = model.computeLoss(y_pred, y_train);
         model.backward(y_train);
         model.update();
@@ -205,8 +205,8 @@ int runHeartDiseaseExample() {
         }
     }
 
-    Matrix y_train_pred = model.forward(X_train);
-    Matrix y_test_pred = model.forward(X_test);
+    Matrix<> y_train_pred = model.forward(X_train);
+    Matrix<> y_test_pred = model.forward(X_test);
 
     fmt::print("\n{:-<70}\n", "");
     fmt::print("Sample Predictions (Test Set - First 10):\n");

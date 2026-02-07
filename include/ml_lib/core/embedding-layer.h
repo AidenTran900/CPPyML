@@ -4,18 +4,19 @@
 #include <vector>
 #include <string>
 
+template<typename T = double>
 class EmbeddingLayer {
     private:
         int vocab_size;
         int embedding_dim;
-        Matrix weights;
-        Matrix grad_weights;
+        Matrix<T> weights;
+        Matrix<T> grad_weights;
         std::vector<int> input_cache;
 
     public:
         EmbeddingLayer(int vocab_size, int embedding_dim);
 
-        Matrix forward(const std::vector<int> &input);
-        void backward(const Matrix &grad_output);
-        void update(Optimizer *opt);
+        Matrix<T> forward(const std::vector<int> &input);
+        void backward(const Matrix<T> &grad_output);
+        void update(Optimizer<T> *opt);
 };

@@ -27,7 +27,7 @@ void DescisionTree::deleteTree(Node* node)
     delete node;
 }
 
-std::pair<int, int> DescisionTree::countClasses(const Matrix& Y, const std::vector<int>& indices) {
+std::pair<int, int> DescisionTree::countClasses(const Matrix<>& Y, const std::vector<int>& indices) {
     int count_0 = 0;
     int count_1 = 0;
     for (int i : indices) {
@@ -40,7 +40,7 @@ std::pair<int, int> DescisionTree::countClasses(const Matrix& Y, const std::vect
     return {count_0, count_1};
 }
 
-double DescisionTree::calculateImpurity(const Matrix& Y, std::vector<int> indices) {
+double DescisionTree::calculateImpurity(const Matrix<>& Y, std::vector<int> indices) {
     auto [count_0, count_1] = countClasses(Y, indices);
 
     int total = indices.size();
@@ -59,12 +59,12 @@ double DescisionTree::calculateImpurity(const Matrix& Y, std::vector<int> indice
     return 0;
 }
 
-int DescisionTree::getMajorityClass(const Matrix& Y, std::vector<int> indices) {
+int DescisionTree::getMajorityClass(const Matrix<>& Y, std::vector<int> indices) {
     auto [count_0, count_1] = countClasses(Y, indices);
     return (count_1 > count_0) ? 1 : 0;
 }
 
-void DescisionTree::evaluateNode(const Matrix& X, const Matrix& Y, Node* node, std::vector<int> indices, int depth) {
+void DescisionTree::evaluateNode(const Matrix<>& X, const Matrix<>& Y, Node* node, std::vector<int> indices, int depth) {
     int n = X.cols();
 
     node->value = getMajorityClass(Y, indices);
@@ -133,7 +133,7 @@ void DescisionTree::evaluateNode(const Matrix& X, const Matrix& Y, Node* node, s
     evaluateNode(X, Y, node->right, best_right_indices, depth + 1);
 }
 
-void DescisionTree::fit(const Matrix &X, const Matrix &Y)
+void DescisionTree::fit(const Matrix<> &X, const Matrix<> &Y)
 {
     std::vector<int> indices;
     for (int i = 0; i < X.rows(); i++) {
@@ -143,10 +143,10 @@ void DescisionTree::fit(const Matrix &X, const Matrix &Y)
     evaluateNode(X, Y, root_node, indices, 0);
 }
 
-Matrix DescisionTree::predict(const Matrix &X)
+Matrix<> DescisionTree::predict(const Matrix<> &X)
 {
     int m = X.rows();
-    Matrix predictions = Matrix(m, 1, 0);
+    Matrix<> predictions = Matrix<>(m, 1, 0);
 
     for (int i = 0; i < m; i++) {
         Node* current_node = root_node;
@@ -158,7 +158,7 @@ Matrix DescisionTree::predict(const Matrix &X)
             }
         }
         predictions(i, 0) = current_node->value;
-        
+
     }
     return predictions;
 }
