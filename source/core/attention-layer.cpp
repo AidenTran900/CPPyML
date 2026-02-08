@@ -1,6 +1,6 @@
 #include "ml_lib/core/attention-layer.h"
 #include "ml_lib/core/masking.h"
-#include "softmax.h"
+#include "ml_lib/core/softmax.h"
 #include <cmath>
 #include <stdexcept>
 
@@ -37,6 +37,51 @@ AttentionLayer<T>::AttentionLayer(int embed_dim, int num_heads)
 }
 
 template<typename T>
+void AttentionLayer<T>::enableRoPE(int max_seq_len)
+{
+    rope_enabled = true;
+    int half_dim = head_dim / 2;
+    rope_cos = Matrix<T>(max_seq_len, half_dim);
+    rope_sin = Matrix<T>(max_seq_len, half_dim);
+
+    for (int pos = 0; pos < max_seq_len; pos++) {
+        for (int i = 0; i < half_dim; i++) {
+            double theta = pos / std::pow(10000.0, (2.0 * i) / head_dim);
+            rope_cos(pos, i) = static_cast<T>(std::cos(theta));
+            rope_sin(pos, i) = static_cast<T>(std::sin(theta));
+        }
+    }
+}
+
+template<typename T>
+void AttentionLayer<T>::applyRoPE(Matrix<T>& Q, Matrix<T>& K, int start_pos)
+{
+    int seq_len = Q.rows();
+    int half_dim = head_dim / 2;
+
+    for (int s = 0; s < seq_len; s++) {
+        int pos = start_pos + s;
+        for (int h = 0; h < num_heads; h++) {
+            int head_start = h * head_dim;
+            for (int i = 0; i < half_dim; i++) {
+                T cos_val = rope_cos(pos, i);
+                T sin_val = rope_sin(pos, i);
+
+                T qx = Q(s, head_start + 2 * i);
+                T qy = Q(s, head_start + 2 * i + 1);
+                Q(s, head_start + 2 * i)     = qx * cos_val - qy * sin_val;
+                Q(s, head_start + 2 * i + 1) = qx * sin_val + qy * cos_val;
+
+                T kx = K(s, head_start + 2 * i);
+                T ky = K(s, head_start + 2 * i + 1);
+                K(s, head_start + 2 * i)     = kx * cos_val - ky * sin_val;
+                K(s, head_start + 2 * i + 1) = kx * sin_val + ky * cos_val;
+            }
+        }
+    }
+}
+
+template<typename T>
 Matrix<T> AttentionLayer<T>::forward(const Matrix<T>& input)
 {
     int seq_len = input.rows();
@@ -46,6 +91,10 @@ Matrix<T> AttentionLayer<T>::forward(const Matrix<T>& input)
     Q_cache = input * W_q;
     K_cache = input * W_k;
     V_cache = input * W_v;
+
+    if (rope_enabled) {
+        applyRoPE(Q_cache, K_cache, 0);
+    }
 
     // multi-head attention
     Matrix<T> output(seq_len, embed_dim);
@@ -106,6 +155,11 @@ Matrix<T> AttentionLayer<T>::forward_cached(const Matrix<T>& input)
     Matrix<T> K_new = input * W_k;
     Matrix<T> V_new = input * W_v;
 
+    if (rope_enabled) {
+        applyRoPE(Q_new, K_new, cached_pos);
+        cached_pos++;
+    }
+
     // append to KV cache
     if (kv_K_cache.empty()) {
         kv_K_cache = K_new;
@@ -160,6 +214,7 @@ void AttentionLayer<T>::clear_cache()
 {
     kv_K_cache = Matrix<T>();
     kv_V_cache = Matrix<T>();
+    cached_pos = 0;
 }
 
 template<typename T>

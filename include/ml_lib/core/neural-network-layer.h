@@ -46,4 +46,8 @@ class NeuralNetworkLayer {
         Matrix<T> forward(const Matrix<T>& X);
         Matrix<T> backward(const Matrix<T> &grad_output);
         void update(Optimizer<T>* opt);
+
+        void loadWeights(const Matrix<T>& w, const Matrix<T>& b) {
+            weights = w; bias = b;
+        }
 };

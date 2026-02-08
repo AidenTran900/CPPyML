@@ -21,4 +21,8 @@ class LayerNorm {
         Matrix<T> forward(const Matrix<T> &input);
         Matrix<T> backward(const Matrix<T> &grad_output);
         void update(Optimizer<T> *opt);
+
+        void loadWeights(const Matrix<T>& g, const Matrix<T>& b) {
+            gamma = g; beta = b;
+        }
 };

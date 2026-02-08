@@ -35,6 +35,14 @@ class Tokenizer {
 
         int vocabSize() const { return static_cast<int>(vocab.size()); }
 
+        void setVocab(const std::unordered_map<std::string, int>& v) {
+            vocab = v;
+            buildReverseVocab();
+        }
+        void setMerges(const std::vector<std::pair<std::string, std::string>>& m) {
+            bpe_merges = m;
+        }
+
     private:
         TOKENIZER_TYPE tokenizer_type;
 

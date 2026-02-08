@@ -36,6 +36,8 @@ set(ML_SOURCES
     ../source/models/neural-network-ff.cpp
     ../source/models/neural-network-ff-resnet.cpp
     ../source/models/transformer.cpp
+    ../source/core/tokenizer.cpp
+    ../source/utils/gguf-loader.cpp
 )
 
 # Create Python module

@@ -19,4 +19,6 @@ class EmbeddingLayer {
         Matrix<T> forward(const std::vector<int> &input);
         void backward(const Matrix<T> &grad_output);
         void update(Optimizer<T> *opt);
+
+        void loadWeights(const Matrix<T>& w) { weights = w; }
 };

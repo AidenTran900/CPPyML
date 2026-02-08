@@ -3,7 +3,10 @@
 #include "../core/embedding-layer.h"
 #include "../core/sin-pos-encode.h"
 #include "../core/transformer-block.h"
+#include "../core/transformer-config.h"
 #include "../core/neural-network-layer.h"
+#include "../core/layer-norm.h"
+#include "../core/rms-norm.h"
 #include "../core/token-sampler.h"
 #include "gradient-model.h"
 #include <vector>
@@ -15,18 +18,30 @@ class Transformer : public GradientModel<T> {
         int vocab_size;
         int embed_dim;
         int max_seq_len;
+        PosEncType pos_enc_type;
 
         EmbeddingLayer<T> embedding;
-        SinPositionalEncoding<T> pos_encoding;
+        std::unique_ptr<SinPositionalEncoding<T>> pos_encoding;
         std::vector<std::shared_ptr<TransformerBlock<T>>> blocks;
         NeuralNetworkLayer<T> output_projection;
+
+        // Optional output norm (before output_projection)
+        std::unique_ptr<LayerNorm<T>> output_ln;
+        std::unique_ptr<RMSNorm<T>> output_rms;
 
         std::vector<int> last_token_input;
         Matrix<T> last_logits;
 
     public:
+        // Legacy constructor (SINUSOIDAL, POST_NORM, LAYER_NORM, STANDARD FFN)
         Transformer(int vocab_size, int embed_dim, int num_heads,
                     int num_layers, int ff_dim, int max_seq_len,
+                    std::unique_ptr<LossFunction<T>> loss,
+                    std::unique_ptr<Optimizer<T>> opt,
+                    std::unique_ptr<Regularizer<T>> reg);
+
+        // Config-based constructor
+        Transformer(const TransformerConfig& config,
                     std::unique_ptr<LossFunction<T>> loss,
                     std::unique_ptr<Optimizer<T>> opt,
                     std::unique_ptr<Regularizer<T>> reg);
@@ -40,4 +55,12 @@ class Transformer : public GradientModel<T> {
         std::vector<int> generate(const std::vector<int>& prompt, int max_tokens,
                                   const TokenSampler<T>& sampler);
         void clear_cache();
+
+        EmbeddingLayer<T>& getEmbedding() { return embedding; }
+        NeuralNetworkLayer<T>& getOutputProjection() { return output_projection; }
+        std::vector<std::shared_ptr<TransformerBlock<T>>>& getBlocks() { return blocks; }
+
+        // Output norm accessors (for weight loading)
+        LayerNorm<T>* getOutputLayerNorm() { return output_ln.get(); }
+        RMSNorm<T>* getOutputRMSNorm() { return output_rms.get(); }
 };

@@ -1,51 +1,161 @@
 #include "ml_lib/core/transformer-block.h"
+#include <cmath>
 
+// Legacy constructor — preserves original behavior
 template<typename T>
 TransformerBlock<T>::TransformerBlock(int embed_dim, int num_heads, int ff_dim)
-    : attention(embed_dim, num_heads),
-      norm1(embed_dim),
-      norm2(embed_dim),
-      ff1(embed_dim, ff_dim, ACTIVATION_FUNC::RELU),
+    : TransformerBlock(embed_dim, num_heads, ff_dim,
+                       NormType::LAYER_NORM, FFNType::STANDARD, NormPosition::POST_NORM)
+{}
+
+// Configurable constructor
+template<typename T>
+TransformerBlock<T>::TransformerBlock(int embed_dim, int num_heads, int ff_dim,
+                                     NormType norm_type, FFNType ffn_type,
+                                     NormPosition norm_position)
+    : norm_type(norm_type), ffn_type(ffn_type), norm_position(norm_position),
+      attention(embed_dim, num_heads),
+      ff1(embed_dim, ff_dim,
+          ffn_type == FFNType::STANDARD ? ACTIVATION_FUNC::RELU : ACTIVATION_FUNC::LINEAR),
       ff2(ff_dim, embed_dim, ACTIVATION_FUNC::LINEAR)
 {
+    if (norm_type == NormType::LAYER_NORM) {
+        ln1 = std::make_unique<LayerNorm<T>>(embed_dim);
+        ln2 = std::make_unique<LayerNorm<T>>(embed_dim);
+    } else {
+        rms1 = std::make_unique<RMSNorm<T>>(embed_dim);
+        rms2 = std::make_unique<RMSNorm<T>>(embed_dim);
+    }
+
+    if (ffn_type == FFNType::GATED_SILU) {
+        ff_gate = std::make_unique<NeuralNetworkLayer<T>>(embed_dim, ff_dim, ACTIVATION_FUNC::LINEAR);
+    }
 }
+
+// Norm dispatch helpers
+
+template<typename T>
+Matrix<T> TransformerBlock<T>::normForward1(const Matrix<T>& x) {
+    return (norm_type == NormType::LAYER_NORM) ? ln1->forward(x) : rms1->forward(x);
+}
+
+template<typename T>
+Matrix<T> TransformerBlock<T>::normForward2(const Matrix<T>& x) {
+    return (norm_type == NormType::LAYER_NORM) ? ln2->forward(x) : rms2->forward(x);
+}
+
+template<typename T>
+Matrix<T> TransformerBlock<T>::normBackward1(const Matrix<T>& g) {
+    return (norm_type == NormType::LAYER_NORM) ? ln1->backward(g) : rms1->backward(g);
+}
+
+template<typename T>
+Matrix<T> TransformerBlock<T>::normBackward2(const Matrix<T>& g) {
+    return (norm_type == NormType::LAYER_NORM) ? ln2->backward(g) : rms2->backward(g);
+}
+
+// FFN dispatch
+
+template<typename T>
+Matrix<T> TransformerBlock<T>::ffnForward(const Matrix<T>& x) {
+    if (ffn_type == FFNType::STANDARD) {
+        return ff2.forward(ff1.forward(x));
+    }
+
+    // Gated SiLU: down(silu(gate(x)) ⊙ up(x))
+    Matrix<T> gate_out = ff_gate->forward(x);
+    Matrix<T> up_out = ff1.forward(x);
+
+    // Apply SiLU to gate: x * sigmoid(x)
+    for (int i = 0; i < gate_out.rows(); i++) {
+        for (int j = 0; j < gate_out.cols(); j++) {
+            double val = static_cast<double>(gate_out(i, j));
+            gate_out(i, j) = static_cast<T>(val / (1.0 + std::exp(-val)));
+        }
+    }
+
+    // Cache for backward
+    gate_cache = gate_out;
+    up_cache = up_out;
+
+    return ff2.forward(gate_out.hadamard(up_out));
+}
+
+template<typename T>
+Matrix<T> TransformerBlock<T>::ffnBackward(const Matrix<T>& g) {
+    if (ffn_type == FFNType::STANDARD) {
+        return ff1.backward(ff2.backward(g));
+    }
+
+    // Gated SiLU backward
+    Matrix<T> grad_hidden = ff2.backward(g);
+
+    // grad w.r.t. gate_activated = grad_hidden ⊙ up_cache
+    Matrix<T> grad_gate_act = grad_hidden.hadamard(up_cache);
+    // grad w.r.t. up = grad_hidden ⊙ gate_cache (post-silu)
+    Matrix<T> grad_up = grad_hidden.hadamard(gate_cache);
+
+    Matrix<T> grad_ff1 = ff1.backward(grad_up);
+
+    // SiLU derivative: sigmoid(x) * (1 + x * (1 - sigmoid(x)))
+    // But we have post-silu values. Re-derive from gate's pre-activation.
+    // For simplicity, use chain rule through ff_gate's backward which handles its own activation.
+    // Since ff_gate uses LINEAR, grad_gate_act passes through directly.
+    Matrix<T> grad_gate = ff_gate->backward(grad_gate_act);
+
+    return grad_ff1 + grad_gate;
+}
+
+// Forward
 
 template<typename T>
 Matrix<T> TransformerBlock<T>::forward(const Matrix<T>& input)
 {
     attention_input_cache = input;
 
-    // Self Attention
+    if (norm_position == NormPosition::PRE_NORM) {
+        // Pre-norm: norm → layer → residual add
+        Matrix<T> normed1 = normForward1(input);
+        Matrix<T> attn_out = attention.forward(normed1);
+        Matrix<T> residual1 = input + attn_out;
+
+        ff_input_cache = residual1;
+        Matrix<T> normed2 = normForward2(residual1);
+        Matrix<T> ff_out = ffnForward(normed2);
+        return residual1 + ff_out;
+    }
+
+    // Post-norm: layer → residual add → norm
     Matrix<T> attn_out = attention.forward(input);
-
-    // Add & Norm
     Matrix<T> residual1 = input + attn_out;
-    Matrix<T> normed1 = norm1.forward(residual1);
+    Matrix<T> normed1 = normForward1(residual1);
 
-    // Feed Forward
     ff_input_cache = normed1;
-
-    // Add & Norm
-    Matrix<T> ff_out = ff2.forward(ff1.forward(normed1));
+    Matrix<T> ff_out = ffnForward(normed1);
     Matrix<T> residual2 = normed1 + ff_out;
-    Matrix<T> output = norm2.forward(residual2);
-
-    return output;
+    return normForward2(residual2);
 }
 
 template<typename T>
 Matrix<T> TransformerBlock<T>::forward_cached(const Matrix<T>& input)
 {
+    if (norm_position == NormPosition::PRE_NORM) {
+        Matrix<T> normed1 = normForward1(input);
+        Matrix<T> attn_out = attention.forward_cached(normed1);
+        Matrix<T> residual1 = input + attn_out;
+
+        Matrix<T> normed2 = normForward2(residual1);
+        Matrix<T> ff_out = ffnForward(normed2);
+        return residual1 + ff_out;
+    }
+
     Matrix<T> attn_out = attention.forward_cached(input);
-
     Matrix<T> residual1 = input + attn_out;
-    Matrix<T> normed1 = norm1.forward(residual1);
+    Matrix<T> normed1 = normForward1(residual1);
 
-    Matrix<T> ff_out = ff2.forward(ff1.forward(normed1));
+    Matrix<T> ff_out = ffnForward(normed1);
     Matrix<T> residual2 = normed1 + ff_out;
-    Matrix<T> output = norm2.forward(residual2);
-
-    return output;
+    return normForward2(residual2);
 }
 
 template<typename T>
@@ -54,33 +164,44 @@ void TransformerBlock<T>::clear_cache()
     attention.clear_cache();
 }
 
+// Backward
+
 template<typename T>
 Matrix<T> TransformerBlock<T>::backward(const Matrix<T>& grad_output)
 {
-    Matrix<T> grad_norm2 = norm2.backward(grad_output);
+    if (norm_position == NormPosition::PRE_NORM) {
+        // Reverse of pre-norm forward
+        Matrix<T> grad_ff = ffnBackward(normBackward2(grad_output));
+        Matrix<T> grad_residual1 = grad_output + grad_ff;
+        Matrix<T> grad_attn = attention.backward(normBackward1(grad_residual1));
+        return grad_residual1 + grad_attn;
+    }
 
-    Matrix<T> grad_ff2 = ff2.backward(grad_norm2);
-    Matrix<T> grad_ff1 = ff1.backward(grad_ff2);
-
-    Matrix<T> grad_residual1 = grad_norm2 + grad_ff1;
-
-    Matrix<T> grad_norm1 = norm1.backward(grad_residual1);
-
+    // Reverse of post-norm forward
+    Matrix<T> grad_norm2 = normBackward2(grad_output);
+    Matrix<T> grad_ff = ffnBackward(grad_norm2);
+    Matrix<T> grad_residual1 = grad_norm2 + grad_ff;
+    Matrix<T> grad_norm1 = normBackward1(grad_residual1);
     Matrix<T> grad_attn = attention.backward(grad_norm1);
-
-    Matrix<T> grad_input = grad_norm1 + grad_attn;
-
-    return grad_input;
+    return grad_norm1 + grad_attn;
 }
 
 template<typename T>
 void TransformerBlock<T>::update(Optimizer<T>* opt)
 {
     attention.update(opt);
-    norm1.update(opt);
+
+    if (norm_type == NormType::LAYER_NORM) {
+        ln1->update(opt);
+        ln2->update(opt);
+    } else {
+        rms1->update(opt);
+        rms2->update(opt);
+    }
+
     ff1.update(opt);
     ff2.update(opt);
-    norm2.update(opt);
+    if (ff_gate) ff_gate->update(opt);
 }
 
 template class TransformerBlock<float>;
