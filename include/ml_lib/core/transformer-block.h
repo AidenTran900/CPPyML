@@ -47,7 +47,8 @@ class TransformerBlock {
         // Configurable constructor
         TransformerBlock(int embed_dim, int num_heads, int ff_dim,
                          NormType norm_type, FFNType ffn_type,
-                         NormPosition norm_position);
+                         NormPosition norm_position,
+                         int num_kv_heads = -1);
 
         Matrix<T> forward(const Matrix<T>& input);
         Matrix<T> forward_cached(const Matrix<T>& input);

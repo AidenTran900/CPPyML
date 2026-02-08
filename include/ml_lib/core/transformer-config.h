@@ -9,6 +9,7 @@ struct TransformerConfig {
     int vocab_size;
     int embed_dim;
     int num_heads;
+    int num_kv_heads = -1; // -1 means same as num_heads (standard MHA)
     int num_layers;
     int ff_dim;
     int max_seq_len;
@@ -16,5 +17,6 @@ struct TransformerConfig {
     FFNType ffn_type = FFNType::STANDARD;
     NormPosition norm_position = NormPosition::POST_NORM;
     PosEncType pos_enc_type = PosEncType::SINUSOIDAL;
+    double rope_theta = 10000.0;
     bool output_norm = false;
 };

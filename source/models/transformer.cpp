@@ -45,11 +45,12 @@ Transformer<T>::Transformer(const TransformerConfig& config,
     for (int i = 0; i < config.num_layers; i++) {
         auto block = std::make_shared<TransformerBlock<T>>(
             config.embed_dim, config.num_heads, config.ff_dim,
-            config.norm_type, config.ffn_type, config.norm_position);
+            config.norm_type, config.ffn_type, config.norm_position,
+            config.num_kv_heads);
 
         // Enable RoPE inside each attention layer
         if (config.pos_enc_type == PosEncType::ROTARY) {
-            block->getAttention().enableRoPE(config.max_seq_len);
+            block->getAttention().enableRoPE(config.max_seq_len, config.rope_theta);
         }
 
         blocks.push_back(std::move(block));

@@ -4,40 +4,55 @@
 #include <cmath>
 #include <stdexcept>
 
+// Legacy constructor — standard MHA (num_kv_heads == num_heads)
 template<typename T>
 AttentionLayer<T>::AttentionLayer(int embed_dim, int num_heads)
+    : AttentionLayer(embed_dim, num_heads, num_heads)
+{}
+
+// GQA-aware constructor
+template<typename T>
+AttentionLayer<T>::AttentionLayer(int embed_dim, int num_heads, int num_kv_heads)
 {
     if (embed_dim % num_heads != 0) {
         throw std::invalid_argument("embed_dim must be divisible by num_heads");
     }
+    if (num_heads % num_kv_heads != 0) {
+        throw std::invalid_argument("num_heads must be divisible by num_kv_heads");
+    }
 
     this->embed_dim = embed_dim;
     this->num_heads = num_heads;
+    this->num_kv_heads = num_kv_heads;
     this->head_dim = embed_dim / num_heads;
+    this->kv_dim = num_kv_heads * head_dim;
+    this->heads_per_group = num_heads / num_kv_heads;
 
     W_q = Matrix<T>(embed_dim, embed_dim);
-    W_k = Matrix<T>(embed_dim, embed_dim);
-    W_v = Matrix<T>(embed_dim, embed_dim);
+    W_k = Matrix<T>(embed_dim, kv_dim);
+    W_v = Matrix<T>(embed_dim, kv_dim);
     W_o = Matrix<T>(embed_dim, embed_dim);
 
     grad_W_q = Matrix<T>(embed_dim, embed_dim);
-    grad_W_k = Matrix<T>(embed_dim, embed_dim);
-    grad_W_v = Matrix<T>(embed_dim, embed_dim);
+    grad_W_k = Matrix<T>(embed_dim, kv_dim);
+    grad_W_v = Matrix<T>(embed_dim, kv_dim);
     grad_W_o = Matrix<T>(embed_dim, embed_dim);
 
     double scale = std::sqrt(2.0 / (embed_dim + embed_dim));
     for (int i = 0; i < embed_dim; i++) {
         for (int j = 0; j < embed_dim; j++) {
             W_q(i, j) = static_cast<T>(((double)rand() / RAND_MAX * 2 - 1) * scale);
+            W_o(i, j) = static_cast<T>(((double)rand() / RAND_MAX * 2 - 1) * scale);
+        }
+        for (int j = 0; j < kv_dim; j++) {
             W_k(i, j) = static_cast<T>(((double)rand() / RAND_MAX * 2 - 1) * scale);
             W_v(i, j) = static_cast<T>(((double)rand() / RAND_MAX * 2 - 1) * scale);
-            W_o(i, j) = static_cast<T>(((double)rand() / RAND_MAX * 2 - 1) * scale);
         }
     }
 }
 
 template<typename T>
-void AttentionLayer<T>::enableRoPE(int max_seq_len)
+void AttentionLayer<T>::enableRoPE(int max_seq_len, double theta)
 {
     rope_enabled = true;
     int half_dim = head_dim / 2;
@@ -46,9 +61,9 @@ void AttentionLayer<T>::enableRoPE(int max_seq_len)
 
     for (int pos = 0; pos < max_seq_len; pos++) {
         for (int i = 0; i < half_dim; i++) {
-            double theta = pos / std::pow(10000.0, (2.0 * i) / head_dim);
-            rope_cos(pos, i) = static_cast<T>(std::cos(theta));
-            rope_sin(pos, i) = static_cast<T>(std::sin(theta));
+            double angle = pos / std::pow(theta, (2.0 * i) / head_dim);
+            rope_cos(pos, i) = static_cast<T>(std::cos(angle));
+            rope_sin(pos, i) = static_cast<T>(std::sin(angle));
         }
     }
 }
@@ -59,6 +74,7 @@ void AttentionLayer<T>::applyRoPE(Matrix<T>& Q, Matrix<T>& K, int start_pos)
     int seq_len = Q.rows();
     int half_dim = head_dim / 2;
 
+    // Rotate Q (num_heads heads, embed_dim cols)
     for (int s = 0; s < seq_len; s++) {
         int pos = start_pos + s;
         for (int h = 0; h < num_heads; h++) {
@@ -71,6 +87,15 @@ void AttentionLayer<T>::applyRoPE(Matrix<T>& Q, Matrix<T>& K, int start_pos)
                 T qy = Q(s, head_start + 2 * i + 1);
                 Q(s, head_start + 2 * i)     = qx * cos_val - qy * sin_val;
                 Q(s, head_start + 2 * i + 1) = qx * sin_val + qy * cos_val;
+            }
+        }
+
+        // Rotate K (num_kv_heads heads, kv_dim cols)
+        for (int h = 0; h < num_kv_heads; h++) {
+            int head_start = h * head_dim;
+            for (int i = 0; i < half_dim; i++) {
+                T cos_val = rope_cos(pos, i);
+                T sin_val = rope_sin(pos, i);
 
                 T kx = K(s, head_start + 2 * i);
                 T ky = K(s, head_start + 2 * i + 1);
@@ -88,15 +113,15 @@ Matrix<T> AttentionLayer<T>::forward(const Matrix<T>& input)
 
     input_cache = input;
 
-    Q_cache = input * W_q;
-    K_cache = input * W_k;
-    V_cache = input * W_v;
+    Q_cache = input * W_q;  // (seq_len, embed_dim)
+    K_cache = input * W_k;  // (seq_len, kv_dim)
+    V_cache = input * W_v;  // (seq_len, kv_dim)
 
     if (rope_enabled) {
         applyRoPE(Q_cache, K_cache, 0);
     }
 
-    // multi-head attention
+    // multi-head attention with GQA
     Matrix<T> output(seq_len, embed_dim);
     attention_weights_cache.clear();
     attention_weights_cache.resize(num_heads);
@@ -104,7 +129,9 @@ Matrix<T> AttentionLayer<T>::forward(const Matrix<T>& input)
     T scale = static_cast<T>(1.0) / static_cast<T>(std::sqrt((double)head_dim));
 
     for (int h = 0; h < num_heads; h++) {
-        int head_start = h * head_dim;
+        int q_start = h * head_dim;
+        int kv_h = h / heads_per_group;
+        int kv_start = kv_h * head_dim;
 
         Matrix<T> Q_h(seq_len, head_dim);
         Matrix<T> K_h(seq_len, head_dim);
@@ -112,9 +139,9 @@ Matrix<T> AttentionLayer<T>::forward(const Matrix<T>& input)
 
         for (int i = 0; i < seq_len; i++) {
             for (int j = 0; j < head_dim; j++) {
-                Q_h(i, j) = Q_cache(i, head_start + j);
-                K_h(i, j) = K_cache(i, head_start + j);
-                V_h(i, j) = V_cache(i, head_start + j);
+                Q_h(i, j) = Q_cache(i, q_start + j);
+                K_h(i, j) = K_cache(i, kv_start + j);
+                V_h(i, j) = V_cache(i, kv_start + j);
             }
         }
 
@@ -128,7 +155,7 @@ Matrix<T> AttentionLayer<T>::forward(const Matrix<T>& input)
             }
         }
 
-        // casual masking
+        // causal masking
         Masking<T> causal_mask(seq_len, seq_len);
         scores = causal_mask.apply(scores);
 
@@ -140,7 +167,7 @@ Matrix<T> AttentionLayer<T>::forward(const Matrix<T>& input)
 
         for (int i = 0; i < seq_len; i++) {
             for (int j = 0; j < head_dim; j++) {
-                output(i, head_start + j) = head_output(i, j);
+                output(i, q_start + j) = head_output(i, j);
             }
         }
     }
@@ -151,9 +178,9 @@ Matrix<T> AttentionLayer<T>::forward(const Matrix<T>& input)
 template<typename T>
 Matrix<T> AttentionLayer<T>::forward_cached(const Matrix<T>& input)
 {
-    Matrix<T> Q_new = input * W_q;
-    Matrix<T> K_new = input * W_k;
-    Matrix<T> V_new = input * W_v;
+    Matrix<T> Q_new = input * W_q;  // (1, embed_dim)
+    Matrix<T> K_new = input * W_k;  // (1, kv_dim)
+    Matrix<T> V_new = input * W_v;  // (1, kv_dim)
 
     if (rope_enabled) {
         applyRoPE(Q_new, K_new, cached_pos);
@@ -175,19 +202,21 @@ Matrix<T> AttentionLayer<T>::forward_cached(const Matrix<T>& input)
     Matrix<T> output(1, embed_dim);
 
     for (int h = 0; h < num_heads; h++) {
-        int head_start = h * head_dim;
+        int q_start = h * head_dim;
+        int kv_h = h / heads_per_group;
+        int kv_start = kv_h * head_dim;
 
         Matrix<T> Q_h(1, head_dim);
         Matrix<T> K_h(cached_len, head_dim);
         Matrix<T> V_h(cached_len, head_dim);
 
         for (int j = 0; j < head_dim; j++) {
-            Q_h(0, j) = Q_new(0, head_start + j);
+            Q_h(0, j) = Q_new(0, q_start + j);
         }
         for (int i = 0; i < cached_len; i++) {
             for (int j = 0; j < head_dim; j++) {
-                K_h(i, j) = kv_K_cache(i, head_start + j);
-                V_h(i, j) = kv_V_cache(i, head_start + j);
+                K_h(i, j) = kv_K_cache(i, kv_start + j);
+                V_h(i, j) = kv_V_cache(i, kv_start + j);
             }
         }
 
@@ -202,7 +231,7 @@ Matrix<T> AttentionLayer<T>::forward_cached(const Matrix<T>& input)
         Matrix<T> head_output = attn_weights * V_h;
 
         for (int j = 0; j < head_dim; j++) {
-            output(0, head_start + j) = head_output(0, j);
+            output(0, q_start + j) = head_output(0, j);
         }
     }
 
@@ -223,33 +252,38 @@ Matrix<T> AttentionLayer<T>::backward(const Matrix<T>& grad_output)
     int seq_len = grad_output.rows();
     T scale = static_cast<T>(1.0) / static_cast<T>(std::sqrt((double)head_dim));
 
-    // distribute error and update output projection
+    // distribute error through output projection
     Matrix<T> grad_concat = grad_output * W_o.transpose();
 
     Matrix<T> concat_output(seq_len, embed_dim);
     for (int h = 0; h < num_heads; h++) {
-        int head_start = h * head_dim;
+        int q_start = h * head_dim;
+        int kv_h = h / heads_per_group;
+        int kv_start = kv_h * head_dim;
+
         Matrix<T> V_h(seq_len, head_dim);
         for (int i = 0; i < seq_len; i++) {
             for (int j = 0; j < head_dim; j++) {
-                V_h(i, j) = V_cache(i, head_start + j);
+                V_h(i, j) = V_cache(i, kv_start + j);
             }
         }
         Matrix<T> head_output = attention_weights_cache[h] * V_h;
         for (int i = 0; i < seq_len; i++) {
             for (int j = 0; j < head_dim; j++) {
-                concat_output(i, head_start + j) = head_output(i, j);
+                concat_output(i, q_start + j) = head_output(i, j);
             }
         }
     }
     grad_W_o = concat_output.transpose() * grad_output;
 
     Matrix<T> grad_Q(seq_len, embed_dim);
-    Matrix<T> grad_K(seq_len, embed_dim);
-    Matrix<T> grad_V(seq_len, embed_dim);
+    Matrix<T> grad_K(seq_len, kv_dim);
+    Matrix<T> grad_V(seq_len, kv_dim);
 
     for (int h = 0; h < num_heads; h++) {
-        int head_start = h * head_dim;
+        int q_start = h * head_dim;
+        int kv_h = h / heads_per_group;
+        int kv_start = kv_h * head_dim;
 
         Matrix<T> grad_head(seq_len, head_dim);
         Matrix<T> Q_h(seq_len, head_dim);
@@ -258,25 +292,22 @@ Matrix<T> AttentionLayer<T>::backward(const Matrix<T>& grad_output)
 
         for (int i = 0; i < seq_len; i++) {
             for (int j = 0; j < head_dim; j++) {
-                grad_head(i, j) = grad_concat(i, head_start + j);
-                Q_h(i, j) = Q_cache(i, head_start + j);
-                K_h(i, j) = K_cache(i, head_start + j);
-                V_h(i, j) = V_cache(i, head_start + j);
+                grad_head(i, j) = grad_concat(i, q_start + j);
+                Q_h(i, j) = Q_cache(i, q_start + j);
+                K_h(i, j) = K_cache(i, kv_start + j);
+                V_h(i, j) = V_cache(i, kv_start + j);
             }
         }
 
         Matrix<T> attn_weights = attention_weights_cache[h];
 
         // gradient V
-        // paid attenttion to the right word but info was useless
         Matrix<T> grad_V_h = attn_weights.transpose() * grad_head;
 
         // gradient attention
-        // paid attention to the wrong word
         Matrix<T> grad_attn = grad_head * V_h.transpose();
 
         // gradient softmax
-        // too much attention paid to one word
         Matrix<T> grad_scores = Softmax::derivative<T>(attn_weights, grad_attn);
 
         for (int i = 0; i < seq_len; i++) {
@@ -286,19 +317,23 @@ Matrix<T> AttentionLayer<T>::backward(const Matrix<T>& grad_output)
         }
 
         // gradient Q
-        // looked at the wrong key
         Matrix<T> grad_Q_h = grad_scores * K_h;
 
         // gradient K
-        // key representation was poor
         Matrix<T> grad_K_h = grad_scores.transpose() * Q_h;
 
-        // accumulate into gradients
+        // accumulate Q gradients (each Q head gets its own slice)
         for (int i = 0; i < seq_len; i++) {
             for (int j = 0; j < head_dim; j++) {
-                grad_Q(i, head_start + j) = grad_Q_h(i, j);
-                grad_K(i, head_start + j) = grad_K_h(i, j);
-                grad_V(i, head_start + j) = grad_V_h(i, j);
+                grad_Q(i, q_start + j) = grad_Q_h(i, j);
+            }
+        }
+
+        // accumulate K/V gradients (multiple Q heads share the same KV head)
+        for (int i = 0; i < seq_len; i++) {
+            for (int j = 0; j < head_dim; j++) {
+                grad_K(i, kv_start + j) += grad_K_h(i, j);
+                grad_V(i, kv_start + j) += grad_V_h(i, j);
             }
         }
     }
@@ -319,8 +354,8 @@ void AttentionLayer<T>::update(Optimizer<T>* opt)
     opt->step(W_o, grad_W_o);
 
     grad_W_q = Matrix<T>(embed_dim, embed_dim);
-    grad_W_k = Matrix<T>(embed_dim, embed_dim);
-    grad_W_v = Matrix<T>(embed_dim, embed_dim);
+    grad_W_k = Matrix<T>(embed_dim, kv_dim);
+    grad_W_v = Matrix<T>(embed_dim, kv_dim);
     grad_W_o = Matrix<T>(embed_dim, embed_dim);
 }
 

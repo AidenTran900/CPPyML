@@ -12,9 +12,10 @@ TransformerBlock<T>::TransformerBlock(int embed_dim, int num_heads, int ff_dim)
 template<typename T>
 TransformerBlock<T>::TransformerBlock(int embed_dim, int num_heads, int ff_dim,
                                      NormType norm_type, FFNType ffn_type,
-                                     NormPosition norm_position)
+                                     NormPosition norm_position,
+                                     int num_kv_heads)
     : norm_type(norm_type), ffn_type(ffn_type), norm_position(norm_position),
-      attention(embed_dim, num_heads),
+      attention(embed_dim, num_heads, num_kv_heads < 0 ? num_heads : num_kv_heads),
       ff1(embed_dim, ff_dim,
           ffn_type == FFNType::STANDARD ? ACTIVATION_FUNC::RELU : ACTIVATION_FUNC::LINEAR),
       ff2(ff_dim, embed_dim, ACTIVATION_FUNC::LINEAR)

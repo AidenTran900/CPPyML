@@ -38,6 +38,7 @@ set(ML_SOURCES
     ../source/models/transformer.cpp
     ../source/core/tokenizer.cpp
     ../source/utils/gguf-loader.cpp
+    ../source/utils/llama-loader.cpp
 )
 
 # Create Python module

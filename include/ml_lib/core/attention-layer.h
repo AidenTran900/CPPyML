@@ -9,12 +9,15 @@ class AttentionLayer {
     private:
         int embed_dim;
         int num_heads;
+        int num_kv_heads;
         int head_dim;
+        int kv_dim;        // num_kv_heads * head_dim
+        int heads_per_group; // num_heads / num_kv_heads
 
-        Matrix<T> W_q;
-        Matrix<T> W_k;
-        Matrix<T> W_v;
-        Matrix<T> W_o;
+        Matrix<T> W_q;  // (embed_dim, embed_dim)
+        Matrix<T> W_k;  // (embed_dim, kv_dim)
+        Matrix<T> W_v;  // (embed_dim, kv_dim)
+        Matrix<T> W_o;  // (embed_dim, embed_dim)
 
         Matrix<T> grad_W_q;
         Matrix<T> grad_W_k;
@@ -22,9 +25,9 @@ class AttentionLayer {
         Matrix<T> grad_W_o;
 
         Matrix<T> input_cache;
-        Matrix<T> Q_cache;
-        Matrix<T> K_cache;
-        Matrix<T> V_cache;
+        Matrix<T> Q_cache;   // (seq_len, embed_dim)
+        Matrix<T> K_cache;   // (seq_len, kv_dim)
+        Matrix<T> V_cache;   // (seq_len, kv_dim)
         std::vector<Matrix<T>> attention_weights_cache;
 
         Matrix<T> kv_K_cache;
@@ -40,8 +43,9 @@ class AttentionLayer {
 
     public:
         AttentionLayer(int embed_dim, int num_heads);
+        AttentionLayer(int embed_dim, int num_heads, int num_kv_heads);
 
-        void enableRoPE(int max_seq_len);
+        void enableRoPE(int max_seq_len, double theta = 10000.0);
 
         Matrix<T> forward(const Matrix<T>& input);
         Matrix<T> forward_cached(const Matrix<T>& input);
