@@ -5,6 +5,10 @@
 Tokenizer::Tokenizer()
     : tokenizer_type(TOKENIZER_TYPE::WORD) {}
 
+void Tokenizer::setType(TOKENIZER_TYPE type) {
+    tokenizer_type = type;
+}
+
 std::vector<std::string> Tokenizer::wordTokenize(const std::string& text) {
     std::vector<std::string> tokens;
     std::string new_word = "";
@@ -146,6 +150,8 @@ void Tokenizer::trainBPE(const std::vector<std::string>& corpus, size_t num_merg
             vocab[current] = id++;
         }
     }
+
+    buildReverseVocab();
 }
 
 std::vector<std::string> Tokenizer::applyBPEMerges(const std::string& word) {
@@ -217,4 +223,80 @@ std::vector<std::string> Tokenizer::tokenize(const std::string& text) {
         default:
             return {};
     }
+}
+
+void Tokenizer::buildReverseVocab() {
+    reverse_vocab.clear();
+    for (const auto& [token, id] : vocab) {
+        reverse_vocab[id] = token;
+    }
+}
+
+void Tokenizer::buildVocab(const std::vector<std::string>& corpus) {
+    vocab.clear();
+    int id = 0;
+
+    for (const std::string& text : corpus) {
+        auto tokens = tokenize(text);
+        for (const std::string& token : tokens) {
+            if (vocab.find(token) == vocab.end()) {
+                vocab[token] = id++;
+            }
+        }
+    }
+
+    buildReverseVocab();
+}
+
+std::vector<int> Tokenizer::encode(const std::string& text) {
+    auto tokens = tokenize(text);
+    std::vector<int> ids;
+    ids.reserve(tokens.size());
+
+    for (const std::string& token : tokens) {
+        auto it = vocab.find(token);
+        if (it != vocab.end()) {
+            ids.push_back(it->second);
+        }
+    }
+
+    return ids;
+}
+
+std::string Tokenizer::decode(const std::vector<int>& ids) {
+    std::string result;
+
+    for (size_t i = 0; i < ids.size(); ++i) {
+        auto it = reverse_vocab.find(ids[i]);
+        if (it == reverse_vocab.end()) continue;
+
+        const std::string& token = it->second;
+
+        switch (tokenizer_type) {
+            case TOKENIZER_TYPE::WORD:
+            case TOKENIZER_TYPE::SENTENCE:
+                if (i > 0) result += " ";
+                result += token;
+                break;
+            case TOKENIZER_TYPE::CHARACTER:
+                result += token;
+                break;
+            case TOKENIZER_TYPE::BPE: {
+                std::string clean = token;
+                size_t pos = clean.find("</w>");
+                if (pos != std::string::npos) {
+                    clean.replace(pos, 4, " ");
+                }
+                result += clean;
+                break;
+            }
+        }
+    }
+
+    // trim trailing space from BPE end-of-word markers
+    if (!result.empty() && result.back() == ' ') {
+        result.pop_back();
+    }
+
+    return result;
 }

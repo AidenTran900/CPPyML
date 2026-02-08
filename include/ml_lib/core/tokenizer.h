@@ -20,10 +20,20 @@ struct PairHash {
 class Tokenizer {
     public:
         Tokenizer();
+
+        void setType(TOKENIZER_TYPE type);
+        TOKENIZER_TYPE getType() const { return tokenizer_type; }
+
         std::vector<std::string> tokenize(const std::string& text);
 
+        void buildVocab(const std::vector<std::string>& corpus);
         void trainBPE(const std::vector<std::string>& corpus, size_t num_merges);
         bool isBPETrained() const { return !bpe_merges.empty(); }
+
+        std::vector<int> encode(const std::string& text);
+        std::string decode(const std::vector<int>& ids);
+
+        int vocabSize() const { return static_cast<int>(vocab.size()); }
 
     private:
         TOKENIZER_TYPE tokenizer_type;
@@ -31,6 +41,9 @@ class Tokenizer {
         std::vector<std::pair<std::string, std::string>> bpe_merges;
 
         std::unordered_map<std::string, int> vocab;
+        std::unordered_map<int, std::string> reverse_vocab;
+
+        void buildReverseVocab();
 
         std::vector<std::string> wordTokenize(const std::string& text);
         std::vector<std::string> characterTokenize(const std::string& text);
