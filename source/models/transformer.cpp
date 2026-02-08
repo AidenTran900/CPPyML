@@ -74,6 +74,14 @@ void Transformer<T>::update()
 template<typename T>
 std::vector<int> Transformer<T>::generate(const std::vector<int>& prompt, int max_tokens)
 {
+    TokenSampler<T> greedy;
+    return generate(prompt, max_tokens, greedy);
+}
+
+template<typename T>
+std::vector<int> Transformer<T>::generate(const std::vector<int>& prompt, int max_tokens,
+                                          const TokenSampler<T>& sampler)
+{
     clear_cache();
 
     std::vector<int> output = prompt;
@@ -94,24 +102,16 @@ std::vector<int> Transformer<T>::generate(const std::vector<int>& prompt, int ma
     int pos = prompt.size();
 
     for (int t = 0; t < max_tokens; t++) {
-        // pick token with highest logit
-        int best_token = 0;
-        T best_val = logits(0, 0);
-        for (int v = 1; v < vocab_size; v++) {
-            if (logits(0, v) > best_val) {
-                best_val = logits(0, v);
-                best_token = v;
-            }
-        }
+        int token = sampler.sample(logits);
 
-        output.push_back(best_token);
+        output.push_back(token);
         pos++;
 
         if (pos >= max_seq_len) break;
         if (t == max_tokens - 1) break;
 
         // process new token through cache
-        Matrix<T> embedded = embedding.forward({best_token});
+        Matrix<T> embedded = embedding.forward({token});
         x = pos_encoding.forward(embedded, pos - 1);
         for (auto& block : blocks) {
             x = block->forward_cached(x);

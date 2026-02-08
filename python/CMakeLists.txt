@@ -24,6 +24,7 @@ set(ML_SOURCES
     ../source/core/rot-pos-encode.cpp
     ../source/core/masking.cpp
     ../source/core/transformer-block.cpp
+    ../source/core/token-sampler.cpp
     ../source/models/linear-regression.cpp
     ../source/models/logistic-regression.cpp
     ../source/models/support-vector-machine.cpp

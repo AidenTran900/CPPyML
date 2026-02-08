@@ -4,6 +4,7 @@
 #include "../core/sin-pos-encode.h"
 #include "../core/transformer-block.h"
 #include "../core/neural-network-layer.h"
+#include "../core/token-sampler.h"
 #include "gradient-model.h"
 #include <vector>
 #include <memory>
@@ -36,5 +37,7 @@ class Transformer : public GradientModel<T> {
         void update() override;
 
         std::vector<int> generate(const std::vector<int>& prompt, int max_tokens);
+        std::vector<int> generate(const std::vector<int>& prompt, int max_tokens,
+                                  const TokenSampler<T>& sampler);
         void clear_cache();
 };
