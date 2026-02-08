@@ -328,6 +328,16 @@ void GGUFFile::loadTokenizer(Tokenizer& tokenizer) const {
     }
     tokenizer.setVocab(vocab);
 
+    if (hasKey("tokenizer.ggml.token_type")) {
+        const auto& types = getArray("tokenizer.ggml.token_type");
+        for (size_t i = 0; i < types.size() && i < tokens.size(); i++) {
+            int tt = static_cast<int>(types[i].uint_val);
+            if (tt == 3 || tt == 4) {
+                tokenizer.addSpecialToken(tokens[i].string_val);
+            }
+        }
+    }
+
     // Load BPE merges if available
     if (hasKey("tokenizer.ggml.merges")) {
         const auto& merges = getArray("tokenizer.ggml.merges");

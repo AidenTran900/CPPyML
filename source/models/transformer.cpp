@@ -1,4 +1,5 @@
 #include "ml_lib/models/transformer.h"
+#include <algorithm>
 
 // Legacy constructor
 template<typename T>
@@ -14,7 +15,7 @@ Transformer<T>::Transformer(int vocab_size, int embed_dim, int num_heads,
       pos_enc_type(PosEncType::SINUSOIDAL),
       embedding(vocab_size, embed_dim),
       pos_encoding(std::make_unique<SinPositionalEncoding<T>>(embed_dim, max_seq_len)),
-      output_projection(embed_dim, vocab_size, ACTIVATION_FUNC::SOFTMAX)
+      output_projection(embed_dim, vocab_size, ACTIVATION_FUNC::LINEAR)
 {
     for (int i = 0; i < num_layers; i++) {
         blocks.push_back(std::make_shared<TransformerBlock<T>>(embed_dim, num_heads, ff_dim));
@@ -33,7 +34,7 @@ Transformer<T>::Transformer(const TransformerConfig& config,
       max_seq_len(config.max_seq_len),
       pos_enc_type(config.pos_enc_type),
       embedding(config.vocab_size, config.embed_dim),
-      output_projection(config.embed_dim, config.vocab_size, ACTIVATION_FUNC::SOFTMAX)
+      output_projection(config.embed_dim, config.vocab_size, ACTIVATION_FUNC::LINEAR)
 {
     // Positional encoding: only create for SINUSOIDAL (RoPE is inside attention)
     if (config.pos_enc_type == PosEncType::SINUSOIDAL) {
@@ -165,6 +166,7 @@ std::vector<int> Transformer<T>::generate(const std::vector<int>& prompt, int ma
         output.push_back(token);
         pos++;
 
+        if (std::find(stop_tokens.begin(), stop_tokens.end(), token) != stop_tokens.end()) break;
         if (pos >= max_seq_len) break;
         if (t == max_tokens - 1) break;
 

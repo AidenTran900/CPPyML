@@ -7,6 +7,9 @@
 #if ML_HAS_AVX2 && ML_USE_SIMD
     #include <immintrin.h>
 #endif
+#ifdef _OPENMP
+    #include <omp.h>
+#endif
 
 const int DEFAULT_BLOCK_SIZE = 64;
 
@@ -165,7 +168,6 @@ Matrix<T> Matrix<T>::operator-(const Matrix& other) const {
 
 template<typename T>
 Matrix<T> Matrix<T>::operator*(const Matrix& other) const {
-    // Check dimensions
     if (m_cols != other.m_rows) {
         throw std::invalid_argument("Matrix dimensions are incompatible. "
             "Matrix 1 cols (" + std::to_string(m_cols) +
@@ -173,41 +175,71 @@ Matrix<T> Matrix<T>::operator*(const Matrix& other) const {
     }
 
     Matrix result(m_rows, other.m_cols);
+    const int M = m_rows;
+    const int N = other.m_cols;
+    const int K = m_cols;
+    T* __restrict__ C = result.m_data.data();
+    const T* __restrict__ A = m_data.data();
+    const T* __restrict__ B = other.m_data.data();
 
     #if ML_HAS_AVX2 && ML_USE_SIMD
     if constexpr (std::is_same_v<T, double>) {
-        for (int i = 0; i < m_rows; i++) {
-            int j = 0;
-            for (; j + 4 <= other.m_cols; j += 4) {
-                __m256d sum = _mm256_setzero_pd();
-                for (int h = 0; h < m_cols; h++) {
-                    __m256d vec1 = _mm256_set1_pd((*this)(i, h));
-                    __m256d vec2 = _mm256_loadu_pd(&other.m_data[static_cast<size_t>(h * other.m_cols + j)]);
-                    sum = _mm256_fmadd_pd(vec1, vec2, sum);
-                }
-                _mm256_storeu_pd(&result.m_data[static_cast<size_t>(i * other.m_cols + j)], sum);
-            }
-            for (; j < other.m_cols; j++) {
-                for (int h = 0; h < m_cols; h++) {
-                    result(i, j) += (*this)(i, h) * other(h, j);
+        #ifdef _OPENMP
+        #pragma omp parallel for schedule(dynamic)
+        #endif
+        for (int ii = 0; ii < M; ii += DEFAULT_BLOCK_SIZE) {
+            const int i_end = std::min(ii + DEFAULT_BLOCK_SIZE, M);
+            for (int kk = 0; kk < K; kk += DEFAULT_BLOCK_SIZE) {
+                const int k_end = std::min(kk + DEFAULT_BLOCK_SIZE, K);
+                for (int jj = 0; jj < N; jj += DEFAULT_BLOCK_SIZE) {
+                    const int j_end = std::min(jj + DEFAULT_BLOCK_SIZE, N);
+                    for (int i = ii; i < i_end; i++) {
+                        for (int k = kk; k < k_end; k++) {
+                            __m256d a_ik = _mm256_set1_pd(A[static_cast<size_t>(i * K + k)]);
+                            int j = jj;
+                            for (; j + 4 <= j_end; j += 4) {
+                                size_t c_idx = static_cast<size_t>(i * N + j);
+                                size_t b_idx = static_cast<size_t>(k * N + j);
+                                __m256d c_vec = _mm256_loadu_pd(&C[c_idx]);
+                                __m256d b_vec = _mm256_loadu_pd(&B[b_idx]);
+                                c_vec = _mm256_fmadd_pd(a_ik, b_vec, c_vec);
+                                _mm256_storeu_pd(&C[c_idx], c_vec);
+                            }
+                            for (; j < j_end; j++) {
+                                C[static_cast<size_t>(i * N + j)] += A[static_cast<size_t>(i * K + k)] * B[static_cast<size_t>(k * N + j)];
+                            }
+                        }
+                    }
                 }
             }
         }
     } else if constexpr (std::is_same_v<T, float>) {
-        for (int i = 0; i < m_rows; i++) {
-            int j = 0;
-            for (; j + 8 <= other.m_cols; j += 8) {
-                __m256 sum = _mm256_setzero_ps();
-                for (int h = 0; h < m_cols; h++) {
-                    __m256 vec1 = _mm256_set1_ps((*this)(i, h));
-                    __m256 vec2 = _mm256_loadu_ps(&other.m_data[static_cast<size_t>(h * other.m_cols + j)]);
-                    sum = _mm256_fmadd_ps(vec1, vec2, sum);
-                }
-                _mm256_storeu_ps(&result.m_data[static_cast<size_t>(i * other.m_cols + j)], sum);
-            }
-            for (; j < other.m_cols; j++) {
-                for (int h = 0; h < m_cols; h++) {
-                    result(i, j) += (*this)(i, h) * other(h, j);
+        #ifdef _OPENMP
+        #pragma omp parallel for schedule(dynamic)
+        #endif
+        for (int ii = 0; ii < M; ii += DEFAULT_BLOCK_SIZE) {
+            const int i_end = std::min(ii + DEFAULT_BLOCK_SIZE, M);
+            for (int kk = 0; kk < K; kk += DEFAULT_BLOCK_SIZE) {
+                const int k_end = std::min(kk + DEFAULT_BLOCK_SIZE, K);
+                for (int jj = 0; jj < N; jj += DEFAULT_BLOCK_SIZE) {
+                    const int j_end = std::min(jj + DEFAULT_BLOCK_SIZE, N);
+                    for (int i = ii; i < i_end; i++) {
+                        for (int k = kk; k < k_end; k++) {
+                            __m256 a_ik = _mm256_set1_ps(A[static_cast<size_t>(i * K + k)]);
+                            int j = jj;
+                            for (; j + 8 <= j_end; j += 8) {
+                                size_t c_idx = static_cast<size_t>(i * N + j);
+                                size_t b_idx = static_cast<size_t>(k * N + j);
+                                __m256 c_vec = _mm256_loadu_ps(&C[c_idx]);
+                                __m256 b_vec = _mm256_loadu_ps(&B[b_idx]);
+                                c_vec = _mm256_fmadd_ps(a_ik, b_vec, c_vec);
+                                _mm256_storeu_ps(&C[c_idx], c_vec);
+                            }
+                            for (; j < j_end; j++) {
+                                C[static_cast<size_t>(i * N + j)] += A[static_cast<size_t>(i * K + k)] * B[static_cast<size_t>(k * N + j)];
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -215,22 +247,20 @@ Matrix<T> Matrix<T>::operator*(const Matrix& other) const {
     #else
     {
     #endif
-        // Blocking loop to fit in L1 Cache
-        for (int ii = 0; ii < m_rows; ii += DEFAULT_BLOCK_SIZE) {
-            const int i_end = std::min(ii + DEFAULT_BLOCK_SIZE, m_rows);
-
-            for (int kk = 0; kk < m_cols; kk += DEFAULT_BLOCK_SIZE) {
-                const int k_end = std::min(kk + DEFAULT_BLOCK_SIZE, m_cols);
-
-                for (int jj = 0; jj < other.m_cols; jj += DEFAULT_BLOCK_SIZE) {
-                    const int j_end = std::min(jj + DEFAULT_BLOCK_SIZE, other.m_cols);
-
-                    // Multiply block [ii:i_end, kk:k_end] by [kk:k_end, jj:j_end]
+        #ifdef _OPENMP
+        #pragma omp parallel for schedule(dynamic)
+        #endif
+        for (int ii = 0; ii < M; ii += DEFAULT_BLOCK_SIZE) {
+            const int i_end = std::min(ii + DEFAULT_BLOCK_SIZE, M);
+            for (int kk = 0; kk < K; kk += DEFAULT_BLOCK_SIZE) {
+                const int k_end = std::min(kk + DEFAULT_BLOCK_SIZE, K);
+                for (int jj = 0; jj < N; jj += DEFAULT_BLOCK_SIZE) {
+                    const int j_end = std::min(jj + DEFAULT_BLOCK_SIZE, N);
                     for (int i = ii; i < i_end; i++) {
                         for (int k = kk; k < k_end; k++) {
-                            const T a_ik = (*this)(i, k);
+                            const T a_ik = A[static_cast<size_t>(i * K + k)];
                             for (int j = jj; j < j_end; j++) {
-                                result(i, j) += a_ik * other(k, j);
+                                C[static_cast<size_t>(i * N + j)] += a_ik * B[static_cast<size_t>(k * N + j)];
                             }
                         }
                     }

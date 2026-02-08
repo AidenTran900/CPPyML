@@ -182,6 +182,51 @@ std::vector<std::string> Tokenizer::applyBPEMerges(const std::string& word) {
     return tokens;
 }
 
+static std::string byteToBpeChar(unsigned char b) {
+    static const bool init = []() { return true; }();
+    (void)init;
+
+    bool is_direct =
+        (b >= 33 && b <= 126) ||
+        (b >= 161 && b <= 172) ||
+        (b >= 174 && b <= 255);
+
+    if (is_direct) {
+        return std::string(1, static_cast<char>(b));
+    }
+
+    static const unsigned char remap_bytes[] = {
+        0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,
+        127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,
+        150,151,152,153,154,155,156,157,158,159,160,173
+    };
+    for (int i = 0; i < 68; i++) {
+        if (remap_bytes[i] == b) {
+            int codepoint = 256 + i;
+            char buf[4];
+            buf[0] = static_cast<char>(0xC0 | (codepoint >> 6));
+            buf[1] = static_cast<char>(0x80 | (codepoint & 0x3F));
+            return std::string(buf, 2);
+        }
+    }
+    return std::string(1, static_cast<char>(b));
+}
+
+static std::vector<std::string> splitUtf8Chars(const std::string& s) {
+    std::vector<std::string> chars;
+    for (size_t i = 0; i < s.size(); ) {
+        auto b = static_cast<unsigned char>(s[i]);
+        int len = 1;
+        if (b >= 0xF0) len = 4;
+        else if (b >= 0xE0) len = 3;
+        else if (b >= 0xC0) len = 2;
+        if (i + len > s.size()) len = 1;
+        chars.push_back(s.substr(i, len));
+        i += len;
+    }
+    return chars;
+}
+
 std::vector<std::string> Tokenizer::bpeTokenize(const std::string& text) {
     std::vector<std::string> tokens;
 
@@ -189,22 +234,85 @@ std::vector<std::string> Tokenizer::bpeTokenize(const std::string& text) {
         return characterTokenize(text);
     }
 
-    // split text to words and merge
-    std::string word = "";
-    for (size_t i = 0; i < text.size(); ++i) {
-        if (std::isspace(text[i])) {
-            if (!word.empty()) {
-                auto word_tokens = applyBPEMerges(word);
-                tokens.insert(tokens.end(), word_tokens.begin(), word_tokens.end());
-                word = "";
+    bool byte_level = false;
+    for (const auto& [tok, id] : vocab) {
+        if (tok.size() >= 2) {
+            auto b0 = static_cast<unsigned char>(tok[0]);
+            auto b1 = static_cast<unsigned char>(tok[1]);
+            if (b0 == 0xC4 && b1 == 0xA0) {
+                byte_level = true;
+                break;
             }
-        } else {
-            word += text[i];
         }
     }
-    if (!word.empty()) {
-        auto word_tokens = applyBPEMerges(word);
-        tokens.insert(tokens.end(), word_tokens.begin(), word_tokens.end());
+
+    if (!byte_level) {
+        std::string word;
+        for (size_t i = 0; i < text.size(); ++i) {
+            if (std::isspace(text[i])) {
+                if (!word.empty()) {
+                    auto word_tokens = applyBPEMerges(word);
+                    tokens.insert(tokens.end(), word_tokens.begin(), word_tokens.end());
+                    word = "";
+                }
+            } else {
+                word += text[i];
+            }
+        }
+        if (!word.empty()) {
+            auto word_tokens = applyBPEMerges(word);
+            tokens.insert(tokens.end(), word_tokens.begin(), word_tokens.end());
+        }
+        return tokens;
+    }
+
+    std::string encoded;
+    for (unsigned char b : text) {
+        encoded += byteToBpeChar(b);
+    }
+
+    std::string space_marker = byteToBpeChar(' ');
+    std::vector<std::string> words;
+    std::string current;
+    for (size_t i = 0; i < encoded.size(); ) {
+        auto b = static_cast<unsigned char>(encoded[i]);
+        int len = 1;
+        if (b >= 0xF0) len = 4;
+        else if (b >= 0xE0) len = 3;
+        else if (b >= 0xC0) len = 2;
+        if (i + len > encoded.size()) len = 1;
+
+        std::string ch = encoded.substr(i, len);
+        if (ch == space_marker && !current.empty()) {
+            words.push_back(current);
+            current = ch;
+        } else {
+            current += ch;
+        }
+        i += len;
+    }
+    if (!current.empty()) words.push_back(current);
+
+    for (const auto& word : words) {
+        auto chars = splitUtf8Chars(word);
+
+        for (const auto& [first, second] : bpe_merges) {
+            std::vector<std::string> new_chars;
+            size_t i = 0;
+            while (i < chars.size()) {
+                if (i + 1 < chars.size() && chars[i] == first && chars[i + 1] == second) {
+                    new_chars.push_back(first + second);
+                    i += 2;
+                } else {
+                    new_chars.push_back(chars[i]);
+                    i++;
+                }
+            }
+            chars = std::move(new_chars);
+            if (chars.size() == 1) break;
+        }
+
+        tokens.insert(tokens.end(), chars.begin(), chars.end());
     }
 
     return tokens;
@@ -249,14 +357,62 @@ void Tokenizer::buildVocab(const std::vector<std::string>& corpus) {
 }
 
 std::vector<int> Tokenizer::encode(const std::string& text) {
-    auto tokens = tokenize(text);
     std::vector<int> ids;
-    ids.reserve(tokens.size());
 
-    for (const std::string& token : tokens) {
-        auto it = vocab.find(token);
-        if (it != vocab.end()) {
-            ids.push_back(it->second);
+    if (!special_tokens.empty()) {
+        std::vector<std::string> segments = {text};
+        std::vector<bool> is_special = {false};
+
+        for (const auto& st : special_tokens) {
+            std::vector<std::string> new_segments;
+            std::vector<bool> new_is_special;
+            for (size_t i = 0; i < segments.size(); i++) {
+                if (is_special[i]) {
+                    new_segments.push_back(segments[i]);
+                    new_is_special.push_back(true);
+                    continue;
+                }
+                const std::string& seg = segments[i];
+                size_t pos = 0;
+                while (pos < seg.size()) {
+                    size_t found = seg.find(st, pos);
+                    if (found == std::string::npos) {
+                        if (pos < seg.size()) {
+                            new_segments.push_back(seg.substr(pos));
+                            new_is_special.push_back(false);
+                        }
+                        break;
+                    }
+                    if (found > pos) {
+                        new_segments.push_back(seg.substr(pos, found - pos));
+                        new_is_special.push_back(false);
+                    }
+                    new_segments.push_back(st);
+                    new_is_special.push_back(true);
+                    pos = found + st.size();
+                }
+            }
+            segments = std::move(new_segments);
+            is_special = std::move(new_is_special);
+        }
+
+        for (size_t i = 0; i < segments.size(); i++) {
+            if (is_special[i]) {
+                auto it = vocab.find(segments[i]);
+                if (it != vocab.end()) ids.push_back(it->second);
+            } else {
+                auto tokens = tokenize(segments[i]);
+                for (const auto& token : tokens) {
+                    auto it = vocab.find(token);
+                    if (it != vocab.end()) ids.push_back(it->second);
+                }
+            }
+        }
+    } else {
+        auto tokens = tokenize(text);
+        for (const auto& token : tokens) {
+            auto it = vocab.find(token);
+            if (it != vocab.end()) ids.push_back(it->second);
         }
     }
 
@@ -287,7 +443,29 @@ std::string Tokenizer::decode(const std::vector<int>& ids) {
                 if (pos != std::string::npos) {
                     clean.replace(pos, 4, " ");
                 }
-                result += clean;
+                std::string decoded;
+                for (size_t c = 0; c < clean.size(); ) {
+                    auto b0 = static_cast<unsigned char>(clean[c]);
+                    if (b0 == 0xC4 && c + 1 < clean.size()) {
+                        auto b1 = static_cast<unsigned char>(clean[c + 1]);
+                        if (b1 >= 0x80 && b1 <= 0xBF) {
+                            decoded += static_cast<char>((b1 - 0x80) + 0x00);
+                            c += 2;
+                            continue;
+                        }
+                    }
+                    if (b0 == 0xC5 && c + 1 < clean.size()) {
+                        auto b1 = static_cast<unsigned char>(clean[c + 1]);
+                        if (b1 >= 0x80 && b1 <= 0xBF) {
+                            decoded += static_cast<char>((b1 - 0x80) + 0x40);
+                            c += 2;
+                            continue;
+                        }
+                    }
+                    decoded += clean[c];
+                    c++;
+                }
+                result += decoded;
                 break;
             }
         }

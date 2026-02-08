@@ -106,7 +106,8 @@ LinearModel/
 ├── include/ml_lib/        # Public headers
 ├── examples/
 │   ├── c++/               # C++ examples
-│   │   └── linear-regression/housing/
+│   │   ├── linear-regression/housing/
+│   │   └── language-model/
 │   ├── logistic-regression/ # Heart disease classification example
 │   ├── python/            # Python examples
 │   └── datasets/          # Example datasets
@@ -129,6 +130,26 @@ A complete example demonstrating linear regression on a real-world housing datas
 - Model: Linear regression with L2 regularization
 - Optimizer: Batch gradient descent
 - Metrics: MSE, RMSE, MAE, R²
+
+### SmolLM2 135M (Language Model)
+
+A text generation example using SmolLM2 135M Instruct loaded from a GGUF file:
+
+- Model: HuggingFace SmolLM2 135M Instruct (GGUF format, F16)
+- Features: Tokenizer encoding/decoding, temperature and top-p sampling
+- Inference: Autoregressive generation with KV cache
+
+**Downloading the model:**
+
+Model weights are not included in the repository. Download a GGUF file from Hugging Face:
+
+```bash
+# Install the Hugging Face CLI
+pip install huggingface-hub
+
+# Download the F16 model (~270 MB) used by the example
+huggingface-cli download HuggingFaceTB/SmolLM2-135M-Instruct-GGUF SmolLM2-135M-Instruct-f16.gguf --local-dir examples/datasets/language-model/
+```
 
 ### Heart Disease Prediction (Logistic Regression)
 
@@ -193,7 +214,7 @@ Run the examples:
 - [x] **Positional Encoding:** Sinusoidal, Rotary (RoPE)
 - [x] **Transformer Blocks:** Pre-norm with residual connections
 - [x] **Transformer Model:** Autoregressive generation with token sampling
-- [ ] **Language Models (Basic LLM architecture / GGUF loading)**
+- [x] **Language Models (GGUF loading / SmolLM2 inference)**
 
 ### Precision [ ]
 - [x] **f64 (double):** Default precision for all operations

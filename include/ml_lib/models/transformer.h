@@ -31,6 +31,7 @@ class Transformer : public GradientModel<T> {
 
         std::vector<int> last_token_input;
         Matrix<T> last_logits;
+        std::vector<int> stop_tokens;
 
     public:
         // Legacy constructor (SINUSOIDAL, POST_NORM, LAYER_NORM, STANDARD FFN)
@@ -55,6 +56,8 @@ class Transformer : public GradientModel<T> {
         std::vector<int> generate(const std::vector<int>& prompt, int max_tokens,
                                   const TokenSampler<T>& sampler);
         void clear_cache();
+        void setEosToken(int id) { stop_tokens = {id}; }
+        void addStopToken(int id) { stop_tokens.push_back(id); }
 
         EmbeddingLayer<T>& getEmbedding() { return embedding; }
         NeuralNetworkLayer<T>& getOutputProjection() { return output_projection; }

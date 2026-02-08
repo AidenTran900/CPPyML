@@ -44,35 +44,32 @@ std::unique_ptr<Transformer<T>> LlamaLoader<T>::load(const std::string& gguf_pat
     // Load tokenizer from GGUF metadata
     gguf.loadTokenizer(tokenizer);
 
-    // Load embedding weights
+    // Load embedding weights (not transposed — rows are vocab entries)
     model->getEmbedding().loadWeights(
         gguf.loadTensor<T>("token_embd.weight"));
 
     // Load per-layer weights
+    // GGUF stores linear weights as (out_features, in_features),
+    // but layers expect (in_features, out_features) for X * W.
     auto& blocks = model->getBlocks();
     for (int i = 0; i < config.num_layers; i++) {
         std::string prefix = "blk." + std::to_string(i) + ".";
 
-        // Attention weights
         blocks[i]->getAttention().loadWeights(
-            gguf.loadTensor<T>(prefix + "attn_q.weight"),
-            gguf.loadTensor<T>(prefix + "attn_k.weight"),
-            gguf.loadTensor<T>(prefix + "attn_v.weight"),
-            gguf.loadTensor<T>(prefix + "attn_output.weight"));
+            gguf.loadTensor<T>(prefix + "attn_q.weight").transpose(),
+            gguf.loadTensor<T>(prefix + "attn_k.weight").transpose(),
+            gguf.loadTensor<T>(prefix + "attn_v.weight").transpose(),
+            gguf.loadTensor<T>(prefix + "attn_output.weight").transpose());
 
-        // Attention norm (RMSNorm, pre-attention = norm1)
         blocks[i]->getRMSNorm1()->loadWeights(
-            gguf.loadTensor<T>(prefix + "attn_norm.weight"));
+            gguf.loadTensor<T>(prefix + "attn_norm.weight").transpose());
 
-        // FFN norm (RMSNorm, pre-FFN = norm2)
         blocks[i]->getRMSNorm2()->loadWeights(
-            gguf.loadTensor<T>(prefix + "ffn_norm.weight"));
+            gguf.loadTensor<T>(prefix + "ffn_norm.weight").transpose());
 
-        // FFN weights: gate, up (ff1), down (ff2)
-        // gate and up need zero bias since LLaMA has no bias
-        Matrix<T> gate_w = gguf.loadTensor<T>(prefix + "ffn_gate.weight");
-        Matrix<T> up_w   = gguf.loadTensor<T>(prefix + "ffn_up.weight");
-        Matrix<T> down_w = gguf.loadTensor<T>(prefix + "ffn_down.weight");
+        Matrix<T> gate_w = gguf.loadTensor<T>(prefix + "ffn_gate.weight").transpose();
+        Matrix<T> up_w   = gguf.loadTensor<T>(prefix + "ffn_up.weight").transpose();
+        Matrix<T> down_w = gguf.loadTensor<T>(prefix + "ffn_down.weight").transpose();
 
         Matrix<T> gate_bias(gate_w.cols(), 1);
         Matrix<T> up_bias(up_w.cols(), 1);
@@ -83,19 +80,23 @@ std::unique_ptr<Transformer<T>> LlamaLoader<T>::load(const std::string& gguf_pat
         blocks[i]->getFF2().loadWeights(down_w, down_bias);
     }
 
-    // Output norm
     model->getOutputRMSNorm()->loadWeights(
-        gguf.loadTensor<T>("output_norm.weight"));
+        gguf.loadTensor<T>("output_norm.weight").transpose());
 
-    // Output projection (lm_head)
-    // Some models tie weights with embedding; use output.weight if available
     const GGUFTensorInfo* output_tensor = gguf.findTensor("output.weight");
     Matrix<T> output_w = output_tensor
-        ? gguf.loadTensor<T>("output.weight")
-        : gguf.loadTensor<T>("token_embd.weight");
+        ? gguf.loadTensor<T>("output.weight").transpose()
+        : gguf.loadTensor<T>("token_embd.weight").transpose();
 
     Matrix<T> output_bias(output_w.cols(), 1);
     model->getOutputProjection().loadWeights(output_w, output_bias);
+
+    if (gguf.hasKey("tokenizer.ggml.eos_token_id")) {
+        model->addStopToken(static_cast<int>(gguf.getUint("tokenizer.ggml.eos_token_id")));
+    }
+    if (gguf.hasKey("tokenizer.ggml.eot_token_id")) {
+        model->addStopToken(static_cast<int>(gguf.getUint("tokenizer.ggml.eot_token_id")));
+    }
 
     return model;
 }

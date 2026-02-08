@@ -19,17 +19,14 @@ void TemperatureProcessor<T>::process(Matrix<T>& logits) const
 {
     int cols = logits.cols();
 
-    // convert probabilities to log space, scale, re softmax, and find max
-    T max_val = static_cast<T>(std::log(std::max(static_cast<double>(logits(0, 0)), 1e-30)));
-    for (int j = 0; j < cols; j++) {
-        T log_val = static_cast<T>(std::log(std::max(static_cast<double>(logits(0, j)), 1e-30)));
-        if (log_val > max_val) max_val = log_val;
+    T max_val = logits(0, 0);
+    for (int j = 1; j < cols; j++) {
+        if (logits(0, j) > max_val) max_val = logits(0, j);
     }
 
     double sum = 0.0;
     for (int j = 0; j < cols; j++) {
-        double log_val = std::log(std::max(static_cast<double>(logits(0, j)), 1e-30));
-        double scaled = (log_val - static_cast<double>(max_val)) / temperature;
+        double scaled = (static_cast<double>(logits(0, j)) - static_cast<double>(max_val)) / temperature;
         logits(0, j) = static_cast<T>(std::exp(scaled));
         sum += static_cast<double>(logits(0, j));
     }

@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 enum TOKENIZER_TYPE {
@@ -41,12 +42,17 @@ class Tokenizer {
         }
         void setMerges(const std::vector<std::pair<std::string, std::string>>& m) {
             bpe_merges = m;
+            tokenizer_type = TOKENIZER_TYPE::BPE;
+        }
+        void addSpecialToken(const std::string& token) {
+            special_tokens.push_back(token);
         }
 
     private:
         TOKENIZER_TYPE tokenizer_type;
 
         std::vector<std::pair<std::string, std::string>> bpe_merges;
+        std::vector<std::string> special_tokens;
 
         std::unordered_map<std::string, int> vocab;
         std::unordered_map<int, std::string> reverse_vocab;

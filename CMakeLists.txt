@@ -82,6 +82,12 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
 ###############
+##  OpenMP   ##
+###############
+
+find_package(OpenMP)
+
+###############
 ##  Project  ##
 ###############
 
@@ -108,6 +114,9 @@ add_executable(Build
     source/models/logistic-regression.cpp
     source/models/support-vector-machine.cpp
     source/utils/csv_utils.cpp
+    source/utils/gguf-loader.cpp
+    source/utils/llama-loader.cpp
+    source/core/tokenizer.cpp
     examples/c++/linear-regression/housing/housing-example.cpp
     examples/logistic-regression/h-disease-example.cpp
     tests/math/matrix-test.cpp
@@ -117,10 +126,14 @@ add_executable(Build
     include/ml_lib/core/optimizer.h
     include/ml_lib/core/regularizer.h
     include/ml_lib/core/metrics.h
+    include/ml_lib/core/tokenizer.h
+    include/ml_lib/core/token-sampler.h
     include/ml_lib/models/linear-regression.h
     include/ml_lib/models/logistic-regression.h
     include/ml_lib/models/support-vector-machine.h
     include/ml_lib/utils/csv_utils.h
+    include/ml_lib/utils/gguf-loader.h
+    include/ml_lib/utils/llama-loader.h
     examples/c++/linear-regression/housing/housing-example.h
     examples/logistic-regression/h-disease-example.h
 )
@@ -138,8 +151,8 @@ target_link_libraries(Build
     #PUBLIC # Useful for libraries, see https://cmake.org/cmake/help/latest/manual/cmake-buildsystem.7.html for more details about transitive usage requirements.
         #libraries/targets to link when linking this library
         #this will automatically setup the needed flags and dependencies when linking against this target
-    PRIVATE # The following libraries are only linked for this target, and its flags/dependencies will not be used when linking against this target
-        general fmt::fmt spdlog::spdlog csv # It is possible to link some libraries for debug or optimized builds only
+    PRIVATE
+        general fmt::fmt spdlog::spdlog csv $<$<BOOL:${OpenMP_CXX_FOUND}>:OpenMP::OpenMP_CXX>
         #debug DEBUGLIBS
         #optimized RELEASELIBS
 )
@@ -160,6 +173,7 @@ endif()
 # Require c++17, this is better than setting CMAKE_CXX_STANDARD since it won't pollute other targets
 # note : cxx_std_* features were added in CMake 3.8.2
 target_compile_features(Build PRIVATE cxx_std_17)
+target_compile_options(Build PRIVATE $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-mavx2 -mfma>)
 
 # CMake scripts extensions
 target_set_warnings(Build ENABLE ALL AS_ERROR ALL DISABLE Annoying) # Helper that can set default warning flags for you
@@ -168,6 +182,46 @@ copy_dlls_for_debug(Build "" "") # Copy dependencies next to the executable (DLL
 
 # Setup our project as the startup project for Visual so that people don't need to do it manually
 set_directory_properties(PROPERTIES VS_STARTUP_PROJECT Build)
+
+#=================================#
+#  SmolLM2 language model example  #
+#=================================#
+
+add_executable(SmolLM2Example
+    examples/c++/language-model/smollm2-135m.cpp
+    source/math/matrix.cpp
+    source/core/loss.cpp
+    source/core/optimizer.cpp
+    source/core/regularizer.cpp
+    source/core/tokenizer.cpp
+    source/core/token-sampler.cpp
+    source/core/embedding-layer.cpp
+    source/core/attention-layer.cpp
+    source/core/transformer-block.cpp
+    source/core/neural-network-layer.cpp
+    source/core/layer-norm.cpp
+    source/core/rms-norm.cpp
+    source/core/sin-pos-encode.cpp
+    source/core/rot-pos-encode.cpp
+    source/core/masking.cpp
+    source/models/transformer.cpp
+    source/utils/gguf-loader.cpp
+    source/utils/llama-loader.cpp
+)
+
+target_include_directories(SmolLM2Example
+    PRIVATE
+        ${CMAKE_CURRENT_LIST_DIR}/include
+        ${CMAKE_CURRENT_LIST_DIR}/source
+)
+
+target_link_libraries(SmolLM2Example
+    PRIVATE
+        fmt::fmt spdlog::spdlog $<$<BOOL:${OpenMP_CXX_FOUND}>:OpenMP::OpenMP_CXX>
+)
+
+target_compile_features(SmolLM2Example PRIVATE cxx_std_17)
+target_compile_options(SmolLM2Example PRIVATE $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-mavx2 -mfma>)
 
 #===============#
 #  Foo library  #
