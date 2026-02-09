@@ -138,6 +138,14 @@ template<typename T>
 std::vector<int> Transformer<T>::generate(const std::vector<int>& prompt, int max_tokens,
                                           const TokenSampler<T>& sampler)
 {
+    return generate(prompt, max_tokens, sampler, nullptr);
+}
+
+template<typename T>
+std::vector<int> Transformer<T>::generate(const std::vector<int>& prompt, int max_tokens,
+                                          const TokenSampler<T>& sampler,
+                                          std::function<void(int)> on_token)
+{
     clear_cache();
 
     std::vector<int> output = prompt;
@@ -169,6 +177,7 @@ std::vector<int> Transformer<T>::generate(const std::vector<int>& prompt, int ma
         int token = sampler.sample(logits);
 
         output.push_back(token);
+        if (on_token) on_token(token);
         pos++;
 
         if (std::find(stop_tokens.begin(), stop_tokens.end(), token) != stop_tokens.end()) break;

@@ -47,6 +47,10 @@ class Tokenizer {
         void addSpecialToken(const std::string& token) {
             special_tokens.push_back(token);
         }
+        int tokenToId(const std::string& token) const {
+            auto it = vocab.find(token);
+            return (it != vocab.end()) ? it->second : -1;
+        }
 
     private:
         TOKENIZER_TYPE tokenizer_type;

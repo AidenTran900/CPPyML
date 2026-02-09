@@ -11,6 +11,7 @@
 #include "gradient-model.h"
 #include <vector>
 #include <memory>
+#include <functional>
 
 #ifdef ML_USE_CUDA
 #include "../cuda/gpu-transformer.h"
@@ -59,6 +60,9 @@ class Transformer : public GradientModel<T> {
         std::vector<int> generate(const std::vector<int>& prompt, int max_tokens);
         std::vector<int> generate(const std::vector<int>& prompt, int max_tokens,
                                   const TokenSampler<T>& sampler);
+        std::vector<int> generate(const std::vector<int>& prompt, int max_tokens,
+                                  const TokenSampler<T>& sampler,
+                                  std::function<void(int)> on_token);
         void clear_cache();
         void setEosToken(int id) { stop_tokens = {id}; }
         void addStopToken(int id) { stop_tokens.push_back(id); }
@@ -81,5 +85,9 @@ class Transformer : public GradientModel<T> {
         std::vector<int> generate_gpu(const std::vector<int>& prompt, int max_tokens);
         std::vector<int> generate_gpu(const std::vector<int>& prompt, int max_tokens,
                                        const TokenSampler<T>& sampler);
+        std::vector<int> generate_gpu(const std::vector<int>& prompt, int max_tokens,
+                                       const TokenSampler<T>& sampler,
+                                       std::function<void(int)> on_token);
+        void prepare_gpu();
 #endif
 };

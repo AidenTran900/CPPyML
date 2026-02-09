@@ -425,7 +425,17 @@ template<typename T>
 std::vector<int> Transformer<T>::generate_gpu(const std::vector<int>& prompt,
                                                int max_tokens,
                                                const TokenSampler<T>& sampler) {
+    return generate_gpu(prompt, max_tokens, sampler, nullptr);
+}
+
+template<typename T>
+std::vector<int> Transformer<T>::generate_gpu(const std::vector<int>& prompt,
+                                               int max_tokens,
+                                               const TokenSampler<T>& sampler,
+                                               std::function<void(int)> on_token) {
     using GpuT = __half;
+
+    prepare_gpu();
 
     auto& attn0 = blocks[0]->getAttention();
     int num_heads    = attn0.getNumHeads();
@@ -434,22 +444,6 @@ std::vector<int> Transformer<T>::generate_gpu(const std::vector<int>& prompt,
     int kv_dim       = attn0.getKVDim();
     int ff_dim       = blocks[0]->getFF1().getWeights().cols();
     float rms_eps    = static_cast<float>(output_rms->getEpsilon());
-
-    // Lazy-init: transfer weights + allocate GPU buffers once
-    if (!gpu_weights_) {
-        gpu_weights_ = std::make_unique<GpuTransformerWeights<GpuT>>(
-            transfer_weights_to_gpu<GpuT>(*this));
-
-        gpu_kv_cache_ = std::make_unique<GpuKVCache<GpuT>>();
-        gpu_kv_cache_->layers.resize(blocks.size());
-        for (auto& layer : gpu_kv_cache_->layers) {
-            layer.K = CudaMatrix<GpuT>(max_seq_len, kv_dim);
-            layer.V = CudaMatrix<GpuT>(max_seq_len, kv_dim);
-        }
-
-        gpu_scratch_ = std::make_unique<GpuScratch<GpuT>>();
-        gpu_scratch_->allocate(max_seq_len, embed_dim, ff_dim, kv_dim, vocab_size);
-    }
 
     gpu_kv_cache_->clear();
 
@@ -465,6 +459,7 @@ std::vector<int> Transformer<T>::generate_gpu(const std::vector<int>& prompt,
     for (int t = 0; t < max_tokens; t++) {
         int token = sampler.sample(logits);
         output.push_back(token);
+        if (on_token) on_token(token);
 
         if (std::find(stop_tokens.begin(), stop_tokens.end(), token) != stop_tokens.end())
             break;
@@ -479,6 +474,30 @@ std::vector<int> Transformer<T>::generate_gpu(const std::vector<int>& prompt,
     }
 
     return output;
+}
+
+template<typename T>
+void Transformer<T>::prepare_gpu() {
+    using GpuT = __half;
+
+    if (gpu_weights_) return;
+
+    auto& attn0 = blocks[0]->getAttention();
+    int kv_dim  = attn0.getKVDim();
+    int ff_dim  = blocks[0]->getFF1().getWeights().cols();
+
+    gpu_weights_ = std::make_unique<GpuTransformerWeights<GpuT>>(
+        transfer_weights_to_gpu<GpuT>(*this));
+
+    gpu_kv_cache_ = std::make_unique<GpuKVCache<GpuT>>();
+    gpu_kv_cache_->layers.resize(blocks.size());
+    for (auto& layer : gpu_kv_cache_->layers) {
+        layer.K = CudaMatrix<GpuT>(max_seq_len, kv_dim);
+        layer.V = CudaMatrix<GpuT>(max_seq_len, kv_dim);
+    }
+
+    gpu_scratch_ = std::make_unique<GpuScratch<GpuT>>();
+    gpu_scratch_->allocate(max_seq_len, embed_dim, ff_dim, kv_dim, vocab_size);
 }
 
 // ============================================================

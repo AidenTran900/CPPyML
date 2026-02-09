@@ -189,7 +189,7 @@ static std::string byteToBpeChar(unsigned char b) {
     bool is_direct =
         (b >= 33 && b <= 126) ||
         (b >= 161 && b <= 172) ||
-        (b >= 174 && b <= 255);
+        (b >= 174);
 
     if (is_direct) {
         return std::string(1, static_cast<char>(b));
