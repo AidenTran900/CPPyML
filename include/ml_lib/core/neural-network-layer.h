@@ -50,4 +50,8 @@ class NeuralNetworkLayer {
         void loadWeights(const Matrix<T>& w, const Matrix<T>& b) {
             weights = w; bias = b;
         }
+
+#ifdef ML_USE_CUDA
+        const Matrix<T>& getWeights() const { return weights; }
+#endif
 };

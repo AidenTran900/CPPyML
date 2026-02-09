@@ -30,6 +30,18 @@ project(
     LANGUAGES C CXX # Used to determine the languages to use based on file extensions
 )
 
+###############
+##   CUDA    ##
+###############
+
+option(ML_USE_CUDA "Enable CUDA GPU inference" OFF)
+
+if(ML_USE_CUDA)
+    enable_language(CUDA)
+    find_package(CUDAToolkit REQUIRED)
+    set(CMAKE_CUDA_ARCHITECTURES 75)
+endif()
+
 ############################
 ##  Modules and scripts   ##
 ############################
@@ -222,6 +234,17 @@ target_link_libraries(SmolLM2Example
 
 target_compile_features(SmolLM2Example PRIVATE cxx_std_17)
 target_compile_options(SmolLM2Example PRIVATE $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-mavx2 -mfma>)
+
+if(ML_USE_CUDA)
+    target_sources(SmolLM2Example PRIVATE
+        source/cuda/cuda-matrix.cu
+        source/cuda/cuda-kernels.cu
+        source/cuda/gpu-transformer.cu
+    )
+    target_compile_definitions(SmolLM2Example PRIVATE ML_USE_CUDA)
+    target_link_libraries(SmolLM2Example PRIVATE CUDA::cublas CUDA::cudart)
+    set_target_properties(SmolLM2Example PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+endif()
 
 #===============#
 #  Foo library  #

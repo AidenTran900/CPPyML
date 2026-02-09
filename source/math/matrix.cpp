@@ -182,8 +182,7 @@ Matrix<T> Matrix<T>::operator*(const Matrix& other) const {
     const T* __restrict__ A = m_data.data();
     const T* __restrict__ B = other.m_data.data();
 
-    // Fast path: matrix-vector multiply (M == 1)
-    // Parallelizes over output columns instead of the single row
+
     if (M == 1) {
         #if ML_HAS_AVX2 && ML_USE_SIMD
         if constexpr (std::is_same_v<T, double>) {
@@ -246,7 +245,7 @@ Matrix<T> Matrix<T>::operator*(const Matrix& other) const {
         return result;
     }
 
-    // General matrix multiply (M > 1)
+    // general matrix multiply (M > 1)
     #if ML_HAS_AVX2 && ML_USE_SIMD
     if constexpr (std::is_same_v<T, double>) {
         #ifdef _OPENMP

@@ -12,6 +12,10 @@
 #include <vector>
 #include <memory>
 
+#ifdef ML_USE_CUDA
+#include "../cuda/gpu-transformer.h"
+#endif
+
 template<typename T = double>
 class Transformer : public GradientModel<T> {
     private:
@@ -66,4 +70,16 @@ class Transformer : public GradientModel<T> {
         // Output norm accessors (for weight loading)
         LayerNorm<T>* getOutputLayerNorm() { return output_ln.get(); }
         RMSNorm<T>* getOutputRMSNorm() { return output_rms.get(); }
+
+#ifdef ML_USE_CUDA
+    private:
+        std::unique_ptr<GpuTransformerWeights<__half>> gpu_weights_;
+        std::unique_ptr<GpuKVCache<__half>> gpu_kv_cache_;
+        std::unique_ptr<GpuScratch<__half>> gpu_scratch_;
+
+    public:
+        std::vector<int> generate_gpu(const std::vector<int>& prompt, int max_tokens);
+        std::vector<int> generate_gpu(const std::vector<int>& prompt, int max_tokens,
+                                       const TokenSampler<T>& sampler);
+#endif
 };

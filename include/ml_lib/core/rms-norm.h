@@ -21,4 +21,9 @@ class RMSNorm {
         void update(Optimizer<T> *opt);
 
         void loadWeights(const Matrix<T>& g) { gamma = g; }
+
+#ifdef ML_USE_CUDA
+        const Matrix<T>& getGamma() const { return gamma; }
+        double getEpsilon() const { return epsilon; }
+#endif
 };

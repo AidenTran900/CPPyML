@@ -58,4 +58,18 @@ class AttentionLayer {
                          const Matrix<T>& v, const Matrix<T>& o) {
             W_q = q; W_k = k; W_v = v; W_o = o;
         }
+
+#ifdef ML_USE_CUDA
+        const Matrix<T>& getWq() const { return W_q; }
+        const Matrix<T>& getWk() const { return W_k; }
+        const Matrix<T>& getWv() const { return W_v; }
+        const Matrix<T>& getWo() const { return W_o; }
+        const Matrix<T>& getRopeCos() const { return rope_cos; }
+        const Matrix<T>& getRopeSin() const { return rope_sin; }
+        int getHeadDim() const { return head_dim; }
+        int getKVDim() const { return kv_dim; }
+        int getNumKVHeads() const { return num_kv_heads; }
+        int getNumHeads() const { return num_heads; }
+        bool isRoPEEnabled() const { return rope_enabled; }
+#endif
 };

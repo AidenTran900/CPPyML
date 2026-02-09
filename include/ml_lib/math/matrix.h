@@ -24,6 +24,8 @@ class Matrix {
         int rows() const { return m_rows; }
         int cols() const { return m_cols; }
         bool empty() const { return m_rows == 0 || m_cols == 0; }
+        const T* data() const { return m_data.data(); }
+        T* data() { return m_data.data(); }
 
         const T* getRow(int row) const;
         T* getRow(int row);

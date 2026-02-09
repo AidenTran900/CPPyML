@@ -21,4 +21,8 @@ class EmbeddingLayer {
         void update(Optimizer<T> *opt);
 
         void loadWeights(const Matrix<T>& w) { weights = w; }
+
+#ifdef ML_USE_CUDA
+        const Matrix<T>& getWeights() const { return weights; }
+#endif
 };
