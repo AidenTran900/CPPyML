@@ -131,13 +131,13 @@ A complete example demonstrating linear regression on a real-world housing datas
 - Optimizer: Batch gradient descent
 - Metrics: MSE, RMSE, MAE, R²
 
-### SmolLM2 135M (Language Model)
+### Llama 3.2-1B Instruct (Language Model)
 
-A text generation example using SmolLM2 135M Instruct loaded from a GGUF file:
+A text generation example using Llama 3.2-1B Instruct loaded from a GGUF file:
 
-- Model: HuggingFace SmolLM2 135M Instruct (GGUF format)
+- Model: Llama 3.2-1B Instruct (GGUF format)
 - Supported quantizations: F32, F16, Q4_0, Q4_1, Q5_0, Q5_1, Q8_0, Q8_1
-- Features: Tokenizer encoding/decoding, temperature and top-p sampling
+- Features: Tokenizer encoding/decoding, streaming output, temperature and top-p sampling
 - Inference: Autoregressive generation with KV cache
 
 **Downloading the model:**
@@ -148,11 +148,8 @@ Model weights are not included in the repository. Download a GGUF file from Hugg
 # Install the Hugging Face CLI
 pip install huggingface-hub
 
-# F16 (~270 MB)
-huggingface-cli download HuggingFaceTB/SmolLM2-135M-Instruct-GGUF SmolLM2-135M-Instruct-f16.gguf --local-dir examples/datasets/language-model/
-
-# Q8_0 quantized (~143 MB)
-huggingface-cli download bartowski/SmolLM2-135M-Instruct-GGUF SmolLM2-135M-Instruct-Q8_0.gguf --local-dir examples/datasets/language-model/
+# Q8_0 quantized (~1.1 GB)
+huggingface-cli download bartowski/Llama-3.2-1B-Instruct-GGUF Llama-3.2-1B-Instruct-Q8_0.gguf --local-dir examples/datasets/language-model/
 ```
 
 ### Heart Disease Prediction (Logistic Regression)
@@ -218,7 +215,7 @@ Run the examples:
 - [x] **Positional Encoding:** Sinusoidal, Rotary (RoPE)
 - [x] **Transformer Blocks:** Pre-norm with residual connections
 - [x] **Transformer Model:** Autoregressive generation with token sampling
-- [x] **Language Models (GGUF loading / SmolLM2 inference)**
+- [x] **Language Models (GGUF loading / Llama inference)**
 
 ### Precision [X]
 - [x] **f64 (double):** Default precision for all operations

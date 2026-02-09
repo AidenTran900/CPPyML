@@ -1,19 +1,14 @@
 # Language Model Examples
 
-## SmolLM2-135M
+## Llama 3.2-1B Instruct
 
-A small instruction-tuned language model loaded from GGUF format.
+An instruction-tuned language model loaded from GGUF format with streaming token generation.
 
 ### Download Model
 
-**F16 (270 MB):**
+**Q8_0 quantized (~1.1 GB):**
 ```bash
-huggingface-cli download bartowski/SmolLM2-135M-Instruct-GGUF SmolLM2-135M-Instruct-f16.gguf --local-dir examples/datasets/language-model/
-```
-
-**Q8_0 quantized (143 MB):**
-```bash
-huggingface-cli download bartowski/SmolLM2-135M-Instruct-GGUF SmolLM2-135M-Instruct-Q8_0.gguf --local-dir examples/datasets/language-model/
+huggingface-cli download bartowski/Llama-3.2-1B-Instruct-GGUF Llama-3.2-1B-Instruct-Q8_0.gguf --local-dir examples/datasets/language-model/
 ```
 
 > Requires `huggingface-cli`: `pip install huggingface-hub`
@@ -22,16 +17,16 @@ huggingface-cli download bartowski/SmolLM2-135M-Instruct-GGUF SmolLM2-135M-Instr
 
 F32, F16, Q4_0, Q4_1, Q5_0, Q5_1, Q8_0, Q8_1
 
-### Run
+### Build & Run
 
 ```bash
 cmake --build build/
-./build/Build
+./build/LlamaExample
 ```
 
-To use the quantized model, update the path in `smollm2-135m.cpp`:
+To use a different quantization, update the path in `llama-3.2-1b.cpp`:
 ```cpp
 auto model = LlamaLoader<float>::load(
-    "examples/datasets/language-model/SmolLM2-135M-Instruct-Q8_0.gguf",
-    tokenizer, 128);
+    "examples/datasets/language-model/Llama-3.2-1B-Instruct-Q8_0.gguf",
+    tokenizer, 2048);
 ```

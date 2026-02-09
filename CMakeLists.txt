@@ -30,7 +30,7 @@ project(
     LANGUAGES C CXX # Used to determine the languages to use based on file extensions
 )
 
-###############
+###############s
 ##   CUDA    ##
 ###############
 
@@ -196,11 +196,11 @@ copy_dlls_for_debug(Build "" "") # Copy dependencies next to the executable (DLL
 set_directory_properties(PROPERTIES VS_STARTUP_PROJECT Build)
 
 #=================================#
-#  SmolLM2 language model example  #
+#  Llama 3.2 language model example  #
 #=================================#
 
-add_executable(SmolLM2Example
-    examples/c++/language-model/smollm2-135m.cpp
+add_executable(LlamaExample
+    examples/c++/language-model/llama-3.2-1b.cpp
     source/math/matrix.cpp
     source/core/loss.cpp
     source/core/optimizer.cpp
@@ -221,29 +221,29 @@ add_executable(SmolLM2Example
     source/utils/llama-loader.cpp
 )
 
-target_include_directories(SmolLM2Example
+target_include_directories(LlamaExample
     PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/include
         ${CMAKE_CURRENT_LIST_DIR}/source
 )
 
-target_link_libraries(SmolLM2Example
+target_link_libraries(LlamaExample
     PRIVATE
         fmt::fmt spdlog::spdlog $<$<BOOL:${OpenMP_CXX_FOUND}>:OpenMP::OpenMP_CXX>
 )
 
-target_compile_features(SmolLM2Example PRIVATE cxx_std_17)
-target_compile_options(SmolLM2Example PRIVATE $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-mavx2 -mfma>)
+target_compile_features(LlamaExample PRIVATE cxx_std_17)
+target_compile_options(LlamaExample PRIVATE $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-mavx2 -mfma>)
 
 if(ML_USE_CUDA)
-    target_sources(SmolLM2Example PRIVATE
+    target_sources(LlamaExample PRIVATE
         source/cuda/cuda-matrix.cu
         source/cuda/cuda-kernels.cu
         source/cuda/gpu-transformer.cu
     )
-    target_compile_definitions(SmolLM2Example PRIVATE ML_USE_CUDA)
-    target_link_libraries(SmolLM2Example PRIVATE CUDA::cublas CUDA::cudart)
-    set_target_properties(SmolLM2Example PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    target_compile_definitions(LlamaExample PRIVATE ML_USE_CUDA)
+    target_link_libraries(LlamaExample PRIVATE CUDA::cublas CUDA::cudart)
+    set_target_properties(LlamaExample PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 endif()
 
 #===============#
