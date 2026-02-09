@@ -52,6 +52,7 @@ class TransformerBlock {
 
         Matrix<T> forward(const Matrix<T>& input);
         Matrix<T> forward_cached(const Matrix<T>& input);
+        Matrix<T> forward_prefill(const Matrix<T>& input);
         void clear_cache();
         Matrix<T> backward(const Matrix<T>& grad_output);
         void update(Optimizer<T>* opt);

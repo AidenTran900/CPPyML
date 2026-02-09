@@ -182,6 +182,71 @@ Matrix<T> Matrix<T>::operator*(const Matrix& other) const {
     const T* __restrict__ A = m_data.data();
     const T* __restrict__ B = other.m_data.data();
 
+    // Fast path: matrix-vector multiply (M == 1)
+    // Parallelizes over output columns instead of the single row
+    if (M == 1) {
+        #if ML_HAS_AVX2 && ML_USE_SIMD
+        if constexpr (std::is_same_v<T, double>) {
+            #ifdef _OPENMP
+            #pragma omp parallel for schedule(static)
+            #endif
+            for (int jj = 0; jj < N; jj += DEFAULT_BLOCK_SIZE) {
+                const int j_end = std::min(jj + DEFAULT_BLOCK_SIZE, N);
+                for (int k = 0; k < K; k++) {
+                    __m256d a_k = _mm256_set1_pd(A[k]);
+                    int j = jj;
+                    for (; j + 4 <= j_end; j += 4) {
+                        __m256d c_vec = _mm256_loadu_pd(&C[j]);
+                        __m256d b_vec = _mm256_loadu_pd(&B[static_cast<size_t>(k * N + j)]);
+                        c_vec = _mm256_fmadd_pd(a_k, b_vec, c_vec);
+                        _mm256_storeu_pd(&C[j], c_vec);
+                    }
+                    for (; j < j_end; j++) {
+                        C[j] += A[k] * B[static_cast<size_t>(k * N + j)];
+                    }
+                }
+            }
+        } else if constexpr (std::is_same_v<T, float>) {
+            #ifdef _OPENMP
+            #pragma omp parallel for schedule(static)
+            #endif
+            for (int jj = 0; jj < N; jj += DEFAULT_BLOCK_SIZE) {
+                const int j_end = std::min(jj + DEFAULT_BLOCK_SIZE, N);
+                for (int k = 0; k < K; k++) {
+                    __m256 a_k = _mm256_set1_ps(A[k]);
+                    int j = jj;
+                    for (; j + 8 <= j_end; j += 8) {
+                        __m256 c_vec = _mm256_loadu_ps(&C[j]);
+                        __m256 b_vec = _mm256_loadu_ps(&B[static_cast<size_t>(k * N + j)]);
+                        c_vec = _mm256_fmadd_ps(a_k, b_vec, c_vec);
+                        _mm256_storeu_ps(&C[j], c_vec);
+                    }
+                    for (; j < j_end; j++) {
+                        C[j] += A[k] * B[static_cast<size_t>(k * N + j)];
+                    }
+                }
+            }
+        } else {
+        #else
+        {
+        #endif
+            #ifdef _OPENMP
+            #pragma omp parallel for schedule(static)
+            #endif
+            for (int jj = 0; jj < N; jj += DEFAULT_BLOCK_SIZE) {
+                const int j_end = std::min(jj + DEFAULT_BLOCK_SIZE, N);
+                for (int k = 0; k < K; k++) {
+                    const T a_k = A[k];
+                    for (int j = jj; j < j_end; j++) {
+                        C[j] += a_k * B[static_cast<size_t>(k * N + j)];
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    // General matrix multiply (M > 1)
     #if ML_HAS_AVX2 && ML_USE_SIMD
     if constexpr (std::is_same_v<T, double>) {
         #ifdef _OPENMP
@@ -532,6 +597,22 @@ Matrix<T> Matrix<T>::verticalConcat(const Matrix& other) const {
         }
     }
     return result;
+}
+
+template<typename T>
+void Matrix<T>::appendRow(const Matrix& row) {
+    if (row.m_rows != 1) {
+        throw std::invalid_argument("appendRow expects a single-row matrix.");
+    }
+    if (empty()) {
+        m_cols = row.m_cols;
+        m_rows = 0;
+    }
+    if (m_cols != row.m_cols) {
+        throw std::invalid_argument("Column count must match for appendRow.");
+    }
+    m_data.insert(m_data.end(), row.m_data.begin(), row.m_data.end());
+    m_rows++;
 }
 
 template<typename T>

@@ -135,7 +135,8 @@ A complete example demonstrating linear regression on a real-world housing datas
 
 A text generation example using SmolLM2 135M Instruct loaded from a GGUF file:
 
-- Model: HuggingFace SmolLM2 135M Instruct (GGUF format, F16)
+- Model: HuggingFace SmolLM2 135M Instruct (GGUF format)
+- Supported quantizations: F32, F16, Q4_0, Q4_1, Q5_0, Q5_1, Q8_0, Q8_1
 - Features: Tokenizer encoding/decoding, temperature and top-p sampling
 - Inference: Autoregressive generation with KV cache
 
@@ -147,8 +148,11 @@ Model weights are not included in the repository. Download a GGUF file from Hugg
 # Install the Hugging Face CLI
 pip install huggingface-hub
 
-# Download the F16 model (~270 MB) used by the example
+# F16 (~270 MB)
 huggingface-cli download HuggingFaceTB/SmolLM2-135M-Instruct-GGUF SmolLM2-135M-Instruct-f16.gguf --local-dir examples/datasets/language-model/
+
+# Q8_0 quantized (~143 MB)
+huggingface-cli download bartowski/SmolLM2-135M-Instruct-GGUF SmolLM2-135M-Instruct-Q8_0.gguf --local-dir examples/datasets/language-model/
 ```
 
 ### Heart Disease Prediction (Logistic Regression)
@@ -216,10 +220,10 @@ Run the examples:
 - [x] **Transformer Model:** Autoregressive generation with token sampling
 - [x] **Language Models (GGUF loading / SmolLM2 inference)**
 
-### Precision [ ]
+### Precision [X]
 - [x] **f64 (double):** Default precision for all operations
 - [x] **f32 (float):** Template support across the full stack
-- [ ] **f16 / Quantization:** For efficient model loading
+- [x] **f16 / Quantization:** F16, Q4_0, Q4_1, Q5_0, Q5_1, Q8_0, Q8_1 dequantization for GGUF loading
 
 ### DL Architectures [ ]
 - [ ] **Convolutional Neural Networks (CNNs)** (For images)

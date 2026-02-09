@@ -304,11 +304,167 @@ Matrix<T> GGUFFile::loadTensor(const GGUFTensorInfo& info) const {
         for (uint64_t i = 0; i < num_elements; i++) {
             mat(static_cast<int>(i / cols), static_cast<int>(i % cols)) = static_cast<T>(f16ToF32(buf[i]));
         }
+    } else if (info.type == GGMLType::Q4_0) {
+        // Block: f16 delta (2B) + uint8[16] nibbles (16B) = 18 bytes per 32 values
+        constexpr int QK = 32;
+        constexpr int BLOCK_BYTES = 18;
+        uint64_t num_blocks = num_elements / QK;
+        std::vector<uint8_t> raw(num_blocks * BLOCK_BYTES);
+        f.read(reinterpret_cast<char*>(raw.data()), raw.size());
+
+        for (uint64_t b = 0; b < num_blocks; b++) {
+            const uint8_t* block = raw.data() + b * BLOCK_BYTES;
+            uint16_t d_half;
+            std::memcpy(&d_half, block, 2);
+            float delta = f16ToF32(d_half);
+
+            for (int j = 0; j < 16; j++) {
+                uint8_t byte = block[2 + j];
+                int lo = (byte & 0x0F);
+                int hi = (byte >> 4);
+                uint64_t idx = b * QK + j * 2;
+                mat(static_cast<int>(idx / cols), static_cast<int>(idx % cols)) = static_cast<T>(delta * (lo - 8));
+                idx++;
+                mat(static_cast<int>(idx / cols), static_cast<int>(idx % cols)) = static_cast<T>(delta * (hi - 8));
+            }
+        }
+    } else if (info.type == GGMLType::Q4_1) {
+        // Block: f16 delta (2B) + f16 min (2B) + uint8[16] nibbles (16B) = 20 bytes per 32 values
+        constexpr int QK = 32;
+        constexpr int BLOCK_BYTES = 20;
+        uint64_t num_blocks = num_elements / QK;
+        std::vector<uint8_t> raw(num_blocks * BLOCK_BYTES);
+        f.read(reinterpret_cast<char*>(raw.data()), raw.size());
+
+        for (uint64_t b = 0; b < num_blocks; b++) {
+            const uint8_t* block = raw.data() + b * BLOCK_BYTES;
+            uint16_t d_half, m_half;
+            std::memcpy(&d_half, block, 2);
+            std::memcpy(&m_half, block + 2, 2);
+            float delta = f16ToF32(d_half);
+            float min = f16ToF32(m_half);
+
+            for (int j = 0; j < 16; j++) {
+                uint8_t byte = block[4 + j];
+                int lo = (byte & 0x0F);
+                int hi = (byte >> 4);
+                uint64_t idx = b * QK + j * 2;
+                mat(static_cast<int>(idx / cols), static_cast<int>(idx % cols)) = static_cast<T>(delta * lo + min);
+                idx++;
+                mat(static_cast<int>(idx / cols), static_cast<int>(idx % cols)) = static_cast<T>(delta * hi + min);
+            }
+        }
+    } else if (info.type == GGMLType::Q5_0) {
+        // Block: f16 delta (2B) + uint8[4] high bits (4B) + uint8[16] nibbles (16B) = 22 bytes per 32 values
+        constexpr int QK = 32;
+        constexpr int BLOCK_BYTES = 22;
+        uint64_t num_blocks = num_elements / QK;
+        std::vector<uint8_t> raw(num_blocks * BLOCK_BYTES);
+        f.read(reinterpret_cast<char*>(raw.data()), raw.size());
+
+        for (uint64_t b = 0; b < num_blocks; b++) {
+            const uint8_t* block = raw.data() + b * BLOCK_BYTES;
+            uint16_t d_half;
+            std::memcpy(&d_half, block, 2);
+            float delta = f16ToF32(d_half);
+
+            // High bits packed in 4 bytes (32 bits for 32 values)
+            uint32_t qh;
+            std::memcpy(&qh, block + 2, 4);
+
+            for (int j = 0; j < 16; j++) {
+                uint8_t byte = block[6 + j];
+                int lo = (byte & 0x0F);
+                int hi = (byte >> 4);
+
+                // Add 5th bit from qh
+                lo |= ((qh >> (j * 2)) & 1) << 4;
+                hi |= ((qh >> (j * 2 + 1)) & 1) << 4;
+
+                uint64_t idx = b * QK + j * 2;
+                mat(static_cast<int>(idx / cols), static_cast<int>(idx % cols)) = static_cast<T>(delta * (lo - 16));
+                idx++;
+                mat(static_cast<int>(idx / cols), static_cast<int>(idx % cols)) = static_cast<T>(delta * (hi - 16));
+            }
+        }
+    } else if (info.type == GGMLType::Q5_1) {
+        // Block: f16 delta (2B) + f16 min (2B) + uint8[4] high bits (4B) + uint8[16] nibbles (16B) = 24 bytes per 32 values
+        constexpr int QK = 32;
+        constexpr int BLOCK_BYTES = 24;
+        uint64_t num_blocks = num_elements / QK;
+        std::vector<uint8_t> raw(num_blocks * BLOCK_BYTES);
+        f.read(reinterpret_cast<char*>(raw.data()), raw.size());
+
+        for (uint64_t b = 0; b < num_blocks; b++) {
+            const uint8_t* block = raw.data() + b * BLOCK_BYTES;
+            uint16_t d_half, m_half;
+            std::memcpy(&d_half, block, 2);
+            std::memcpy(&m_half, block + 2, 2);
+            float delta = f16ToF32(d_half);
+            float min = f16ToF32(m_half);
+
+            uint32_t qh;
+            std::memcpy(&qh, block + 4, 4);
+
+            for (int j = 0; j < 16; j++) {
+                uint8_t byte = block[8 + j];
+                int lo = (byte & 0x0F);
+                int hi = (byte >> 4);
+
+                lo |= ((qh >> (j * 2)) & 1) << 4;
+                hi |= ((qh >> (j * 2 + 1)) & 1) << 4;
+
+                uint64_t idx = b * QK + j * 2;
+                mat(static_cast<int>(idx / cols), static_cast<int>(idx % cols)) = static_cast<T>(delta * lo + min);
+                idx++;
+                mat(static_cast<int>(idx / cols), static_cast<int>(idx % cols)) = static_cast<T>(delta * hi + min);
+            }
+        }
+    } else if (info.type == GGMLType::Q8_0) {
+        // Block: f16 delta (2B) + int8[32] quants (32B) = 34 bytes per 32 values
+        constexpr int QK = 32;
+        constexpr int BLOCK_BYTES = 34;
+        uint64_t num_blocks = num_elements / QK;
+        std::vector<uint8_t> raw(num_blocks * BLOCK_BYTES);
+        f.read(reinterpret_cast<char*>(raw.data()), raw.size());
+
+        for (uint64_t b = 0; b < num_blocks; b++) {
+            const uint8_t* block = raw.data() + b * BLOCK_BYTES;
+            uint16_t d_half;
+            std::memcpy(&d_half, block, 2);
+            float delta = f16ToF32(d_half);
+
+            for (int j = 0; j < QK; j++) {
+                int8_t qi = static_cast<int8_t>(block[2 + j]);
+                uint64_t idx = b * QK + j;
+                mat(static_cast<int>(idx / cols), static_cast<int>(idx % cols)) = static_cast<T>(delta * qi);
+            }
+        }
+    } else if (info.type == GGMLType::Q8_1) {
+        // Block: f32 delta (4B) + f32 sum (4B) + int8[32] quants (32B) = 40 bytes per 32 values
+        constexpr int QK = 32;
+        constexpr int BLOCK_BYTES = 40;
+        uint64_t num_blocks = num_elements / QK;
+        std::vector<uint8_t> raw(num_blocks * BLOCK_BYTES);
+        f.read(reinterpret_cast<char*>(raw.data()), raw.size());
+
+        for (uint64_t b = 0; b < num_blocks; b++) {
+            const uint8_t* block = raw.data() + b * BLOCK_BYTES;
+            float delta;
+            std::memcpy(&delta, block, 4);
+            // bytes 4-7: precomputed sum (not needed for dequantization)
+
+            for (int j = 0; j < QK; j++) {
+                int8_t qi = static_cast<int8_t>(block[8 + j]);
+                uint64_t idx = b * QK + j;
+                mat(static_cast<int>(idx / cols), static_cast<int>(idx % cols)) = static_cast<T>(delta * qi);
+            }
+        }
     } else {
         std::ostringstream oss;
         oss << "Unsupported tensor type " << static_cast<int>(info.type)
-            << " for tensor '" << info.name << "'. Only F32 and F16 are supported. "
-            << "Use a non-quantized GGUF model (e.g. F16 or F32).";
+            << " for tensor '" << info.name << "'. Supported types: F32, F16, "
+            << "Q4_0, Q4_1, Q5_0, Q5_1, Q8_0, Q8_1.";
         throw std::runtime_error(oss.str());
     }
 

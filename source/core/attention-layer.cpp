@@ -176,6 +176,70 @@ Matrix<T> AttentionLayer<T>::forward(const Matrix<T>& input)
 }
 
 template<typename T>
+Matrix<T> AttentionLayer<T>::forward_prefill(const Matrix<T>& input)
+{
+    int seq_len = input.rows();
+
+    Matrix<T> Q = input * W_q;  // (seq_len, embed_dim)
+    Matrix<T> K = input * W_k;  // (seq_len, kv_dim)
+    Matrix<T> V = input * W_v;  // (seq_len, kv_dim)
+
+    if (rope_enabled) {
+        applyRoPE(Q, K, 0);
+        cached_pos = seq_len;
+    }
+
+    // Populate KV cache for subsequent forward_cached() calls
+    kv_K_cache = K;
+    kv_V_cache = V;
+
+    // Multi-head causal attention (same as forward())
+    Matrix<T> output(seq_len, embed_dim);
+    T scale = static_cast<T>(1.0) / static_cast<T>(std::sqrt((double)head_dim));
+
+    for (int h = 0; h < num_heads; h++) {
+        int q_start = h * head_dim;
+        int kv_h = h / heads_per_group;
+        int kv_start = kv_h * head_dim;
+
+        Matrix<T> Q_h(seq_len, head_dim);
+        Matrix<T> K_h(seq_len, head_dim);
+        Matrix<T> V_h(seq_len, head_dim);
+
+        for (int i = 0; i < seq_len; i++) {
+            for (int j = 0; j < head_dim; j++) {
+                Q_h(i, j) = Q(i, q_start + j);
+                K_h(i, j) = K(i, kv_start + j);
+                V_h(i, j) = V(i, kv_start + j);
+            }
+        }
+
+        Matrix<T> scores = Q_h * K_h.transpose();
+
+        for (int i = 0; i < seq_len; i++) {
+            for (int j = 0; j < seq_len; j++) {
+                scores(i, j) *= scale;
+            }
+        }
+
+        // Causal masking
+        Masking<T> causal_mask(seq_len, seq_len);
+        scores = causal_mask.apply(scores);
+
+        Matrix<T> attn_weights = Softmax::apply<T>(scores);
+        Matrix<T> head_output = attn_weights * V_h;
+
+        for (int i = 0; i < seq_len; i++) {
+            for (int j = 0; j < head_dim; j++) {
+                output(i, q_start + j) = head_output(i, j);
+            }
+        }
+    }
+
+    return output * W_o;
+}
+
+template<typename T>
 Matrix<T> AttentionLayer<T>::forward_cached(const Matrix<T>& input)
 {
     Matrix<T> Q_new = input * W_q;  // (1, embed_dim)
@@ -187,14 +251,9 @@ Matrix<T> AttentionLayer<T>::forward_cached(const Matrix<T>& input)
         cached_pos++;
     }
 
-    // append to KV cache
-    if (kv_K_cache.empty()) {
-        kv_K_cache = K_new;
-        kv_V_cache = V_new;
-    } else {
-        kv_K_cache = kv_K_cache.verticalConcat(K_new);
-        kv_V_cache = kv_V_cache.verticalConcat(V_new);
-    }
+    // append to KV cache (in-place, avoids full copy)
+    kv_K_cache.appendRow(K_new);
+    kv_V_cache.appendRow(V_new);
 
     int cached_len = kv_K_cache.rows();
     T scale = static_cast<T>(1.0) / static_cast<T>(std::sqrt((double)head_dim));

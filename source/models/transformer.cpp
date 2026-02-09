@@ -141,17 +141,22 @@ std::vector<int> Transformer<T>::generate(const std::vector<int>& prompt, int ma
     clear_cache();
 
     std::vector<int> output = prompt;
-    Matrix<T> x;
 
-    // prefill tokens to build up the KV cache
-    for (int i = 0; i < (int)prompt.size(); i++) {
-        Matrix<T> embedded = embedding.forward({prompt[i]});
-        x = pos_encoding ? pos_encoding->forward(embedded, i) : embedded;
+    // Batched prefill — process all prompt tokens at once
+    Matrix<T> embedded = embedding.forward(prompt);  // (seq_len, embed_dim)
+    Matrix<T> x = pos_encoding ? pos_encoding->forward(embedded) : embedded;
 
-        for (auto& block : blocks) {
-            x = block->forward_cached(x);
-        }
+    for (auto& block : blocks) {
+        x = block->forward_prefill(x);
     }
+
+    // Extract last row for output projection
+    int seq_len = x.rows();
+    Matrix<T> last_row(1, embed_dim);
+    for (int j = 0; j < embed_dim; j++) {
+        last_row(0, j) = x(seq_len - 1, j);
+    }
+    x = last_row;
 
     if (output_rms) x = output_rms->forward(x);
     else if (output_ln) x = output_ln->forward(x);

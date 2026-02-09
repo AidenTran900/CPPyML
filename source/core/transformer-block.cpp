@@ -160,6 +160,28 @@ Matrix<T> TransformerBlock<T>::forward_cached(const Matrix<T>& input)
 }
 
 template<typename T>
+Matrix<T> TransformerBlock<T>::forward_prefill(const Matrix<T>& input)
+{
+    if (norm_position == NormPosition::PRE_NORM) {
+        Matrix<T> normed1 = normForward1(input);
+        Matrix<T> attn_out = attention.forward_prefill(normed1);
+        Matrix<T> residual1 = input + attn_out;
+
+        Matrix<T> normed2 = normForward2(residual1);
+        Matrix<T> ff_out = ffnForward(normed2);
+        return residual1 + ff_out;
+    }
+
+    Matrix<T> attn_out = attention.forward_prefill(input);
+    Matrix<T> residual1 = input + attn_out;
+    Matrix<T> normed1 = normForward1(residual1);
+
+    Matrix<T> ff_out = ffnForward(normed1);
+    Matrix<T> residual2 = normed1 + ff_out;
+    return normForward2(residual2);
+}
+
+template<typename T>
 void TransformerBlock<T>::clear_cache()
 {
     attention.clear_cache();

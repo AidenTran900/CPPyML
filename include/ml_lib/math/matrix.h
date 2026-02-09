@@ -50,6 +50,7 @@ class Matrix {
         bool approxEqual(const Matrix& other, double epsilon = 1e-9) const;
 
         Matrix verticalConcat(const Matrix& other) const;
+        void appendRow(const Matrix& row);
 
         static EliminationResult<T> forwardElimination(const Matrix& m, const Matrix& aug = Matrix(0, 0));
         static EliminationResult<T> backwardElimination(const Matrix& m, const Matrix& aug = Matrix(0, 0));

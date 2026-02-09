@@ -3,24 +3,31 @@
 
 int main() {
     Tokenizer tokenizer;
-    auto model = LlamaLoader<float>::load("examples/datasets/language-model/SmolLM2-135M-Instruct-f16.gguf", tokenizer, 128);
+    auto model = LlamaLoader<float>::load("examples/datasets/language-model/Llama-3.2-1B-Instruct-Q8_0.gguf", tokenizer, 128);
 
     TokenSampler<float> sampler;
     sampler.addProcessor(std::make_unique<TemperatureProcessor<float>>(0.7));
     sampler.addProcessor(std::make_unique<TopPProcessor<float>>(0.9));
     sampler.setSelector(std::make_unique<CategoricalSelector<float>>());
 
-    std::vector<int> prompt = tokenizer.encode(
-        "<|im_start|>user\nWhat is the capital of France?<|im_end|>\n<|im_start|>assistant\n");
+    std::string input;
+    while (true) {
+        std::cout << "\n> ";
+        if (!std::getline(std::cin, input) || input == "exit") break;
+        if (input.empty()) continue;
 
-    std::cout << "Token IDs (" << prompt.size() << "): ";
-    for (int id : prompt) std::cout << id << " ";
-    std::cout << std::endl;
-
-    std::vector<int> output = model->generate(prompt, 100, sampler);
-    std::string text = tokenizer.decode(output);
-
-    std::cout << "Generated text:\n" << text << std::endl;
+       std::string formatted =
+            "<|start_header_id|>system<|end_header_id|>\n"
+            "You are a helpful assistant.<|eot_id|>\n"
+            "<|start_header_id|>user<|end_header_id|>\n"
+            + input +
+            "\n<|eot_id|>\n"
+            "<|start_header_id|>assistant<|end_header_id|>";
+        std::vector<int> prompt = tokenizer.encode(formatted);
+        std::vector<int> output = model->generate(prompt, 100, sampler);
+        std::vector<int> generated(output.begin() + prompt.size(), output.end());
+        std::cout << tokenizer.decode(generated) << std::endl;
+    }
 
     return 0;
 }
